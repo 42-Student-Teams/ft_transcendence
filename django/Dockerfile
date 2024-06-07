@@ -6,7 +6,7 @@ RUN adduser -D $USER
 
 COPY ./requirements.txt /
 
-RUN apk add --no-cache postgresql-libs postgresql-libs python3 py3-pip
+RUN apk add --no-cache postgresql-libs python3 py3-pip
 
 # Thanks to --virtual .build-deps we can yank all deps at the end
 RUN \
