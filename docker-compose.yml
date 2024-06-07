@@ -1,0 +1,44 @@
+services:
+  db:
+    build:
+      context: db
+    restart: always
+    ports:
+      - ${DB_PORT}:5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    networks:
+      - db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 30s
+      start_period: 1s
+      retries: 3
+  web:
+    build:
+      context: django
+    restart: always
+    ports:
+      - ${APP_PORT}:8000
+    volumes:
+      - ./django/app:/app
+    env_file:
+      - .env
+    networks:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    #command: ["sleep", "infinity"]
+
+volumes:
+  db-data:
+
+networks:
+  backnet:
+  db:
+
+#TODO: followinf w3c setup django, rename django to app, and don't rename app, rather delete it and run sleep infinity and create the app using django admin
