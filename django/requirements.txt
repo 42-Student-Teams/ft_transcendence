@@ -1,2 +1,4 @@
 Django == 5.0.6
 psycopg[binary,pool] == 3.1.19
+djangorestframework == 3.15.1
+tzdata == 2024.1
