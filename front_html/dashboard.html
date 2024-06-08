@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Profile</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid p-3">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-3 p-3">
+                    <button class="btn btn-dark btn-sm mb-3">Edit profil</button>
+                    <div class="d-flex align-items-center">
+                        <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid placeholder mr-3">
+                        <div>
+                            <h5 class="mb-0">Lamillton</h5>
+                            <p class="mb-0">12W 13L &nbsp; 43%</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between">
+                            <span>Kills/Death</span>
+                            <span>2.11</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Dmg/Round</span>
+                            <span>2.11</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>HS</span>
+                            <span>66.23%</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Combat Score</span>
+                            <span>631</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Eson Score</span>
+                            <span>632.0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-3">
+                    <h6>AVG.SHOTS% - LAST 30 GAME</h6>
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="card mb-3 p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex">
+                            <div class="text-center mr-4">
+                                <p class="mb-0 font-weight-bold">11W 9L</p>
+                                <p class="mb-0">Last 20</p>
+                            </div>
+                            <div class="text-center mr-4">
+                                <p class="mb-0 font-weight-bold">55%</p>
+                                <p class="mb-0">Winrate</p>
+                            </div>
+                            <div class="text-center mr-4">
+                                <p class="mb-0 font-weight-bold">1.23</p>
+                                <p class="mb-0">KD</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="mb-0 font-weight-bold">322.2</p>
+                                <p class="mb-0">Avg. Score</p>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <div class="text-center mr-4">
+                                <img src="https://via.placeholder.com/40" alt="Avatar1" class="img-fluid avatar mb-2">
+                                <p class="mb-0 font-weight-bold text-success">65%</p>
+                            </div>
+                            <div class="text-center mr-4">
+                                <img src="https://via.placeholder.com/40" alt="Avatar2" class="img-fluid avatar mb-2">
+                                <p class="mb-0 font-weight-bold text-success">100%</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="https://via.placeholder.com/40" alt="Avatar3" class="img-fluid avatar mb-2">
+                                <p class="mb-0 font-weight-bold text-danger">33%</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 55%;"></div>
+                        <div class="progress-bar bg-success" style="width: 45%;"></div>
+                    </div>
+                </div>
+                <div class="card p-3 mb-3 equal-height">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid placeholder mr-3">
+                        <div>
+                            <h6 class="mb-0">Victory</h6>
+                            <p class="mb-0">100-43</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">11 Total Kill</p>
+                            <p class="mb-0">55% Headshot</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">1.23 KD</p>
+                            <p class="mb-0">322.2 Avg. Score</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-success" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="card p-3 mb-3 equal-height">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid placeholder mr-3">
+                        <div>
+                            <h6 class="mb-0">Victory</h6>
+                            <p class="mb-0">19-13</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">31 Total Kill</p>
+                            <p class="mb-0">55% Winrate</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">1.23 KD</p>
+                            <p class="mb-0">322.2 Avg. Score</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 55%;"></div>
+                        <div class="progress-bar bg-success" style="width: 45%;"></div>
+                    </div>
+                </div>
+                <div class="card p-3 mb-3 equal-height">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid placeholder mr-3">
+                        <div>
+                            <h6 class="mb-0">Defeat</h6>
+                            <p class="mb-0">9-13</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">52 Total Kill</p>
+                            <p class="mb-0">55% Winrate</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">1.23 KD</p>
+                            <p class="mb-0">322.2 Avg. Score</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="card p-3 mb-3 equal-height">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid placeholder mr-3">
+                        <div>
+                            <h6 class="mb-0">Victory</h6>
+                            <p class="mb-0">13-2</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">31 Total Kill</p>
+                            <p class="mb-0">55% Winrate</p>
+                        </div>
+                        <div>
+                            <p class="mb-0">1.23 KD</p>
+                            <p class="mb-0">322.2 Avg. Score</p>
+                        </div>
+                    </div>
+                    <div class="progress mt-2" style="height: 10px;">
+                        <div class="progress-bar bg-danger" style="width: 45%;"></div>
+                        <div class="progress-bar bg-success" style="width: 55%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
