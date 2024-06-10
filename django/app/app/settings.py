@@ -28,7 +28,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -39,8 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'backend',
-    'rest_framework'
+    'rest_framework',
+    'oauth',
+
 ]
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
+AUTHORIZATION_URL = os.getenv('AUTHORIZATION_URL')
+TOKEN_URL = os.getenv('TOKEN_URL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
