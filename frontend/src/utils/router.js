@@ -1,12 +1,12 @@
-// import Login from "../components/login.js";
-import Main from "../views/main.js";
+import Home from "../views/home.js";
+import Login from "../views/login.js";
 // import Game from "../components/game.js";
 // import TournamentRecord from "../components/tournamentRecord.js";
 import store from "../store/index.js";
 
 const routes = [
-	{ path: "/", view: Main },
-	// { path: "/login", view: Login },
+	{ path: "/", view: Home },
+	{ path: "/login", view: Login },
 	// { path: "/game", view: Game },
 	// { path: "/record", view: TournamentRecord },
 ];

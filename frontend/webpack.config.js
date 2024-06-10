@@ -34,7 +34,7 @@ export default {
     new HtmlWebpackPlugin({
       template: './index.html',
     }),
-    new FaviconsWebpackPlugin("./src/assets/image/favicon.ico"),
+    new FaviconsWebpackPlugin("./src/assets/image/header-logo.png"),
   ],
   devServer: {
     compress: true,

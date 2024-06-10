@@ -1,4 +1,5 @@
 import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/js/bootstrap.bundle.js';
 import "./assets/css/style.css";
 import store from "./store/index.js";
 import router, { navigateTo } from "./utils/router.js";

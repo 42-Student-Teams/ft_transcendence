@@ -3,7 +3,7 @@ import imgPingPong from "../assets/image/ping-pong.png";
 import Component from "../library/component.js";
 // import LogoutButton from './main/logoutButton.js';
 
-export default class Main extends Component {
+export default class Home extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
 
@@ -29,7 +29,7 @@ export default class Main extends Component {
            <div class="col-md-6 right-box">
               <div class="row align-items-center">
                     <div class="header-text mb-4">
-                         <h2>Welcome Back</h2>
+                         <h2>Welcome Back !</h2>
                     </div>
                     <div class="input-group mb-3">
                         <input type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Login">
@@ -43,7 +43,7 @@ export default class Main extends Component {
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <button class="btn btn-lg btn-primary w-100 fs-6">Login</button>
+                        <button class="btn btn-lg btn-primary w-100 fs-5">Login</button>
                     </div>
                     <div class="divider d-flex align-items-center my-4">
                         <p class="text-center mx-3 mb-0 divider-or">Or</p>
