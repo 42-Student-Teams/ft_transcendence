@@ -26,14 +26,15 @@ export default class Home extends Component {
                     <img src=${headerLogo} width="40" height="32"">
                   </a>
                   <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0">
-                    <li><a href="#" class="nav-link px-2 link-secondary">Game</a></li>
-                    <li><a href="#" class="nav-link px-2 link-dark">Chat</a></li>
                   </ul>
                   <div class="dropdown text-end">
                     <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                       <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
                     </a>
                     <ul class="dropdown-menu text-small">
+                      <li>
+                          <a class="dropdown-item" href="#">Chat</a>
+                      </li>
                       <li>
                           <a class="dropdown-item" href="#">Settings</a>
                       </li>
@@ -51,6 +52,17 @@ export default class Home extends Component {
                 </div>
               </div>
             </header>
+            <main class="d-flex flex-column align-items-center justify-content-center vh-100">
+                <div>
+                    <div class="w-100 d-flex justify-content-center align-items-center py-2">
+                        <h1 class="display-4 fw-bold">Game Mode Selection</h1>
+                    </div>
+                    <div class="d-flex flex-row gap-3 mt-3 justify-content-center">
+                        <div id="singleGameMode" class="rounded border bg-light text-dark shadow-sm col" data-v0-t="card"></div>
+                        <div id="tournamentGameMode" class="rounded border bg-light text-dark shadow-sm col" data-v0-t="card"></div>
+                    </div>
+                </div>
+            </main>
         `;
 
         this.element.innerHTML = view;
