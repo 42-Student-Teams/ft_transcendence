@@ -1,0 +1,160 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #aaaaaa;
+    font-family: Arial, sans-serif;
+    display: flex;
+}
+
+h1, h2, h5, h6, p {
+    font-weight: bold;
+    color: #333;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 30px;
+    padding: 15px;
+}
+
+.btn-custom, .btn-primary {
+    border-radius: 30px;
+    padding: 10px 0;
+    width: 100%;
+    font-size: 16px;
+}
+
+.btn-custom {
+    background-color: #4dc0b5;
+    color: white;
+    border: none;
+}
+
+.btn-logo {
+    height: 24px;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.btn {
+    font-weight: bold;
+    margin: 0 5px;
+    padding: 10px 20px;
+}
+
+.btn-send {
+    border-radius: 30px;
+    padding: 10px; 
+    font-size: 14px;
+    flex: 0 0 25%; 
+}
+
+.img-fluid {
+    object-fit: cover;
+    height: auto;
+    width: auto;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.text-light-gray {
+    color: #b0b0b0;
+}
+
+.sidebar {
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    height: 100vh; 
+}
+
+.sidebar .btn-block {
+    border-radius: 30px;
+    padding: 10px 0;
+    width: 90%;
+    margin: 0 auto;
+}
+
+.sidebar ul {
+    width: 100%;
+}
+
+.sidebar ul li {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.sidebar ul li i {
+    margin-right: 10px;
+}
+
+.sidebar-separator {
+    border-top: 1px dashed #dee2e6;
+    margin: 20px 0;
+}
+
+.separator-vertical {
+    width: 1px;
+    background: repeating-linear-gradient(
+        to bottom,
+        #dee2e6,
+        #dee2e6 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    margin: 0 10px;
+    height: 100vh;
+}
+
+.content {
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; 
+}
+
+.content h1 {
+    font-weight: bold;
+    color: #b0b0b0; 
+}
+
+.message-input-container {
+    background-color: #ffffff;
+    border-top: 1px solid #dee2e6;
+    width: 100%; 
+}
+
+.message-input {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%; 
+}
+
+.message-input .message-input-box {
+    border-radius: 30px;
+    padding: 15px;
+    flex-grow: 1;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+.bottom-0 {
+    bottom: 0;
+}
+
+.w-100 {
+    width: 100%;
+}
