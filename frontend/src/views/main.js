@@ -1,3 +1,5 @@
+import btnLogo from "../assets/image/42-logo.png";
+import imgPingPong from "../assets/image/ping-pong.png";
 import Component from "../library/component.js";
 // import LogoutButton from './main/logoutButton.js';
 
@@ -18,24 +20,46 @@ export default class Main extends Component {
 
         const view = /*html*/ `
 		<div class="container d-flex justify-content-center align-items-center min-vh-100">
-            <div class="card p-5">
-                <h2 class="text-center">Welcome Back!</h2>
-                <form>
-                    <div class="form-group">
-                        <input type="email" class="form-control" placeholder="get@tutorial.com">
+           <div class="row border rounded-5 p-3 bg-white shadow box-area">
+           <div class="col-md-6 rounded-4 d-flex justify-content-center align-items-center flex-column left-box" style="background: #D5D5D5;">
+                <div class="featured-image mb-3">
+                    <img src=${imgPingPong} class="img-fluid"">
+                </div>
+           </div> 
+           <div class="col-md-6 right-box">
+              <div class="row align-items-center">
+                    <div class="header-text mb-4">
+                         <h2>Welcome Back</h2>
                     </div>
-                    <div class="form-group">
-                        <input type="password" class="form-control" placeholder="Password">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Login">
                     </div>
-                    <p class="text-center">Or continue with</p>
-                    <div class="form-group">
-                        <button type="button" class="btn btn-block btn-custom"> 
-                            <img src="assets/intra.png" alt="intra button" class="btn-intra">
+                    <div class="input-group mb-1">
+                        <input type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password">
+                    </div>
+                    <div class="input-group mb-5 d-flex justify-content-between">
+                        <div class="forgot">
+                            <small><a href="#">Forgot Password?</a></small>
+                        </div>
+                    </div>
+                    <div class="input-group mb-3">
+                        <button class="btn btn-lg btn-primary w-100 fs-6">Login</button>
+                    </div>
+                    <div class="divider d-flex align-items-center my-4">
+                        <p class="text-center mx-3 mb-0 divider-or">Or</p>
+                    </div>
+                    <div class="input-group mb-3">
+                        <button class="btn btn-lg btn-fortytwo w-100 fs-6">
+                            <img src=${btnLogo} style="width:20px" class="me-2">
+                            <small>Sign In with 42</small>
                         </button>
                     </div>
-                    <button type="submit" class="btn btn-primary btn-block">Log in</button>
-                </form>
-            </div>
+                    <div class="row">
+                        <small>Don't have account? <a href="#">Sign Up</a></small>
+                    </div>
+              </div>
+           </div> 
+          </div>
         </div>
         `;
 
