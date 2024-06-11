@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await checkAuthStatus();
 		} catch (error) {
 			//console.log(error);
-			navigateTo("/");
+			navigateTo("/login");
 			return;
 		}
 	}
@@ -73,9 +73,9 @@ async function checkAuthStatus() {
 
 	if (data.isLoggedIn) {
 		store.dispatch("logIn");
-		await setUserInfo();
+		// await setUserInfo();
 		navigateTo("/");
-		console.log("login state: redirect to /");
+		// console.log("login state: redirect to /");
 	} else {
 		throw new Error("Not logged in");
 	}
