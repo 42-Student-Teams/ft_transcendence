@@ -67,6 +67,4 @@ export default class Home extends Component {
 
         this.element.innerHTML = view;
     }
-
-   
 }
