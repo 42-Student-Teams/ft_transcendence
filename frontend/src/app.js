@@ -28,15 +28,15 @@ window.addEventListener("popstate", (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
-	// if (!store.state.isLoggedIn) {
-		// try {
-		// 	await checkAuthStatus();
-		// } catch (error) {
-		// 	//console.log(error);
-		// 	navigateTo("/login");
-		// 	return;
-		// }
-	// }
+	if (!store.state.isLoggedIn) {
+		try {
+			await checkAuthStatus();
+		} catch (error) {
+			//console.log(error);
+			navigateTo("/login");
+			return;
+		}
+	}
 
 	handleDefaultRoute();
 });
@@ -53,36 +53,33 @@ function setupNavigation() {
 }
 
 async function setUserInfo() {
-	// const response = await fetch("/api/v1/user", {
-	// 	method: "GET",
-	// 	credentials: "include",
-	// });
+	const response = await fetch("/api/v1/user", {
+		method: "GET",
+		credentials: "include",
+	});
 
-	const user = {
-		intraId: "lsaba-qu",
-		preferred_language: "en",
-	}
+	const data = await response.json();
 
-	store.dispatch("setIntraId", { intraId: user.intraId });
-	store.dispatch("setLanguage", { languageId: user.preferred_language });
+	store.dispatch("setIntraId", { intraId: data.user.intraId });
+	// store.dispatch("setLanguage", { languageId: data.preferred_language });
 }
 
-// async function checkAuthStatus() {
-// 	const response = await fetch("/api/v1/check-login", {
-// 		credentials: "include",
-// 	});
+async function checkAuthStatus() {
+	const response = await fetch("/api/check-login", {
+		credentials: "include",
+	});
 
-// 	const data = await response.json();
+	const data = await response.json();
 
-// 	if (data.isLoggedIn) {
-// 		store.dispatch("logIn");
-// 		await setUserInfo();
-// 		navigateTo("/");
-// 		console.log("login state: redirect to /");
-// 	} else {
-// 		throw new Error("Not logged in");
-// 	}
-// }
+	if (data.isLoggedIn) {
+		store.dispatch("logIn");
+		await setUserInfo();
+		navigateTo("/");
+		console.log("login state: redirect to /");
+	} else {
+		throw new Error("Not logged in");
+	}
+}
 
 function handleDefaultRoute() {
 	if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {

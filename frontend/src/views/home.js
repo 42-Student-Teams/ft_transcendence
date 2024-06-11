@@ -1,6 +1,6 @@
-import Component from "../library/component.js";
-// import LogoutButton from './main/logoutButton.js';
 import headerLogo from "../assets/image/header-logo.png";
+import LogoutButton from '../components/home/btn-logout.js';
+import Component from "../library/component.js";
 
 export default class Home extends Component {
     constructor() {
@@ -10,9 +10,9 @@ export default class Home extends Component {
 
         this.render();
         
-        // this.components = {
-        //     logoutButton: new LogoutButton(),
-        // };
+        this.components = {
+            logoutButton: new LogoutButton(),
+        };
     }
 
     async render() {
@@ -44,9 +44,7 @@ export default class Home extends Component {
                       <li>
                           <hr class="dropdown-divider" />
                       </li>
-                      <li>
-                        <a class="dropdown-item" href="#">Sign out</a>
-                      </li>
+                      <li id="btnLogout"></li>
                     </ul>
                   </div>
                 </div>
