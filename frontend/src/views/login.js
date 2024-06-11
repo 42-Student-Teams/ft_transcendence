@@ -1,5 +1,6 @@
 import imgPingPong from "../assets/image/ping-pong.png";
 import BtnAuth0 from '../components/login/btn-auth0.js';
+import FormLogin from '../components/login/form-login.js';
 import Component from "../library/component.js";
 
 export default class Login extends Component {
@@ -9,7 +10,10 @@ export default class Login extends Component {
         // store.events.subscribe("languageIdChange", () => this.renderAll());
 
         this.render();
-        this.components = { btnAuth0: new BtnAuth0() };
+        this.components = { 
+            btnAuth0: new BtnAuth0(),
+            formLogin: new FormLogin()
+         };
     }
 
     async render() {
@@ -27,20 +31,7 @@ export default class Login extends Component {
                     <div class="header-text mb-4">
                          <h2>Welcome Back !</h2>
                     </div>
-                    <div class="input-group mb-3">
-                        <input type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Login">
-                    </div>
-                    <div class="input-group mb-1">
-                        <input type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password">
-                    </div>
-                    <div class="input-group mb-5 d-flex justify-content-between">
-                        <div class="forgot">
-                            <small><a href="#">Forgot Password?</a></small>
-                        </div>
-                    </div>
-                    <div class="input-group mb-3">
-                        <button class="btn btn-lg btn-primary w-100 fs-5">Login</button>
-                    </div>
+                    <div id="formLogin"></div>
                     <div class="divider d-flex align-items-center my-4">
                         <p class="text-center mx-3 mb-0 divider-or">Or</p>
                     </div>

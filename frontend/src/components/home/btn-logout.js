@@ -13,16 +13,16 @@ export default class LogoutButton extends Component {
 		// With api call
 
 
+		const view = /*html*/ `
+			<a href="#" class="dropdown-item" role="button">
+        		Logout
+        	</a>
+        `;
 		// const view = /*html*/ `
 		// 	<a href="${process.env.LOGOUT_URL}" class="dropdown-item" role="button">
         // 		Logout
         // 	</a>
         // `;
-		const view = /*html*/ `
-			<a href="${process.env.LOGOUT_URL}" class="dropdown-item" role="button">
-        		Logout
-        	</a>
-        `;
 
 		this.element = document.getElementById("btnLogout");
 		this.element.innerHTML = view;

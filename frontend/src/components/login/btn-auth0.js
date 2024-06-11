@@ -10,7 +10,7 @@ export default class Login extends Component {
 	async render() {
 
 		const view = /*html*/ `
-            <a href="${process.env.LOGIN_URL}" class="btn btn-lg btn-fortytwo w-100 fs-5">
+            <a href="${process.env.LOGIN_URL}" class="btn btn-md btn-fortytwo w-100 fs-5">
                 <img src=${btnLogo} style="width:20px" class="me-2">
                 Sign In with 42
 			</a>

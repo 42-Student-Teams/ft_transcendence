@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await checkAuthStatus();
 		} catch (error) {
 			//console.log(error);
-			navigateTo("/login");
+			navigateTo("/");
 			return;
 		}
 	}
