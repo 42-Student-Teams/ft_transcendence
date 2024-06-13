@@ -1,5 +1,5 @@
 import imgPingPong from "../assets/image/ping-pong.png";
-import BtnAuth0 from '../components/register/btn-auth0.js';
+import BtnLoginInRegister from '../components/register/btn-login-in-register.js';
 import FormRegister from '../components/register/form-register.js';
 import Component from "../library/component.js";
 
@@ -11,7 +11,7 @@ export default class Register extends Component {
 
         this.render();
         this.components = { 
-            btnAuth0: new BtnAuth0(),
+            btnLoginInRegister: new BtnLoginInRegister(),
             formRegister: new FormRegister()
         };
     }
@@ -31,14 +31,7 @@ export default class Register extends Component {
                          <h2>Create Your Account</h2>
                     </div>
                     <div id="formRegister"></div>
-                    <div class="divider d-flex align-items-center my-4">
-                        <p class="text-center mx-3 mb-0 divider-or">Or</p>
-                    </div>
-                    <div id="btnAuth0" class="input-group mb-3">
-                    </div>
-                    <div class="row">
-                        <small>Already have an account? <a href="login">Login</a></small>
-                    </div>
+                    <div id="btnLoginInRegister" class="row"></div>
               </div>
            </div> 
           </div>

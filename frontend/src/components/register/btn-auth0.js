@@ -1,7 +1,7 @@
 import btnLogo from "../../assets/image/42-logo.png";
 import Component from "../../library/component.js";
 
-export default class Login extends Component {
+export default class REgister extends Component {
 	constructor() {
 		super({ element: document.getElementById("btnAuth0") });
 		this.render();
@@ -18,5 +18,13 @@ export default class Login extends Component {
 
 		this.element = document.getElementById("btnAuth0");
 		this.element.innerHTML = view;
+		// this.handleEvent();
+	}
+
+	async handleEvent() {
+		this.element.querySelector("button").addEventListener("click", () => {
+
+			navigateTo("/login");
+		});
 	}
 }

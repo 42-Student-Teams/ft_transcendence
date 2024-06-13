@@ -57,3 +57,10 @@ body{
         padding: 20px;
      }
 }
+
+
+#BtnRegisterInLogin, #BtnRegisterInLogin:visited, #btn-login-from-signup, #btn-login-from-signup:visited {
+    text-decoration: underline;
+    color: #0A58CA;
+    cursor: pointer;
+}

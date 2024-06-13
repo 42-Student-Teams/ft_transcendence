@@ -22,7 +22,6 @@ export default class Login extends Component {
 
 	async handleEvent() {
 		this.element.querySelector("button").addEventListener("click", () => {
-
 			navigateTo("/login");
 		});
 	}
