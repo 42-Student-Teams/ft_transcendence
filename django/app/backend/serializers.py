@@ -4,5 +4,5 @@ from .models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('username', 'is_admin')
         # fields = ('content', 'created_at') # to expose arbitrary fields
