@@ -41,16 +41,29 @@ export default class Login extends Component {
 
             try {
                 // Make the POST request with the login credentials
-                const response = await fetch("/api/user/login", {
-                    method: "GET",
+                const apiurl = process.env.API_URL;
+
+
+                const data = {
+                    username: username,
+                    password: password
+                };
+
+                const response = await fetch(`${apiurl}/login`, {
+                    method: "POST",
                     headers: {
-                        "Content-Type": "application/json",
-                        "username": username,
-                        "password": password,
+                        'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify(data)
                 });
 
-                if (username.trim() !== "" && password.trim() !== "") {
+                console.log(response);
+
+                // if (username.trim() !== "" && password.trim() !== "") {
+                //     store.dispatch("logIn");
+                //     navigateTo("/");
+                // }
+                if (response.ok) {
                     store.dispatch("logIn");
                     navigateTo("/");
                 }

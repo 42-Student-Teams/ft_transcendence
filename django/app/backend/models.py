@@ -41,20 +41,3 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
-
-
-
-
-'''class User(AbstractUser):
-    #username is handles by AbstractUser
-    # pwd and salt are handled by AbstractBaseUser's set_password and check_password
-    #USERNAME_FIELD = 'username'
-    #REQUIRED_FIELDS = ['username']
-    password = models.CharField(_("password"), max_length=128, null=True, blank=True)
-    objects = CustomUserManager()
-    email = None
-    EMAIL_FIELD = None
-
-    def __str__(self):
-        return self.username
-'''

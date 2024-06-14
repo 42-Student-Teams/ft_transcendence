@@ -8,9 +8,11 @@ COPY ./requirements.txt /
 
 RUN apk add --no-cache postgresql-libs python3 py3-pip
 
+#RUN apk add libffi-dev, python-dev for arm64 (m1,  m2, etc...)
+
 # Thanks to --virtual .build-deps we can yank all deps at the end
 RUN \
-	apk add --no-cache --virtual .build-deps gcc musl-dev postgresql-dev && \
+	apk add --no-cache --virtual .build-deps python3-dev libffi-dev gcc musl-dev postgresql-dev && \
 	pip3 install -r requirements.txt --no-cache-dir --break-system-packages && \
 	apk --purge del .build-deps
 

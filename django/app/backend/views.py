@@ -87,24 +87,28 @@ class UserLoginView(View):
     auth_level: AuthLevel = AuthLevel.NOAUTH
 
     def post(self, request, *args, **kwargs):
+        print('bruhhhhhhhhhhhh1')
+        print(request.body)
+        data = json.loads(request.body)
+
         if validate_token(request.POST, self.auth_level) != TokenValidationResponse.VALID:
             return respond_invalid_token(validate_token(request.POST, self.auth_level))
 
         err_resp = {'reason': 'unknown'}
-        if not request.POST.get('username'):
+        if 'username' not in data:
             err_resp['reason'] = 'missing username'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if not request.POST.get('password'):
+        if 'password' not in data:
             err_resp['reason'] = 'missing password'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
 
-        user: User = User.objects.user_by_username(request.POST.get('username'))
+        user: User = User.objects.user_by_username(data['username'])
         if user is None:
             err_resp['reason'] = 'user not found'
             return HttpResponseBadRequest(
                 json.dumps(err_resp, default=str),
                 content_type='application/json')
-        if not user.validate_password(request.POST.get('password')):
+        if not user.validate_password(data['password']):
             err_resp['reason'] = 'invalid password'
             return HttpResponseForbidden(
                 json.dumps(err_resp, default=str),
@@ -120,7 +124,7 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['get']
-    auth_level = AuthLevel.AUTH
+    auth_level = AuthLevel.NOAUTH
 
     def get(self, request, *args, **kwargs):
         if validate_token(request.GET, self.auth_level) != TokenValidationResponse.VALID:

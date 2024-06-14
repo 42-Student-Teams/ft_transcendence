@@ -18,7 +18,6 @@ const envKeys = env ? Object.keys(env).reduce((prev, next) => {
 
 
 export default {
-  watch: true,
   entry: './src/app.js',
   mode: 'development',
   output: {
@@ -52,7 +51,6 @@ export default {
   ],
   devServer: {
     compress: true,
-    port: 8080,
     port: 8080,
     hot: true,
     static: {
