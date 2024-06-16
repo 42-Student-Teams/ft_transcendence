@@ -1,7 +1,0 @@
-# Use an official Node.js runtime as a base image
-FROM node:18
-
-# Set the working directory inside the container
-WORKDIR /app
-
-CMD ["sh", "-c", "npm install && npm run build && npm run start"]
