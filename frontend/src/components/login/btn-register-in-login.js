@@ -22,6 +22,7 @@ export default class Login extends Component {
 
 	async handleEvent() {
 		this.element.querySelector("a").addEventListener("click", () => {
+			event.preventDefault();
 			navigateTo("/register");
 		});
 	}

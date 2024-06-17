@@ -9,7 +9,6 @@ import router, { navigateTo } from "./utils/router.js";
 window.addEventListener("popstate", (event) => {
 	//console.groupCollapsed("EVENT: popstate");
 	//console.log(" - window.location.pathname=", window.location.pathname);
-
 	// if (store.state.location === "/game") {
 	// 	event.preventDefault();
 	// 	//console.log("leave game");

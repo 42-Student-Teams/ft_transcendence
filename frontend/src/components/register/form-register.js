@@ -1,4 +1,6 @@
 import Component from "../../library/component.js";
+import store from "../../store/index.js";
+import { navigateTo } from "../../utils/router.js";
 
 export default class FormRegister extends Component {
     constructor() {
@@ -29,15 +31,14 @@ export default class FormRegister extends Component {
                 </div>
             </form>
         `;
-
+        this.element = document.getElementById("formRegister");
         this.element.innerHTML = view;
-        this.attachEventHandlers();
+        this.handleEvent();
     }
 
-    attachEventHandlers() {
-        document.getElementById("form-register").addEventListener("submit", async (event) => {
+    async handleEvent() {
+        this.element.querySelector("#register-submit").addEventListener("click", async (event) => {
             event.preventDefault();
-
             const firstname = document.getElementById("register-firstname").value;
             const lastname = document.getElementById("register-lastname").value;
             const username = document.getElementById("register-username").value;
@@ -45,16 +46,25 @@ export default class FormRegister extends Component {
             const password = document.getElementById("register-password").value;
 
             try {
-                const response = await fetch("/api/user/register", {
+
+                const data = {
+                    firstname: firstname,
+                    lastname: lastname,
+                    username: username,
+                    email: email,
+                    password: password
+                };
+                const apiurl = process.env.API_URL;
+                const response = await fetch(`${apiurl}/register`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ firstname, lastname, username, email, password })
+                    },body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
-                    window.location.href = "/";
+                    store.dispatch("logIn");
+                    navigateTo("/");
                 } else {
                     console.error("Registration failed:");
                 }
