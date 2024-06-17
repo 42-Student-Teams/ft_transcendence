@@ -3,22 +3,22 @@ import LogoutButton from '../components/home/btn-logout.js';
 import Component from "../library/component.js";
 
 export default class Home extends Component {
-    constructor() {
-        super({ element: document.getElementById("app") });
+  constructor() {
+    super({ element: document.getElementById("app") });
 
-        // store.events.subscribe("languageIdChange", () => this.renderAll());
+    // store.events.subscribe("languageIdChange", () => this.renderAll());
 
-        this.render();
-        
-        this.components = {
-            logoutButton: new LogoutButton(),
-        };
-    }
+    this.render();
 
-    async render() {
-        // const languageId = store.state.languageId;
+    this.components = {
+      logoutButton: new LogoutButton(),
+    };
+  }
 
-        const view = /*html*/ `
+  async render() {
+    // const languageId = store.state.languageId;
+
+    const view = /*html*/ `
             <header class="p-3 mb-3 border-bottom">
               <div class="container">
                 <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
@@ -50,19 +50,27 @@ export default class Home extends Component {
                 </div>
               </div>
             </header>
-            <main class="d-flex flex-column align-items-center justify-content-center vh-100">
-                <div>
-                    <div class="w-100 d-flex justify-content-center align-items-center py-2">
-                        <h1 class="display-4 fw-bold">Game Mode Selection</h1>
-                    </div>
-                    <div class="d-flex flex-row gap-3 mt-3 justify-content-center">
-                        <div id="singleGameMode" class="rounded border bg-light text-dark shadow-sm col" data-v0-t="card"></div>
-                        <div id="tournamentGameMode" class="rounded border bg-light text-dark shadow-sm col" data-v0-t="card"></div>
-                    </div>
+            <div class="layout overflow-hidden">
+              <aside class="sidebar bg-primary">
+                <div id="chat">
+                  <p>Hello</p>
                 </div>
-            </main>
+              </aside>
+              <main class="main container h-100 bg-secondary">
+                  <div class=" ">
+                      <div class="w-100 d-flex justify-content-center align-items-center py-2">
+                          <h1 class="display-4 fw-bold">Game Mode Selection</h1>
+                      </div>
+                      <div class="d-flex flex-row gap-3 mt-3 justify-content-center">
+                          <div id="singleGameMode" class="" ></div>
+                          <div id="tournamentGameMode" class=" col"></div>
+                      </div>
+                  </div>
+                  </div>
+              </main>
+            </div>
         `;
 
-        this.element.innerHTML = view;
-    }
+    this.element.innerHTML = view;
+  }
 }
