@@ -1,8 +1,8 @@
 FROM alpine:3.20.0
 
-ARG USER=appuser
+# ARG USER=appuser
 
-RUN adduser -D $USER
+# RUN adduser -D $USER
 
 COPY ./requirements.txt /
 
