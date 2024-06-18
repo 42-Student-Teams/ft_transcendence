@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat</title>
+    <style>
+        #chat-log {
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 300px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+        .chat-message {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chat</h1>
+    <div id="chat-log"></div>
+    <input id="chat-message-input" type="text" size="100" placeholder="Type your message here">
+    <button id="chat-message-submit">Send</button>
+
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        socket.on('connect', function() {
+            console.log('Connected to the server');
+        });
+
+        socket.on('message', function(data) {
+            var chatLog = document.getElementById('chat-log');
+            var messageElement = document.createElement('div');
+            messageElement.className = 'chat-message';
+            messageElement.innerText = data.message;
+            chatLog.appendChild(messageElement);
+        });
+
+        var input = document.getElementById('chat-message-input');
+        var submit = document.getElementById('chat-message-submit');
+
+        submit.onclick = function() {
+            var message = input.value;
+            if (message.trim() !== "") {
+                socket.send({'message': message});
+                input.value = '';
+
+                // Afficher le message envoyé dans le chat-log
+                var chatLog = document.getElementById('chat-log');
+                var messageElement = document.createElement('div');
+                messageElement.className = 'chat-message';
+                messageElement.innerText = 'You: ' + message;
+                chatLog.appendChild(messageElement);
+            }
+        };
+
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submit.click();
+            }
+        });
+    </script>
+</body>
+</html>
