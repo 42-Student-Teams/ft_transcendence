@@ -33,4 +33,4 @@ async def disconnect(sid):
 @sio.event
 async def message(sid, data):
     print('Message from {}: {}'.format(sid, data))
-    await sio.emit('message', {'username': data['username'], 'message': data['message']}, broadcast=True)
+    await sio.emit('message', {'username': data['username'], 'message': data['message']}, to=sid)

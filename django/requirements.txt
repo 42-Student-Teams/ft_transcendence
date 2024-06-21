@@ -9,4 +9,5 @@ django-cors-headers == 4.3.1
 # django-socketio == 0.3.9
 python-socketio==5.8.0
 python-engineio==4.3.4
-uvicorn == 0.29.0
+uvicorn[standard] == 0.29.0
+websockets == 12.0
