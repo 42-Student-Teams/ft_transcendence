@@ -32,7 +32,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    #command: ["sleep", "infinity"]
+    command: ["python3", "run_socketio.py"]
 
 volumes:
   db-data:

@@ -26,6 +26,9 @@ WORKDIR /app
 
 USER $USER
 
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+# Exposer le port
+EXPOSE 8000
+
+CMD ["python3", "run_socketio.py"]
 
 #CMD ["sleep", "infinity"]
