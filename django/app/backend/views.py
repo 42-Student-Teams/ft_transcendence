@@ -1,6 +1,7 @@
 import datetime
 import json
 
+from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.views import View
 
@@ -15,7 +16,7 @@ from .serializers import UserSerializer
 
 def jsonget(request, key):
     try:
-        data = json.loads(request)
+        data = json.loads(request.body)
     except:
         return None
     if key not in data:
@@ -35,7 +36,10 @@ def validate_token(request, auth_level: AuthLevel) -> TokenValidationResponse:
         if auth_level == AuthLevel.ADMIN:
             if not requesting_user.is_admin:
                 return TokenValidationResponse.MISSING_PERMS
-        if requesting_user.session_token_expires < datetime.datetime.now():
+        time_now = timezone.localtime()
+        print(time_now.strftime("%Y-%m-%d-%H-%M-%S"))
+        print(requesting_user.session_token_expires.strftime("%Y-%m-%d-%H-%M-%S"))
+        if requesting_user.session_token_expires < time_now:
             return TokenValidationResponse.EXPIRED
     return TokenValidationResponse.VALID
 
@@ -100,11 +104,12 @@ class UserLoginView(View):
             return respond_invalid_token(validate_token(request, self.auth_level))
 
         err_resp = {'reason': 'unknown'}
-            data2 = jsonget(request, 'username')
+        data2 = jsonget(request, 'username')
         print('Hello')
         print(data2)
         if jsonget(request, 'username') is None:
-            err_resp['reason'] = 'missing username login'
+            print(json.loads(request.body))
+            err_resp['reason'] = 'missing username'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
         if jsonget(request, 'password') is None:
             err_resp['reason'] = 'missing password'
