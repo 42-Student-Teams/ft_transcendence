@@ -14,7 +14,7 @@ export default class LogoutButton extends Component {
 
 
 		const view = /*html*/ `
-			<a href="#" class="dropdown-item" role="button">
+			<a href="" class="dropdown-item" role="button">
         		Logout
         	</a>
         `;
@@ -31,6 +31,7 @@ export default class LogoutButton extends Component {
 
 	async handleEvent() {
 		this.element.querySelector("a").addEventListener("click", () => {
+			event.preventDefault();
 			store.dispatch("logout");
 			navigateTo("/login");
 		});

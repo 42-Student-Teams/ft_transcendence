@@ -1,4 +1,17 @@
 services:
+  frontend:
+    build:
+      context: frontend
+    restart: always
+    env_file:
+      - frontend/.env
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      - backnet
+    depends_on:
+      - backend
   db:
     build:
       context: db
@@ -17,7 +30,7 @@ services:
       timeout: 30s
       start_period: 1s
       retries: 3
-  web:
+  backend:
     build:
       context: django
     restart: always

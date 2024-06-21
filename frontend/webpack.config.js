@@ -5,23 +5,24 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const envPath = path.join(__dirname, `.env`);
-const env = dotenv.config({ path: envPath }).parsed;
-
-const envKeys = env ? Object.keys(env).reduce((prev, next) => {
-  prev[`process.env.${next}`] = JSON.stringify(env[next]);
-  return prev;
-}, {}) : {};
-
-
+const __filename =  fileURLToPath(import.meta.url);
+const __dirname = path.resolve();
 
 export default {
   entry: './src/app.js',
   mode: 'development',
+  devServer: {
+    compress: true,
+    port: 8080,
+    hot: true,
+    static: {
+      directory: path.resolve('dist'),
+    },
+    historyApiFallback: true,
+  },
   output: {
     filename: 'bundle.js',
+    clean : true,
     path: path.resolve('dist'),
   },
   module: {
@@ -45,17 +46,10 @@ export default {
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin({template: './index.html',}),
-    new webpack.DefinePlugin(envKeys),
+    new HtmlWebpackPlugin({ template: './index.html', }),
     new FaviconsWebpackPlugin("./src/assets/image/header-logo.png"),
+    new webpack.DefinePlugin({
+      'process.env': JSON.stringify(dotenv.config().parsed)
+    })
   ],
-  devServer: {
-    compress: true,
-    port: 8080,
-    hot: true,
-    static: {
-      directory: path.resolve('dist'),
-    },
-    historyApiFallback: true,
-  },
 };

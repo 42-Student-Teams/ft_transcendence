@@ -1,6 +1,7 @@
 import datetime
 import json
 
+from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from django.views import View
 
@@ -12,21 +13,33 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 
 
-def validate_token(requestget, auth_level: AuthLevel) -> TokenValidationResponse:
-    token = requestget.get('token')
+
+def jsonget(request, key):
+    try:
+        data = json.loads(request.body)
+    except:
+        return None
+    if key not in data:
+        return None
+    return data[key]
+
+
+def validate_token(request, auth_level: AuthLevel) -> TokenValidationResponse:
+    token = jsonget(request, 'token')
+    if token is None:
+        token = request.GET.get('token')
     print(f'token: {token}, auth_level: {auth_level}')
     if auth_level.value > AuthLevel.NOAUTH.value:
-        print('bruh')
-        #if len(User.objects.filter(session_token=token)) == 0:
-        #    print('bruh2')
-        #    return TokenValidationResponse.INVALID
-        requesting_user: User = User.objects.user_by_token(token)  #User.objects.filter(session_token=token).first()
+        requesting_user: User = User.objects.user_by_token(token)
         if requesting_user is None:
             return TokenValidationResponse.INVALID
         if auth_level == AuthLevel.ADMIN:
             if not requesting_user.is_admin:
                 return TokenValidationResponse.MISSING_PERMS
-        if requesting_user.session_token_expires < datetime.datetime.now():
+        time_now = timezone.localtime()
+        print(time_now.strftime("%Y-%m-%d-%H-%M-%S"))
+        print(requesting_user.session_token_expires.strftime("%Y-%m-%d-%H-%M-%S"))
+        if requesting_user.session_token_expires < time_now:
             return TokenValidationResponse.EXPIRED
     return TokenValidationResponse.VALID
 
@@ -55,28 +68,28 @@ class UserCreateView(View):
     auth_level: AuthLevel = AuthLevel.NOAUTH
 
     def post(self, request, *args, **kwargs):
-        if validate_token(request.POST, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request.POST, self.auth_level))
+        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
+            return respond_invalid_token(validate_token(request, self.auth_level))
 
         err_resp = {'reason': 'unknown'}
-        if not request.POST.get('username'):
+        if jsonget(request, 'username') is None:
             err_resp['reason'] = 'missing username'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if not request.POST.get('password') and not request.POST.get('oauth_token'):
+        if jsonget(request, 'password') is None and jsonget(request, 'oauth_token') is None:
             err_resp['reason'] = 'missing password or oauth token'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if request.POST.get('password') and request.POST.get('oauth_token'):
+        if jsonget(request, 'password') is not None and jsonget(request, 'oauth_token') is not None:
             err_resp['reason'] = 'need only password or oauth token'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
 
-        if User.objects.user_by_username(request.POST.get('username')) is not None:
+        if User.objects.user_by_username(jsonget(request, 'username')) is not None:
             err_resp['reason'] = 'duplicate username'
             return HttpResponseBadRequest(
                 json.dumps(err_resp, default=str),
                 content_type='application/json')
-        new_user = User.objects.create_user(username=request.POST.get('username'),
-                                            password=request.POST.get('password'),
-                                            oauth_token=request.POST.get('oauth_token'))
+        new_user = User.objects.create_user(username=jsonget(request, 'username'),
+                                            password=jsonget(request, 'password'),
+                                            oauth_token=jsonget(request, 'oauth_token'))
         return HttpResponse(
             json.dumps({'token': new_user.session_token, 'expires': new_user.session_token_expires}, default=str),
             content_type='application/json')
@@ -87,28 +100,24 @@ class UserLoginView(View):
     auth_level: AuthLevel = AuthLevel.NOAUTH
 
     def post(self, request, *args, **kwargs):
-        print('bruhhhhhhhhhhhh1')
-        print(request.body)
-        data = json.loads(request.body)
-
-        if validate_token(request.POST, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request.POST, self.auth_level))
+        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
+            return respond_invalid_token(validate_token(request, self.auth_level))
 
         err_resp = {'reason': 'unknown'}
-        if 'username' not in data:
+        if jsonget(request, 'username') is None:
             err_resp['reason'] = 'missing username'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if 'password' not in data:
+        if jsonget(request, 'password') is None:
             err_resp['reason'] = 'missing password'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
 
-        user: User = User.objects.user_by_username(data['username'])
+        user: User = User.objects.user_by_username(jsonget(request, 'username'))
         if user is None:
             err_resp['reason'] = 'user not found'
             return HttpResponseBadRequest(
                 json.dumps(err_resp, default=str),
                 content_type='application/json')
-        if not user.validate_password(data['password']):
+        if not user.validate_password(jsonget(request, 'password')):
             err_resp['reason'] = 'invalid password'
             return HttpResponseForbidden(
                 json.dumps(err_resp, default=str),
@@ -124,11 +133,11 @@ class UserListView(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     http_method_names = ['get']
-    auth_level = AuthLevel.NOAUTH
+    auth_level = AuthLevel.AUTH
 
     def get(self, request, *args, **kwargs):
-        if validate_token(request.GET, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request.GET, self.auth_level))
+        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
+            return respond_invalid_token(validate_token(request, self.auth_level))
 
         # Proceed with normal view logic if the parameter is present
         queryset = self.get_queryset()

@@ -11,7 +11,7 @@ export default class Register extends Component {
 
 		const view = /*html*/ `
             <small>Already have an account ?
-				<a href="login">Login</a>
+				<a href="">Login</a>
 			</small>
         `;
 
@@ -22,6 +22,7 @@ export default class Register extends Component {
 
 	async handleEvent() {
 		this.element.querySelector("a").addEventListener("click", () => {
+			event.preventDefault();
 			navigateTo("/login");
 		});
 	}
