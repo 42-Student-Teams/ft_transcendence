@@ -55,7 +55,7 @@ export default class FormRegister extends Component {
                     password: password
                 };
                 const apiurl = process.env.API_URL;
-                const response = await fetch(`${apiurl}/register`, {
+                const response = await fetch(`${apiurl}/create_user`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

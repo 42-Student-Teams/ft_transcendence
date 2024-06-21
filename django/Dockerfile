@@ -25,10 +25,10 @@ WORKDIR /app
 
 EXPOSE 8000
 
-COPY ./entrypoint.sh /tmp/entrypoint.sh
-RUN chmod +x /tmp/entrypoint.sh
-ENTRYPOINT [ "sh" , "/tmp/entrypoint.sh"]
+# COPY ./entrypoint.sh /tmp/entrypoint.sh
+# RUN chmod +x /tmp/entrypoint.sh
+# ENTRYPOINT [ "sh" , "/tmp/entrypoint.sh"]
 USER $USER
-# CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
 
 #CMD ["sleep", "infinity"]

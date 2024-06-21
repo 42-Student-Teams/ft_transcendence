@@ -100,8 +100,11 @@ class UserLoginView(View):
             return respond_invalid_token(validate_token(request, self.auth_level))
 
         err_resp = {'reason': 'unknown'}
+            data2 = jsonget(request, 'username')
+        print('Hello')
+        print(data2)
         if jsonget(request, 'username') is None:
-            err_resp['reason'] = 'missing username'
+            err_resp['reason'] = 'missing username login'
             return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
         if jsonget(request, 'password') is None:
             err_resp['reason'] = 'missing password'
