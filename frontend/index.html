@@ -1,14 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+<head>
+    <meta charset="UTF-8">
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
     />
     <title>Pong</title>
-  </head>
-  <body>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .profile-header .avatar {
+            width: 95px;
+            height: 95px;
+            border-radius: 10px;
+            background-color: #5aff92;
+        }
+
+        .profile-header h3 {
+            font-size: 1.5rem;
+            margin-left: 20px;
+        }
+
+        .profile-header .lvl {
+            font-size: 1rem;
+            margin-left: 20px; /* Utilisez la même marge que pour le h3 pour aligner les éléments */
+            color: #6c757d;
+        }
+
+        .game-history {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .game-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .game-history-item .player {
+            display: flex;
+            align-items: center;
+        }
+
+        .game-history-item .player .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 10px;
+        }
+
+        .game-history-item .player .details {
+            display: flex;
+            flex-direction: column; /* Ajouté pour aligner les éléments verticalement */
+            margin-left: 10px;
+        }
+
+        .game-history-item .player p {
+            margin: 0;
+            line-height: 1;
+        }
+
+        .card-body .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-body .info-row .info-title,
+        .card-body .info-row .info-value {
+            margin-left: 10px;
+        }
+
+        .edit-icon {
+            cursor: pointer;
+            color: black;
+        }
+
+        .profile-title {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .back-arrow {
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 7px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .full-height-card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .bottom-spacing {
+            min-height: calc(100vh - 30px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .validate-btn {
+            width: 100%;
+            margin-top: 80px; 
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .game-history-item .player .username {
+            margin-right: 10px; 
+        }
+    </style>
+</head>
+<body>
     <div id="app"></div>
-  </body>
+    <script type="module" src="./main.js"></script>
+</body>
 </html>

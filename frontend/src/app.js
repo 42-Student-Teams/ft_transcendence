@@ -88,3 +88,10 @@ function handleDefaultRoute() {
 		router();
 	}
 }
+
+import Profile from './views/profile.js';
+
+document.addEventListener("DOMContentLoaded", () => {
+    new Profile();
+});
+
