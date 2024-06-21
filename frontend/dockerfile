@@ -11,16 +11,4 @@ RUN npx webpack build
 RUN mkdir -p /app/dist/assets
 COPY ./src/assets/ /app/dist/assets/
 
-
-FROM nginx:1.25
-COPY --from=builder /app/dist/ /usr/share/nginx/html
-
-RUN mkdir -p /etc/nginx/ssl
-RUN openssl req -x509 -nodes \
-        -out /etc/nginx/ssl/nginx-certificate.crt \
-        -keyout /etc/nginx/ssl/nginx-certificate.key \
-        -subj "/C=CH/ST=Vaud/L=Lausanne/O=42/OU=42/CN=*42lausanne.ch/UID=lsaba-qu"
-
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
-COPY ./nginx/self-signed.conf /etc/nginx/snippets/self-signed.conf
-COPY ./nginx/ssl-params.conf /etc/nginx/snippets/ssl-params.conf
+#CMD [""]
