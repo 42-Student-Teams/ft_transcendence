@@ -29,6 +29,7 @@ EXPOSE 8000
 # RUN chmod +x /tmp/entrypoint.sh
 # ENTRYPOINT [ "sh" , "/tmp/entrypoint.sh"]
 USER $USER
-CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+#CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "-m", "uvicorn", "--host", "0.0.0.0", "app.asgi:application"]
 
 #CMD ["sleep", "infinity"]
