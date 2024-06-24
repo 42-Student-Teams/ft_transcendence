@@ -8,6 +8,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
+https://channels.readthedocs.io/en/latest/tutorial/index.html
 """
 
 import os
@@ -43,7 +44,8 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
-    'channels'
+    'channels',
+    'chat'
 ]
 
 MIDDLEWARE = [
@@ -82,7 +84,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'app.wsgi.application'
 ASGI_APPLICATION = 'app.asgi.application'
 
+AUTH_USER_MODEL = 'chat.CustomUser'
 
+#doc : https://channels.readthedocs.io/en/latest/topics/channel_layers.html
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',

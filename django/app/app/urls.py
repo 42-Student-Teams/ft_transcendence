@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('backend/', include("backend.urls")),
+
+    path('chat/', include('chat.urls')),  #verifier la route
 ]
