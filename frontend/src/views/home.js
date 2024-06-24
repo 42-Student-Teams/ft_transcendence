@@ -39,7 +39,6 @@ export default class Home extends Component {
                                 </p>
                             </div>
                         </div>
-                        <div style="height: 100vh"></div>  
                     </div>
                 </main>
             </div>
