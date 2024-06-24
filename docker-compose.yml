@@ -48,6 +48,8 @@ services:
         condition: service_healthy
       nginx:
         condition: service_healthy
+      redis:
+        condition: service_started
     #command: ["sleep", "infinity"]
   nginx:
     build:
@@ -68,6 +70,13 @@ services:
       timeout: 30s
       start_period: 1s
       retries: 3
+
+  redis:
+    image: "redis:alpine"
+    restart: unless-stopped
+    networks:
+      - backnet
+
 volumes:
   db-data:
 
