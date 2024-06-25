@@ -13,15 +13,10 @@ def login_view(request):
         
         try:
             user = User.objects.get(username=username)
-            return redirect('chat_room', username=username)
+            return redirect('chat_room')
         except User.DoesNotExist:
             return render(request, 'chat/login.html', {'error': "Invalid username"})
     return render(request, 'chat/login.html')
 
-def chat_room(request, username):
-    try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return HttpResponse("Invalid username", status=400)
-
-    return render(request, 'chat/room.html', {'username': username})
+def chat_room(request):
+    return render(request, 'chat/room.html', {'room_name': 'room_chat'})
