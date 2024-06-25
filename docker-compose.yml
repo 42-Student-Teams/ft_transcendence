@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: frontend
-    restart: always
+    restart: unless-stopped
     env_file:
       - frontend/.env
     ports:
@@ -15,7 +15,7 @@ services:
   db:
     build:
       context: db
-    restart: always
+    restart: unless-stopped
     ports:
       - ${DB_PORT}:5432
     volumes:
@@ -24,6 +24,7 @@ services:
       - .env
     networks:
       - db
+      - backnet
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
       interval: 10s
@@ -33,7 +34,7 @@ services:
   backend:
     build:
       context: django
-    restart: always
+    restart: unless-stopped
     ports:
       - ${APP_PORT}:8000
     volumes:
@@ -45,8 +46,28 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      nginx:
+        condition: service_healthy
     #command: ["sleep", "infinity"]
-
+  nginx:
+    build:
+      context: nginx
+    restart: unless-stopped
+    ports:
+      - 8080:80
+    volumes:
+      - ./nginx/data:/etc/nginx
+      - ./nginx/logs:/var/log/nginx
+    env_file:
+      - .env
+    networks:
+      - backnet
+    healthcheck:
+      test: ["CMD-SHELL", "nginx"]
+      interval: 10s
+      timeout: 30s
+      start_period: 1s
+      retries: 3
 volumes:
   db-data:
 
