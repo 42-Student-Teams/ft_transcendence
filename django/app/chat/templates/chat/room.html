@@ -2,21 +2,48 @@
 <html>
 <head>
     <title>Chat Room</title>
+    <style>
+        #chat-log {
+            border: 1px solid black;
+            height: 300px;
+            overflow-y: scroll;
+            padding: 10px;
+        }
+        #typing-status {
+            color: grey;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h2>Room: {{ room_name }}</h2>
+    <h2>Room: room_chat</h2>
     <div id="chat-log"></div>
+    <div id="typing-status"></div>
     <input id="chat-message-input" type="text" size="100">
     <input id="chat-message-submit" type="button" value="Send">
     <script>
-        const roomName = "{{ room_name }}";
+        const roomName = "room_chat";
+        const username = "{{ username }}";
         const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+            'ws://' + window.location.host + '/ws/chat/' + roomName + '/?username=' + username
         );
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
-            document.querySelector('#chat-log').innerHTML += (data.message + '<br>');
+            if (data.message) {
+                document.querySelector('#chat-log').innerHTML += (data.username + ': ' + data.message + '<br>');
+            } else if (data.join) {
+                document.querySelector('#chat-log').innerHTML += ('<b>' + data.username + ' joined the chat</b><br>');
+            } else if (data.leave) {
+                document.querySelector('#chat-log').innerHTML += ('<b>' + data.username + ' left the chat</b><br>');
+            } else if (data.typing !== undefined) {
+                const typingStatus = document.querySelector('#typing-status');
+                if (data.typing) {
+                    typingStatus.innerHTML = data.username + ' is typing...';
+                } else {
+                    typingStatus.innerHTML = '';
+                }
+            }
         };
 
         chatSocket.onclose = function(e) {
@@ -27,14 +54,27 @@
         document.querySelector('#chat-message-input').onkeyup = function(e) {
             if (e.keyCode === 13) {  // Enter key
                 document.querySelector('#chat-message-submit').click();
+            } else {
+                chatSocket.send(JSON.stringify({
+                    'typing': true,
+                    'username': username
+                }));
             }
+        };
+
+        document.querySelector('#chat-message-input').onblur = function() {
+            chatSocket.send(JSON.stringify({
+                'typing': false,
+                'username': username
+            }));
         };
 
         document.querySelector('#chat-message-submit').onclick = function(e) {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
             chatSocket.send(JSON.stringify({
-                'message': message
+                'message': message,
+                'username': username
             }));
             messageInputDom.value = '';
         };

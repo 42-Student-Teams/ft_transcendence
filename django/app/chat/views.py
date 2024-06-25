@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from backend.models import User
+from django.urls import reverse
 
 def index(request):
     return render(request, 'chat/index.html')
@@ -13,10 +14,11 @@ def login_view(request):
         
         try:
             user = User.objects.get(username=username)
-            return redirect('chat_room')
+            return redirect(reverse('chat_room', kwargs={'username': username}))
         except User.DoesNotExist:
             return render(request, 'chat/login.html', {'error': "Invalid username"})
     return render(request, 'chat/login.html')
 
-def chat_room(request):
-    return render(request, 'chat/room.html', {'room_name': 'room_chat'})
+def chat_room(request, username):
+    return render(request, 'chat/room.html', {'room_name': 'room_chat', 'username': username})
+
