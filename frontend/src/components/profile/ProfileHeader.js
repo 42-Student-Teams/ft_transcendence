@@ -9,7 +9,7 @@ export default class ProfileHeader extends Component {
     async render() {
         const view = /*html*/ `
             <div class="profile-header mb-4">
-                <div class="avatar"></div>
+                <div class="avatar" style="background-color: #5aff92;"></div>
                 <div>
                     <h3>Lamilton</h3>
                     <p class="lvl">LVL 1.000</p>

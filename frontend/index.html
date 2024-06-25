@@ -2,153 +2,193 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-    />
-    <title>Pong</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Player Profile</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <style>
-        body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
 
-        .profile-header {
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-        }
+body {
+    background-color: #f8f9fa !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
 
-        .profile-header .avatar {
-            width: 95px;
-            height: 95px;
-            border-radius: 10px;
-            background-color: #5aff92;
-        }
+#app {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
 
-        .profile-header h3 {
-            font-size: 1.5rem;
-            margin-left: 20px;
-        }
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
 
-        .profile-header .lvl {
-            font-size: 1rem;
-            margin-left: 20px; /* Utilisez la même marge que pour le h3 pour aligner les éléments */
-            color: #6c757d;
-        }
+.profile-header .avatar {
+    width: 95px;
+    height: 95px;
+    border-radius: 10px;
+    background-color: #5aff92;
+}
 
-        .game-history {
-            background-color: #ffffff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
+.profile-header h3 {
+    font-size: 1.5rem;
+    margin-left: 20px;
+}
 
-        .game-history-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
+.profile-header .lvl {
+    font-size: 1rem;
+    margin-left: 20px;
+    color: #6c757d;
+}
 
-        .game-history-item:last-child {
-            border-bottom: none;
-        }
+.custom-card, .game-history {
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    overflow: auto;
+}
 
-        .game-history-item .player {
-            display: flex;
-            align-items: center;
-        }
+.game-history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 31px 0;
+    border-bottom: 1px solid #e9ecef;
+}
 
-        .game-history-item .player .avatar {
-            width: 55px;
-            height: 55px;
-            border-radius: 10px;
-        }
+.game-history-item:last-child {
+    border-bottom: none;
+}
 
-        .game-history-item .player .details {
-            display: flex;
-            flex-direction: column; /* Ajouté pour aligner les éléments verticalement */
-            margin-left: 10px;
-        }
+.game-history-item .player {
+    display: flex;
+    align-items: center;
+}
 
-        .game-history-item .player p {
-            margin: 0;
-            line-height: 1;
-        }
+.game-history-item .player .avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 10px;
+}
 
-        .card-body .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.game-history-item .player .details {
+    display: flex;
+    flex-direction: column;
+    margin-left: 10px;
+}
 
-        .card-body .info-row .info-title,
-        .card-body .info-row .info-value {
-            margin-left: 10px;
-        }
+.game-history-item .player p {
+    margin: 0;
+    line-height: 1;
+}
 
-        .edit-icon {
-            cursor: pointer;
-            color: black;
-        }
+.result {
+    text-align: center;
+}
 
-        .profile-title {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+.result-text, .score {
+    margin: 0;
+}
 
-        .back-arrow {
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 10px;
-            margin-bottom: 7px;
-        }
+.card-body .info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .card {
-            border: none;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-        }
+.card-body .info-row .info-title, .card-body .info-row .info-value {
+    margin-left: 10px;
+}
 
-        .card-body {
-            padding: 20px;
-        }
+.edit-icon {
+    cursor: pointer;
+    color: black;
+}
 
-        .full-height-card {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
+.profile-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
 
-        .bottom-spacing {
-            min-height: calc(100vh - 30px);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+.back-arrow {
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-bottom: 7px;
+}
 
-        .validate-btn {
-            width: 100%;
-            margin-top: 80px; 
-            background-color: #6c757d;
-            border-color: #6c757d;
-            color: white;
-        }
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 
-        .game-history-item .player .username {
-            margin-right: 10px; 
-        }
+.full-height-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.bottom-spacing {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.validate-btn {
+    width: 100% !important;
+    margin-top: 27.5px !important;
+    background-color: #6c757d !important;
+    border: none !important;
+    border-radius: 4px !important;
+    color: white !important;
+    padding: 10px 0 !important;
+    font-size: 16px !important;
+    text-align: center !important;
+    cursor: pointer !important;
+}
+
+.validate-btn:hover {
+    background-color: #5a6268 !important;
+}
+
+.game-history-item .player .username {
+    margin-right: 10px; 
+}
+
+.container-fluid {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden; 
+
+.limited-height {
+    max-height: 500px;
+    overflow: auto;
+}
+
+.expanded-card {
+    height: 100%;
+    overflow: auto;
+}
+
     </style>
 </head>
 <body>
     <div id="app"></div>
-    <script type="module" src="./main.js"></script>
+    <script type="module" src="../frontend/src/app.js"></script>
 </body>
 </html>

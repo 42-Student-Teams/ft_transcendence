@@ -8,7 +8,7 @@ export default class PersonalInfoCard extends Component {
 
     async render() {
         const view = /*html*/ `
-            <div class="card mb-4">
+            <div class="custom-card mb-4">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="card-title mb-0">Personal Info</h5>
