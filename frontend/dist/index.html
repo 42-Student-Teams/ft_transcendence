@@ -1,14 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
-    />
-    <title>Pong</title>
-  <link rel="icon" href="assets/favicon.png"><script defer src="bundle.js"></script></head>
-  <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Player Profile</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+body {
+    background-color: #f8f9fa !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+}
+
+#app {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-header .avatar, .game-history-item .avatar {
+    border-radius: 10px;
+}
+
+.profile-header h3 {
+    font-size: 1.5rem;
+}
+
+.profile-header .text-muted {
+    font-size: 1rem;
+}
+
+.profile-title {
+    display: flex;
+    align-items: center;
+}
+
+.back-arrow {
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.card {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex-grow: 1;
+    overflow: auto;
+}
+
+.info-row {
+    margin-bottom: 10px;
+}
+
+.edit-icon {
+    cursor: pointer;
+    color: black;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.container-fluid {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.limited-height {
+    max-height: 500px;
+    overflow: auto;
+}
+
+.expanded-card {
+    height: 100%;
+    overflow: auto;
+}
+
+/* style pour register */
+
+.invalid-feedback {
+    font-size: 0.75em;
+}
+
+.input-group .form-control {
+    border-radius: 0.5rem !important; /* forcer les arrondis j'ai pas trouvé d'autre solution */
+}
+
+.input-group .input-group-prepend .input-group-text,
+.input-group .input-group-append .input-group-text {
+    border-radius: 0 !important; 
+    border-left: none; 
+}
+
+.is-invalid {
+    border-color: #dc3545 !important; 
+}
+    </style>
+<link rel="icon" href="assets/favicon.png"><script defer src="bundle.js"></script></head>
+<body>
     <div id="app"></div>
-  </body>
+    <script type="module" src="../frontend/src/app.js"></script>
+</body>
 </html>
