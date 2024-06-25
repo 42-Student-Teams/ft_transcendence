@@ -7,11 +7,6 @@ body {
   margin: 0;
 }
 
-html,
-body {
-  height: 100%;
-}
-
 .divider:after,
 .divider:before {
   content: '';
@@ -77,25 +72,21 @@ body {
 
 /* -- sidebar + nav -- */
 
-#layoutAuthentication {
-  display: flex;
+#app{
+  height:100vh;
+  display:flex;
   flex-direction: column;
-  min-height: 100vh;
-}
-#layoutAuthentication #layoutAuthentication_content {
-  min-width: 0;
-  flex-grow: 1;
-}
-#layoutAuthentication #layoutAuthentication_footer {
-  min-width: 0;
 }
 
 #layoutSidenav {
   display: flex;
+  height:100%;
+  
 }
 
 #layoutSidenav_nav {
-  height: 100vh;
+  align-items: start;
+  
 }
 
 #layoutSidenav #layoutSidenav_nav {
@@ -109,10 +100,8 @@ body {
   position: relative;
   display: flex;
   flex-direction: column;
-
   min-width: 0;
   flex-grow: 1;
-
   margin-left: -225px;
 }
 
@@ -156,14 +145,14 @@ body {
 }
 .sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
   width: 300px;
-  height: 100vh;
+  height: 100%;
   z-index: 1038;
 }
 .sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav {
   padding-top: 56px;
 }
 .sb-nav-fixed #layoutSidenav #layoutSidenav_nav .sb-sidenav .sb-sidenav-menu {
-  overflow-y: auto;
+  /* overflow-y: auto; */
 }
 .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
   padding-left: 24px;
@@ -173,8 +162,8 @@ body {
 #layoutError {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
 }
+
 #layoutError #layoutError_content {
   min-width: 0;
   flex-grow: 1;
@@ -317,9 +306,26 @@ body {
 }
 
 /* -- chat -- */
+#chat-container{
+  height:100%;
+  margin-bottom:15px;
+}
 
-.chat-screen {
-  
+#nav-chat{
+  height:100%;
+}
+
+#chat-messages{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  overflow-y: auto;
+}
+
+#chat-screen-container{
+  display:flex;
+  height:100%;
+  flex-direction:column;
 }
 
 .chat-screen .header {
@@ -345,29 +351,33 @@ body {
   outline: none;
 }
 
+.sb-sidenav-menu{
+  height:100%;
+}
+
+
+
 .chat-screen .messages {
   width: 100%;
-  overflow: auto;
 }
 
 .chat-screen .messages .message{
+  padding: 0px;
+  margin-top:10px;
   display:flex;
-  padding: 10px;
 }
 
 .chat-screen .messages .message > div {
   max-width: 80%;
   box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.05);
-  
 }
-
 .other-message > div > .chat-text  {
   background: #374151;
   color: #fff;
   padding:10px;
   padding-left:20px;
   padding-right:20px;
-  border-radius: 10px;
+  border-radius: 1px 10px 10px 10px;
 }
 
 .my-message > div > .chat-text  {
@@ -376,7 +386,7 @@ body {
   padding:10px;
   padding-left:20px;
   padding-right:20px;
-  border-radius: 10px;
+  border-radius: 10px 1px 10px 10px;
 }
 
 .chat-screen .messages .message.my-message {
@@ -389,36 +399,46 @@ body {
 
 .chat-screen .messages .message .chat-name {
   font-size: 13px;
-  color: #9096A2;
   margin-bottom:5px;
+}
+
+.chat-screen .messages .my-message .chat-name {
+  color: #25CF9C;
+  text-align: end;
+}
+.chat-screen .messages .other-message .chat-name {
+color :#53A6FD;
 }
 
 .chat-screen .messages .message .chat-text {
   word-wrap:break-word;
+  font-size:13px;
 }
 
 .chat-screen .messages .update {
   text-align: center;
   padding:10px;
+  font-size: 12px;
   font-style:italic;
 }
 
 .chat-screen .typebox {
   width:100%;
-  height: 50px;
-  display: flex;
+  display:flex;
+  height: 40px;
+  margin-top: 20px;
 }
 
 .chat-screen .typebox input {
-  flex: 1;
-  height: 50px;
-  background:#374151;
+  flex:1;
+  height: 40px;
+  background:	#424549;
   border:none;
   color:white;
   padding-left: 20px;
   padding-right: 20px;
   outline:none;
-  font-size:18px;
+  font-size:14px;
   border-radius: 10px;
 }
 
@@ -427,11 +447,11 @@ body {
 }
 
 .chat-screen .typebox button{
-  width: 50px;
+  width: 40px;
   height: 100%;
   margin-left: 10px;
   border-radius: 10px;
-  background: #14B8A6;
+  background: #7289da;
   outline:none;
   border:none;
   cursor: pointer;
