@@ -88,9 +88,9 @@ function handleDefaultRoute() {
 	}
 }
 
-import Profile from '../src/views/profile.js';
+// import Profile from '../src/views/profile.js';
 
-document.addEventListener("DOMContentLoaded", () => {
-    new Profile();
-});
+// document.addEventListener("DOMContentLoaded", () => {
+//     new Profile();
+// });
 

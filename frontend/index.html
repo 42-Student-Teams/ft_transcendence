@@ -27,89 +27,38 @@ body {
     flex-direction: column;
 }
 
-.profile-header {
-    display: flex;
-    align-items: center;
-    margin-top: 10px;
-}
-
-.profile-header .avatar {
-    width: 95px;
-    height: 95px;
+.profile-header .avatar, .game-history-item .avatar {
     border-radius: 10px;
-    background-color: #5aff92;
 }
 
 .profile-header h3 {
     font-size: 1.5rem;
-    margin-left: 20px;
 }
 
-.profile-header .lvl {
+.profile-header .text-muted {
     font-size: 1rem;
-    margin-left: 20px;
-    color: #6c757d;
 }
 
-.custom-card, .game-history {
-    background-color: #ffffff;
-    padding: 25px;
+.profile-title {
+    display: flex;
+    align-items: center;
+}
+
+.back-arrow {
+    font-size: 24px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.card {
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     flex-grow: 1;
     overflow: auto;
 }
 
-.game-history-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 31px 0;
-    border-bottom: 1px solid #e9ecef;
-}
-
-.game-history-item:last-child {
-    border-bottom: none;
-}
-
-.game-history-item .player {
-    display: flex;
-    align-items: center;
-}
-
-.game-history-item .player .avatar {
-    width: 55px;
-    height: 55px;
-    border-radius: 10px;
-}
-
-.game-history-item .player .details {
-    display: flex;
-    flex-direction: column;
-    margin-left: 10px;
-}
-
-.game-history-item .player p {
-    margin: 0;
-    line-height: 1;
-}
-
-.result {
-    text-align: center;
-}
-
-.result-text, .score {
-    margin: 0;
-}
-
-.card-body .info-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.card-body .info-row .info-title, .card-body .info-row .info-value {
-    margin-left: 10px;
+.info-row {
+    margin-bottom: 10px;
 }
 
 .edit-icon {
@@ -117,63 +66,21 @@ body {
     color: black;
 }
 
-.profile-title {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.back-arrow {
-    font-size: 24px;
-    cursor: pointer;
-    margin-right: 10px;
-    margin-bottom: 7px;
-}
-
-.card {
+.btn-secondary {
+    background-color: #6c757d;
     border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.full-height-card {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.bottom-spacing {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.validate-btn {
-    width: 100% !important;
-    margin-top: 27.5px !important;
-    background-color: #6c757d !important;
-    border: none !important;
-    border-radius: 4px !important;
-    color: white !important;
-    padding: 10px 0 !important;
-    font-size: 16px !important;
-    text-align: center !important;
-    cursor: pointer !important;
-}
-
-.validate-btn:hover {
-    background-color: #5a6268 !important;
-}
-
-.game-history-item .player .username {
-    margin-right: 10px; 
+.btn-secondary:hover {
+    background-color: #5a6268;
 }
 
 .container-fluid {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
-    overflow: hidden; 
+    overflow: hidden;
+}
 
 .limited-height {
     max-height: 500px;
@@ -185,6 +92,25 @@ body {
     overflow: auto;
 }
 
+/* style pour register */
+
+.invalid-feedback {
+    font-size: 0.75em;
+}
+
+.input-group .form-control {
+    border-radius: 0.5rem !important; /* forcer les arrondis j'ai pas trouvé d'autre solution */
+}
+
+.input-group .input-group-prepend .input-group-text,
+.input-group .input-group-append .input-group-text {
+    border-radius: 0 !important; 
+    border-left: none; 
+}
+
+.is-invalid {
+    border-color: #dc3545 !important; 
+}
     </style>
 </head>
 <body>

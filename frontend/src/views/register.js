@@ -7,8 +7,6 @@ export default class Register extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
 
-        // store.events.subscribe("languageIdChange", () => this.renderAll());
-
         this.render();
         this.components = { 
             btnLoginInRegister: new BtnLoginInRegister(),
