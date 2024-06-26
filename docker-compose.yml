@@ -69,6 +69,7 @@ services:
     # command: ["sleep", "infinity"]
 volumes:
   db-data:
+  nginx-data:
 
 networks:
   backnet:
