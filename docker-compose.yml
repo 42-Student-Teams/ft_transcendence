@@ -66,6 +66,7 @@ services:
       - backnet
     depends_on:
       - backend
+      - frontend
     # command: ["sleep", "infinity"]
 volumes:
   db-data:
