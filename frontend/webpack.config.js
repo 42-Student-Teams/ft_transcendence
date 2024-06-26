@@ -15,6 +15,7 @@ export default {
     compress: true,
     port: 8080,
     hot: true,
+    allowedHosts: "pong.ch",
     static: {
       directory: path.resolve('dist'),
     },

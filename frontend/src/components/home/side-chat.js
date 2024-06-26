@@ -20,10 +20,10 @@ export default class SideChat extends Component {
                                   </div>
                                   <div id="chat-messages" class="messages">
                                     <div class="message my-message">
-                                      <div>
-                                        <div class="chat-name">You</div>
-                                        <div class="chat-text">Hello !</div>
-                                      </div>
+                                        <div>
+                                            <div class="chat-name">You</div>
+                                            <div class="chat-text">Hello !</div>
+                                        </div>
                                     </div>
                                     <div class="update">PolonaisTresSerieux92 joined the conversation</div>
                                     <div class="message other-message">

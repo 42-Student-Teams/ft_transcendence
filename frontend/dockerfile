@@ -3,12 +3,13 @@ FROM node:20.0 as builder
 RUN mkdir /app
 WORKDIR /app
 
-COPY . /app
+# COPY . /app
 
-RUN npm install
-RUN npx webpack build
+# RUN npm install
+# RUN npx webpack build
 
-RUN mkdir -p /app/dist/assets
-COPY ./src/assets/ /app/dist/assets/
+# RUN mkdir -p /app/dist/assets
+# COPY ./src/assets/ /app/dist/assets/
 
-#CMD [""]
+
+CMD ["sh", "-c", "npm install && npm run build && npm run start"]
