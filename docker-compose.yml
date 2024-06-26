@@ -58,7 +58,7 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - ./nginx/data:/etc/nginx
+      - nginx-data:/etc/nginx
       - ./nginx/logs:/var/log/nginx
     env_file:
       - .env
