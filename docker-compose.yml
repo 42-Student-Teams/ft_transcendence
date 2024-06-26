@@ -2,12 +2,11 @@ services:
   frontend:
     build:
       context: frontend
-    restart: always
+    restart: unless-stopped
     env_file:
       - frontend/.env
     ports:
-      - 80:80
-      - 443:443
+      - 8085:80
     networks:
       - backnet
     depends_on:
@@ -15,7 +14,7 @@ services:
   db:
     build:
       context: db
-    restart: always
+    restart: unless-stopped
     ports:
       - ${DB_PORT}:5432
     volumes:
@@ -24,8 +23,9 @@ services:
       - .env
     networks:
       - db
+      - backnet
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-d", "${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"] # https://github.com/peter-evans/docker-compose-healthcheck/issues/16#issuecomment-1402807860
       interval: 10s
       timeout: 30s
       start_period: 1s
@@ -33,7 +33,7 @@ services:
   backend:
     build:
       context: django
-    restart: always
+    restart: unless-stopped
     ports:
       - ${APP_PORT}:8000
     volumes:
@@ -42,11 +42,28 @@ services:
       - .env
     networks:
       - db
+      - backnet
     depends_on:
       db:
         condition: service_healthy
     #command: ["sleep", "infinity"]
-
+  nginx:
+    build:
+      context: nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/data:/etc/nginx
+      - ./nginx/logs:/var/log/nginx
+    env_file:
+      - .env
+    networks:
+      - backnet
+    depends_on:
+      - backend
+    #command: ["sleep", "infinity"]
 volumes:
   db-data:
 
