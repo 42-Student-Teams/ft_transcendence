@@ -27,7 +27,6 @@ export default class Navbar extends Component {
                     </ul>
                 </li>
             </ul>
-
         `;
 
         this.element = document.getElementById("navBar");
