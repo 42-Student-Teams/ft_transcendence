@@ -2,6 +2,8 @@ import store from "../store/index.js";
 import Home from "../views/home.js.old";
 import Login from "../views/login.js";
 import Register from "../views/register.js";
+import Profile from "../views/profile.js";
+
 // import Game from "../components/game.js";
 // import TournamentRecord from "../components/tournamentRecord.js";
 

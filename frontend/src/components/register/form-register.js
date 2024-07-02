@@ -11,23 +11,23 @@ export default class FormRegister extends Component {
     async render() {
         const view = /*html*/ `
             <style>
-                .invalid-feedback {
-                    font-size: 0.75em; 
-                    color: #dc3545; 
-                    display: block; 
-                }
-                .input-group .form-control {
-                    border-radius: 0.5rem !important; 
-                }
-                .input-group .input-group-prepend .input-group-text,
-                .input-group .input-group-append .input-group-text {
-                    border-radius: 0 !important; 
-                    border-left: none; 
-                }
-                .is-invalid {
-                    border-color: #dc3545 !important; 
-                }
-            </style>
+    .invalid-feedback {
+        font-size: 0.75em; 
+        color: #dc3545; 
+        display: none; /* Changez cette ligne */
+    }
+    .input-group .form-control {
+        border-radius: 0.5rem !important; 
+    }
+    .input-group .input-group-prepend .input-group-text,
+    .input-group .input-group-append .input-group-text {
+        border-radius: 0 !important; 
+        border-left: none; 
+    }
+    .is-invalid {
+        border-color: #dc3545 !important; 
+    }
+</style>
             <form id="form-register" novalidate>
                 <div class="input-group mb-3">
                     <input id="register-firstname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
@@ -77,17 +77,17 @@ export default class FormRegister extends Component {
         const form = document.getElementById('form-register');
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
-
+    
             const firstname = document.getElementById("register-firstname").value;
             const lastname = document.getElementById("register-lastname").value;
             const username = document.getElementById("register-username").value;
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
-
+    
             this.resetErrors();
-
+    
             let hasError = false;
-
+    
             if (!firstname) {
                 this.showError("firstname");
                 hasError = true;
@@ -108,9 +108,9 @@ export default class FormRegister extends Component {
                 this.showError("password");
                 hasError = true;
             }
-
+    
             if (hasError) return;
-
+    
             try {
                 const data = {
                     firstname: firstname,
@@ -127,7 +127,7 @@ export default class FormRegister extends Component {
                     },
                     body: JSON.stringify(data)
                 });
-
+    
                 if (response.ok) {
                     store.dispatch("logIn");
                     navigateTo("/");
@@ -140,6 +140,7 @@ export default class FormRegister extends Component {
             }
         });
     }
+    
 
     resetErrors() {
         const errorFields = ["firstname", "lastname", "username", "email", "password"];
@@ -157,4 +158,5 @@ export default class FormRegister extends Component {
         const errorElement = document.getElementById(`error-${field}`);
         errorElement.style.display = "block";
     }
+    
 }
