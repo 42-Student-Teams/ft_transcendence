@@ -42,8 +42,6 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
-    'oauth',
-,
 ]
 
 CLIENT_ID = os.getenv('CLIENT_ID')

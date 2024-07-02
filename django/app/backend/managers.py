@@ -19,7 +19,7 @@ class CustomUserManager(models.Manager):
             user.pwd_hash = hash
         else:
             # store oauth token or whatever is needed here
-            pass
+            user.oauth_token = oauth_token
 
         user.session_token = secrets.token_urlsafe()
         dt = datetime.now()

@@ -2,8 +2,13 @@ import datetime
 import json
 
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 from django.views import View
+from django.shortcuts import render, redirect
+from django.conf import settings
+import requests
+import logging
+
 
 from .enums import AuthLevel, TokenValidationResponse
 from .models import User
@@ -13,6 +18,7 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 
 
+logger = logging.getLogger(__name__)
 
 def jsonget(request, key):
     try:
@@ -143,3 +149,42 @@ class UserListView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+# OAuth views
+def oauth_42(request):
+    logger.info("Starting OAuth process")
+    return redirect(settings.AUTHORIZATION_URL)
+
+def oauth_callback(request):
+    logger.info("OAuth callback received")
+    code = request.GET.get('code')
+    if not code:
+        logger.error("No code provided")
+        return JsonResponse({'error': 'No code provided'}, status=400)
+
+    logger.info(f"Code received: {code}")
+
+    token_url = settings.TOKEN_URL
+    token_data = {
+        'grant_type': 'authorization_code',
+        'client_id': settings.CLIENT_ID,
+        'client_secret': settings.CLIENT_SECRET,
+        'code': code,
+        'redirect_uri': settings.REDIRECT_URI,
+    }
+    token_response = requests.post(token_url, data=token_data)
+    token_json = token_response.json()
+    access_token = token_json.get('access_token')
+    logger.info(f"Access token received: {access_token}")
+
+    user_info = requests.get('https://api.intra.42.fr/v2/me', headers={'Authorization': f'Bearer {access_token}'}).json()
+    logger.info(f"User info: {user_info}")
+
+    user, created = User.objects.get_or_create(username=user_info['login'])
+    user.oauth_token = access_token
+    user.save()
+
+    response = redirect('/home')
+    response.set_cookie('access_token', access_token, samesite='Lax')
+    return response
+
