@@ -30,7 +30,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,7 +42,15 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
+    'oauth',
+,
 ]
+
+CLIENT_ID = os.getenv('CLIENT_ID')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+REDIRECT_URI = os.getenv('REDIRECT_URI')
+AUTHORIZATION_URL = os.getenv('AUTHORIZATION_URL')
+TOKEN_URL = os.getenv('TOKEN_URL')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
