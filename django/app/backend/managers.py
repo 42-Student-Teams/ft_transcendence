@@ -44,3 +44,9 @@ class CustomUserManager(models.Manager):
         if len(users) == 0:
             return None
         return users.first()
+    
+    def user_by_oauth_id(self, oauth_id):
+        users = self.filter(oauth_id=oauth_id)
+        if len(users) == 0:
+            return None
+        return users.first()

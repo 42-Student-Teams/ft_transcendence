@@ -6,8 +6,6 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.views import View
 from django.shortcuts import render, redirect
 from django.conf import settings
-import requests
-import logging
 
 
 from .enums import AuthLevel, TokenValidationResponse
@@ -17,8 +15,9 @@ from rest_framework import generics, permissions
 from rest_framework.response import Response
 from .serializers import UserSerializer
 
+from django.views.decorators.csrf import csrf_exempt
+from social_django.utils import psa
 
-logger = logging.getLogger(__name__)
 
 def jsonget(request, key):
     try:
@@ -151,40 +150,100 @@ class UserListView(generics.ListAPIView):
         return Response(serializer.data)
 
 # OAuth views
-def oauth_42(request):
-    logger.info("Starting OAuth process")
-    return redirect(settings.AUTHORIZATION_URL)
+# @csrf_exempt
+# def exchange_token(request):
+#     code = request.POST.get('code')
+#     if not code:
+#         return JsonResponse({'error': 'No code provided'}, status=400)
 
+#     data = {
+#         'grant_type': 'authorization_code',
+#         'client_id': settings.SOCIAL_AUTH_FORTYTWO_KEY,
+#         'client_secret': settings.SOCIAL_AUTH_FORTYTWO_SECRET,
+#         'code': code,
+#         'redirect_uri': settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL
+#     }
+
+#     response = requests.post(settings.SOCIAL_AUTH_FORTYTWO_TOKEN_URL, data=data)
+
+#     if response.status_code == 200:
+#         return JsonResponse(response.json())
+#     else:
+#         return JsonResponse({'error': 'Failed to obtain token'}, status=400)
+
+# def oauth_callback(request):
+#     code = request.GET.get('code')
+#     if not code:
+#         return redirect('/login')
+
+#     token_url = settings.TOKEN_URL
+#     token_data = {
+#         'grant_type': 'authorization_code',
+#         'code': code,
+#         'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI,
+#         'client_id': settings.SOCIAL_AUTH_42_KEY,
+#         'client_secret': settings.SOCIAL_AUTH_42_SECRET
+#     }
+
+#     token_response = requests.post(token_url, data=token_data)
+#     token_json = token_response.json()
+
+#     access_token = token_json.get('access_token')
+#     if not access_token:
+#         return redirect('/login')
+
+#     # Récupérer les informations de l'utilisateur
+#     user_info_url = 'https://api.intra.42.fr/v2/me'
+#     user_info_response = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
+#     user_info = user_info_response.json()
+
+#     # Connectez l'utilisateur dans votre application
+#     # ...
+
+#     return redirect('/home')
+@csrf_exempt
 def oauth_callback(request):
-    logger.info("OAuth callback received")
     code = request.GET.get('code')
     if not code:
-        logger.error("No code provided")
-        return JsonResponse({'error': 'No code provided'}, status=400)
-
-    logger.info(f"Code received: {code}")
+        return redirect('/login')
 
     token_url = settings.TOKEN_URL
     token_data = {
         'grant_type': 'authorization_code',
-        'client_id': settings.CLIENT_ID,
-        'client_secret': settings.CLIENT_SECRET,
         'code': code,
-        'redirect_uri': settings.REDIRECT_URI,
+        'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI,
+        'client_id': settings.SOCIAL_AUTH_42_KEY,
+        'client_secret': settings.SOCIAL_AUTH_42_SECRET,
+        'scope': settings.SOCIAL_AUTH_42_SCOPE,
     }
+
     token_response = requests.post(token_url, data=token_data)
+    
+    if token_response.status_code != 200:
+        return HttpResponse(f"Failed to authenticate: {token_response.text}", status=token_response.status_code)
+
     token_json = token_response.json()
     access_token = token_json.get('access_token')
-    logger.info(f"Access token received: {access_token}")
+    if not access_token:
+        return HttpResponse("Failed to retrieve access token", status=400)
 
-    user_info = requests.get('https://api.intra.42.fr/v2/me', headers={'Authorization': f'Bearer {access_token}'}).json()
-    logger.info(f"User info: {user_info}")
+    # Récupérer les informations de l'utilisateur
+    user_info_url = 'https://api.intra.42.fr/v2/me'
+    user_info_response = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
+    if user_info_response.status_code != 200:
+        return HttpResponse(f"Failed to retrieve user info: {user_info_response.text}", status=user_info_response.status_code)
+    
+    user_info = user_info_response.json()
+    oauth_id = user_info.get('id')
+    username = user_info.get('login')
 
-    user, created = User.objects.get_or_create(username=user_info['login'])
-    user.oauth_token = access_token
-    user.save()
+    # Trouver ou créer l'utilisateur
+    user = User.objects.user_by_oauth_id(oauth_id)
+    if not user:
+        user = User.objects.create_user(username=username, oauth_token=access_token, oauth_id=oauth_id)
+    else:
+        user.oauth_token = access_token
+        user.save()
 
-    response = redirect('/home')
-    response.set_cookie('access_token', access_token, samesite='Lax')
-    return response
 
+    return redirect('/home')

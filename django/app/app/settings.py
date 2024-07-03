@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
+    'social_django',
 ]
 
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -59,12 +60,35 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.fortytwo.FortyTwoOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+    'social_core.backends.oauth2.BaseOAuth2',
+    'social_core.backends.oauth.OAuthBackend',
+    'social_core.backends.oauth2.OAuth2Backend',
+)
+
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+SOCIAL_AUTH_42_KEY = os.getenv('CLIENT_ID')
+SOCIAL_AUTH_42_SECRET = os.getenv('CLIENT_SECRET')
+SOCIAL_AUTH_42_REDIRECT_URI = os.getenv('REDIRECT_URI')
+SOCIAL_AUTH_42_SCOPE = ['public']  # Ajoutez des scopes si nécessaire
+TOKEN_URL = os.getenv('TOKEN_URL')
+
+print("CLIENT_ID:", SOCIAL_AUTH_42_KEY)
+print("CLIENT_SECRET:", SOCIAL_AUTH_42_SECRET)
+print("REDIRECT_URI:", SOCIAL_AUTH_42_REDIRECT_URI)
+print("TOKEN_URL:", TOKEN_URL)
+
 
 ROOT_URLCONF = 'app.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",  
+    "http://127.0.0.1:8000", 
+    "http://localhost:8080" 
 ]
 
 TEMPLATES = [
