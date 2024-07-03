@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from backend import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('backend/', include("backend.urls")),
-    path('auth/', include('social_django.urls', namespace='social')),
+    path('oauth/', include('social_django.urls', namespace='social')),
+    path('oauth/callback/', views.oauth_callback, name='oauth_callback'),
 ]

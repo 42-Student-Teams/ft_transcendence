@@ -1,11 +1,13 @@
 import datetime
 import json
+import requests
 
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 from django.views import View
 from django.shortcuts import render, redirect
 from django.conf import settings
+from requests import get, post  # ou toute autre fonction dont vous avez besoin
 
 
 from .enums import AuthLevel, TokenValidationResponse
@@ -201,49 +203,62 @@ class UserListView(generics.ListAPIView):
 #     # ...
 
 #     return redirect('/home')
-@csrf_exempt
 def oauth_callback(request):
     code = request.GET.get('code')
     if not code:
-        return redirect('/login')
+        return HttpResponse("Erreur : Pas de code reçu", status=400)
 
     token_url = settings.TOKEN_URL
-    token_data = {
+    data = {
         'grant_type': 'authorization_code',
-        'code': code,
-        'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI,
         'client_id': settings.SOCIAL_AUTH_42_KEY,
         'client_secret': settings.SOCIAL_AUTH_42_SECRET,
-        'scope': settings.SOCIAL_AUTH_42_SCOPE,
+        'code': code,
+        'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI
     }
-
-    token_response = requests.post(token_url, data=token_data)
     
-    if token_response.status_code != 200:
-        return HttpResponse(f"Failed to authenticate: {token_response.text}", status=token_response.status_code)
-
-    token_json = token_response.json()
-    access_token = token_json.get('access_token')
-    if not access_token:
-        return HttpResponse("Failed to retrieve access token", status=400)
-
-    # Récupérer les informations de l'utilisateur
-    user_info_url = 'https://api.intra.42.fr/v2/me'
-    user_info_response = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
-    if user_info_response.status_code != 200:
-        return HttpResponse(f"Failed to retrieve user info: {user_info_response.text}", status=user_info_response.status_code)
+    response = requests.post(token_url, data=data)
     
-    user_info = user_info_response.json()
-    oauth_id = user_info.get('id')
-    username = user_info.get('login')
-
-    # Trouver ou créer l'utilisateur
-    user = User.objects.user_by_oauth_id(oauth_id)
-    if not user:
-        user = User.objects.create_user(username=username, oauth_token=access_token, oauth_id=oauth_id)
+    if response.status_code == 200:
+        token_data = response.json()
+        access_token = token_data.get('access_token')
+        
+        user_info_url = 'https://api.intra.42.fr/v2/me'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_info_response = requests.get(user_info_url, headers=headers)
+        
+        if user_info_response.status_code == 200:
+            user_info = user_info_response.json()
+            
+            
+            # Use 'login' as a fallback if 'id' is not present
+            oauth_id = user_info.get('id') or user_info.get('login')
+            username = user_info.get('login')
+            
+            if not oauth_id or not username:
+                return HttpResponse("Erreur : Informations utilisateur incomplètes", status=400)
+            
+            user, created = User.objects.get_or_create(
+                oauth_id=oauth_id,
+                defaults={'username': username}
+            )
+            
+            # Ici, vous pouvez créer une session pour l'utilisateur ou générer un token JWT
+            
+            return redirect('http://localhost:8080/home')  # Rediriger vers la page d'accueil du frontend
+        else:
+            logging.error(f"Erreur lors de la récupération des informations utilisateur: {user_info_response.text}")
+            return HttpResponse("Erreur lors de la récupération des informations utilisateur", status=400)
     else:
-        user.oauth_token = access_token
-        user.save()
+        logging.error(f"Erreur lors de l'échange du code contre un token: {response.text}")
+        return HttpResponse("Erreur lors de l'échange du code contre un token", status=400)
 
-
-    return redirect('/home')
+def get_oauth_config(request):
+    response = JsonResponse({
+        'CLIENT_ID': settings.SOCIAL_AUTH_42_KEY,
+        'REDIRECT_URI': settings.SOCIAL_AUTH_42_REDIRECT_URI,
+        'AUTHORIZATION_URL': settings.AUTHORIZATION_URL,
+    })
+    response["Access-Control-Allow-Origin"] = "http://localhost:8080"
+    response["Access-Control-Allow-Credentials"] = "true"
+    return response

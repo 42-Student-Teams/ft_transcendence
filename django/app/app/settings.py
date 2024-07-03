@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+import ssl 
+ssl._create_default_https_context = ssl._create_unverified_context
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +28,8 @@ SECRET_KEY = 'django-insecure-9&ys+#0$ffoz189_)^55m7h8pxj1_c=!q@%-$34ws4g(m+!#ov
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+SOCIAL_AUTH_REDIRECT_IS_HTTPS = False
 
 ALLOWED_HOSTS = []
 
@@ -45,17 +48,11 @@ INSTALLED_APPS = [
     'social_django',
 ]
 
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
-REDIRECT_URI = os.getenv('REDIRECT_URI')
-AUTHORIZATION_URL = os.getenv('AUTHORIZATION_URL')
-TOKEN_URL = os.getenv('TOKEN_URL')
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -64,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.fortytwo.FortyTwoOAuth2',
+    'social_core.backends.school42.School42OAuth2', 
     'django.contrib.auth.backends.ModelBackend',
     'social_core.backends.oauth2.BaseOAuth2',
     'social_core.backends.oauth.OAuthBackend',
@@ -86,10 +83,14 @@ print("TOKEN_URL:", TOKEN_URL)
 
 ROOT_URLCONF = 'app.urls'
 
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000", 
-    "http://localhost:8080" 
+    "http://localhost:8080", 
+    "http://localhost:8069",
 ]
+CORS_ALLOW_CREDENTIALS = True
+
 
 TEMPLATES = [
     {
