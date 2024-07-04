@@ -11,6 +11,7 @@ const routes = [
 	{ path: "/", view: Home },
 	{ path: "/login", view: Login },
 	{ path: "/register", view: Register },
+	{ path: "/profile", view: Profile },
 	// { path: "/game", view: Game },
 	// { path: "/record", view: TournamentRecord },
 ];

@@ -1,4 +1,6 @@
 import Component from "../../library/component.js";
+import store from "../../store/index.js";
+import { navigateTo } from "../../utils/router.js";
 
 export default class ProfileInfo extends Component {
     constructor() {
@@ -42,6 +44,7 @@ export default class ProfileInfo extends Component {
             </div>
         `;
 
+        this.element = document.getElementById("profileInfo");
         this.element.innerHTML = view;
     }
 }
