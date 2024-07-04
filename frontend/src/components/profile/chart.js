@@ -9,16 +9,16 @@ export default class ChartComponent extends Component {
 
     async render() {
         const view = /*html*/ `
-        <div class="card p-3 d-flex flex-column align-items-center" style="flex-grow: 1;">
-            <h6 class="mb-3">WL - LAST 30 GAME</h6>
-            <div class="chart-container d-flex justify-content-center align-items-center" style="width: 100%; height: 100%;">
+        <div class="card p-3 d-flex flex-column align-items-center flex-grow-1">
+            <h6 class="mb-3 text-start w-100">WL - LAST 30 GAME</h6>
+            <div class="d-flex justify-content-center align-items-center w-100 h-100">
                 <canvas id="pie-chart" width="250" height="250"></canvas>
             </div>
             <div class="legend mt-3">
                 <ul class="list-unstyled d-flex justify-content-center">
-                    <li class="mr-3"><span class="legend-color" style="background-color: #28a745;"></span> Victory</li>
-                    <li class="mr-3"><span class="legend-color" style="background-color: #dc3545;"></span> Defeat</li>
-                    <li><span class="legend-color" style="background-color: #ffc107;"></span> Something Else</li>
+                    <li class="me-3 d-flex align-items-center"><span class="legend-color bg-success d-inline-block me-2" style="width: 20px; height: 20px;"></span> Victory</li>
+                    <li class="me-3 d-flex align-items-center"><span class="legend-color bg-danger d-inline-block me-2" style="width: 20px; height: 20px;"></span> Defeat</li>
+                    <li class="d-flex align-items-center"><span class="legend-color bg-warning d-inline-block me-2" style="width: 20px; height: 20px;"></span> Something Else</li>
                 </ul>
             </div>
         </div>

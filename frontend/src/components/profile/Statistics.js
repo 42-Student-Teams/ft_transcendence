@@ -9,28 +9,28 @@ export default class Statistics extends Component {
     async render() {
         const view = /*html*/ `
         <div class="card mb-2 p-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
                 <div class="d-flex">
-                    <div class="text-center mr-2">
+                    <div class="text-center mx-1">
                         <p class="mb-0 font-weight-bold">11W 9L</p>
                         <p class="mb-0">Last 20</p>
                     </div>
-                    <div class="text-center mr-2">
+                    <div class="text-center mx-1">
                         <p class="mb-0 font-weight-bold">55%</p>
                         <p class="mb-0">Winrate</p>
                     </div>
                 </div>
                 <div class="d-flex">
-                    <div class="text-center mr-2">
-                        <img src="https://via.placeholder.com/40" alt="Avatar1" class="img-fluid mb-2">
+                    <div class="text-center me-1">
+                        <img src="https://via.placeholder.com/40" alt="Avatar1" class="img-fluid mb-2 rounded">
                         <p class="mb-0 font-weight-bold text-success">65%</p>
                     </div>
-                    <div class="text-center mr-2">
-                        <img src="https://via.placeholder.com/40" alt="Avatar2" class="img-fluid mb-2">
+                    <div class="text-center mx-1">
+                        <img src="https://via.placeholder.com/40" alt="Avatar2" class="img-fluid mb-2 rounded">
                         <p class="mb-0 font-weight-bold text-success">100%</p>
                     </div>
-                    <div class="text-center">
-                        <img src="https://via.placeholder.com/40" alt="Avatar3" class="img-fluid mb-2">
+                    <div class="text-center ms-1">
+                        <img src="https://via.placeholder.com/40" alt="Avatar3" class="img-fluid mb-2 rounded">
                         <p class="mb-0 font-weight-bold text-danger">33%</p>
                     </div>
                 </div>

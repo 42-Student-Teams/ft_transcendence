@@ -1,6 +1,4 @@
 import Component from "../../library/component.js";
-import store from "../../store/index.js";
-import { navigateTo } from "../../utils/router.js";
 
 export default class ProfileInfo extends Component {
     constructor() {
@@ -13,8 +11,8 @@ export default class ProfileInfo extends Component {
             <div class="card mb-2 p-3">
                 <button class="btn btn-dark btn-sm mb-3">Edit profil</button>
                 <div class="d-flex align-items-center mb-3">
-                    <img src="https://via.placeholder.com/80" alt="Profile" class="img-fluid mr-2 profile-photo">
-                    <div>
+                    <img src="https://via.placeholder.com/80" alt="Profile" class="img-fluid rounded mr-3">
+                    <div class="ml-3 mx-2">
                         <h5 class="mb-0">Leonel Saba</h5>
                         <p class="mb-0">12W 13L 43%</p>
                     </div>
