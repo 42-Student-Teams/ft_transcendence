@@ -151,64 +151,16 @@ class UserListView(generics.ListAPIView):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-# OAuth views
-# @csrf_exempt
-# def exchange_token(request):
-#     code = request.POST.get('code')
-#     if not code:
-#         return JsonResponse({'error': 'No code provided'}, status=400)
 
-#     data = {
-#         'grant_type': 'authorization_code',
-#         'client_id': settings.SOCIAL_AUTH_FORTYTWO_KEY,
-#         'client_secret': settings.SOCIAL_AUTH_FORTYTWO_SECRET,
-#         'code': code,
-#         'redirect_uri': settings.SOCIAL_AUTH_LOGIN_REDIRECT_URL
-#     }
-
-#     response = requests.post(settings.SOCIAL_AUTH_FORTYTWO_TOKEN_URL, data=data)
-
-#     if response.status_code == 200:
-#         return JsonResponse(response.json())
-#     else:
-#         return JsonResponse({'error': 'Failed to obtain token'}, status=400)
-
-# def oauth_callback(request):
-#     code = request.GET.get('code')
-#     if not code:
-#         return redirect('/login')
-
-#     token_url = settings.TOKEN_URL
-#     token_data = {
-#         'grant_type': 'authorization_code',
-#         'code': code,
-#         'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI,
-#         'client_id': settings.SOCIAL_AUTH_42_KEY,
-#         'client_secret': settings.SOCIAL_AUTH_42_SECRET
-#     }
-
-#     token_response = requests.post(token_url, data=token_data)
-#     token_json = token_response.json()
-
-#     access_token = token_json.get('access_token')
-#     if not access_token:
-#         return redirect('/login')
-
-#     # Récupérer les informations de l'utilisateur
-#     user_info_url = 'https://api.intra.42.fr/v2/me'
-#     user_info_response = requests.get(user_info_url, headers={'Authorization': f'Bearer {access_token}'})
-#     user_info = user_info_response.json()
-
-#     # Connectez l'utilisateur dans votre application
-#     # ...
-
-#     return redirect('/home')
 def oauth_callback(request):
     code = request.GET.get('code')
     if not code:
+        print("Pas de code reçu dans la requête")
         return HttpResponse("Erreur : Pas de code reçu", status=400)
 
-    token_url = settings.TOKEN_URL
+    print(f"Code reçu : {code}")
+
+    token_url = 'https://api.intra.42.fr/oauth/token'
     data = {
         'grant_type': 'authorization_code',
         'client_id': settings.SOCIAL_AUTH_42_KEY,
@@ -217,48 +169,95 @@ def oauth_callback(request):
         'redirect_uri': settings.SOCIAL_AUTH_42_REDIRECT_URI
     }
     
+    print(f"Envoi de la requête pour obtenir le token. URL : {token_url}, Data : {data}")
+    
     response = requests.post(token_url, data=data)
     
-    if response.status_code == 200:
-        token_data = response.json()
-        access_token = token_data.get('access_token')
+    print(f"Réponse de la requête token. Status : {response.status_code}, Contenu : {response.text}")
+
+    if response.status_code != 200:
+        error_message = f"Erreur lors de l'échange du code contre un token: {response.text}"
+        print(error_message)
+        return HttpResponse(error_message, status=400)
+
+    token_data = response.json()
+    access_token = token_data.get('access_token')
         
-        user_info_url = 'https://api.intra.42.fr/v2/me'
-        headers = {'Authorization': f'Bearer {access_token}'}
-        user_info_response = requests.get(user_info_url, headers=headers)
+    if not access_token:
+        print("Pas de access_token dans la réponse")
+        return HttpResponse("Erreur : Pas de access_token reçu", status=400)
+
+    user_info = get_user_info(access_token)
         
-        if user_info_response.status_code == 200:
-            user_info = user_info_response.json()
+    if user_info:
+        oauth_id = str(user_info.get('id'))
+        username = user_info.get('login')
             
+        if not oauth_id or not username:
+            print(f"Informations utilisateur incomplètes. oauth_id: {oauth_id}, username: {username}")
+            return HttpResponse("Erreur : Informations utilisateur incomplètes", status=400)
             
-            # Use 'login' as a fallback if 'id' is not present
-            oauth_id = user_info.get('id') or user_info.get('login')
-            username = user_info.get('login')
-            
-            if not oauth_id or not username:
-                return HttpResponse("Erreur : Informations utilisateur incomplètes", status=400)
-            
+        try:
             user, created = User.objects.get_or_create(
                 oauth_id=oauth_id,
                 defaults={'username': username}
             )
-            
-            # Ici, vous pouvez créer une session pour l'utilisateur ou générer un token JWT
-            
-            return redirect('http://localhost:8080/home')  # Rediriger vers la page d'accueil du frontend
-        else:
-            logging.error(f"Erreur lors de la récupération des informations utilisateur: {user_info_response.text}")
-            return HttpResponse("Erreur lors de la récupération des informations utilisateur", status=400)
+                
+            # Mettre à jour le token OAuth séparément
+            user.oauth_token = access_token
+            user.save(update_fields=['oauth_token'])
+                
+            print(f"Utilisateur {'créé' if created else 'mis à jour'}: {username}")
+                
+            # Générer un token de session
+            user.refresh_session_token()
+                
+            # Renvoyer le token au frontend
+            return JsonResponse({
+                'token': user.session_token,
+                # 'expires': user.session_token_expires.isoformat() if user.session_token_expires else None,
+                'username': user.username
+            })
+        except Exception as e:
+            print(f"Erreur lors de la création/mise à jour de l'utilisateur: {str(e)}")
+            return HttpResponse("Erreur interne du serveur", status=500)
     else:
-        logging.error(f"Erreur lors de l'échange du code contre un token: {response.text}")
-        return HttpResponse("Erreur lors de l'échange du code contre un token", status=400)
+        return HttpResponse("Erreur lors de la récupération des informations utilisateur", status=400)
+
+
+def get_user_info(access_token):
+    user_info_url = 'https://api.intra.42.fr/v2/me'
+    headers = {'Authorization': f'Bearer {access_token}'}
+    
+    print(f"Envoi de la requête pour obtenir les infos utilisateur. URL : {user_info_url}")
+    
+    response = requests.get(user_info_url, headers=headers)
+    
+    print(f"Réponse de la requête user_info. Status : {response.status_code}, Contenu : {response.text}")
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Erreur lors de la récupération des informations utilisateur: {response.text}")
+        return None
 
 def get_oauth_config(request):
     response = JsonResponse({
         'CLIENT_ID': settings.SOCIAL_AUTH_42_KEY,
         'REDIRECT_URI': settings.SOCIAL_AUTH_42_REDIRECT_URI,
-        'AUTHORIZATION_URL': settings.AUTHORIZATION_URL,
+        'AUTHORIZATION_URL': settings.SOCIAL_AUTHORIZATION_URL,
     })
     response["Access-Control-Allow-Origin"] = "http://localhost:8080"
     response["Access-Control-Allow-Credentials"] = "true"
     return response
+
+def make_api_request(access_token, endpoint):
+    base_url = 'https://api.intra.42.fr/v2'
+    headers = {'Authorization': f'Bearer {access_token}'}
+    
+    response = requests.get(f"{base_url}/{endpoint}", headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
