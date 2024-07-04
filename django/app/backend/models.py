@@ -21,9 +21,11 @@ class User(models.Model):
     session_token = models.TextField(blank=True, null=True)
     session_token_expires = models.DateTimeField(blank=True, null=True)
     oauth_token = models.TextField(blank=True, null=True)
-    oauth_id = models.TextField(blank=True, null=True, unique=True)
     is_admin = models.BooleanField(default=False)
+    oauth_id = models.TextField(blank=True, null=True, unique=True)
     email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
+    last_login = models.DateTimeField(blank=True, null=True)
+    
 
     def validate_password(self, password):
         ph = PasswordHasher()

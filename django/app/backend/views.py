@@ -4,7 +4,7 @@ import os
 import requests
 
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect, JsonResponse
 from django.views import View
 from django.shortcuts import redirect
 from django.contrib.auth import login, logout
@@ -103,9 +103,12 @@ class UserCreateView(View):
 
 
 class UserLoginView(View):
-    http_method_names = ['post']
+    http_method_names = ['get','post']
     auth_level: AuthLevel = AuthLevel.NOAUTH
 
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({'message': 'GET request not supported for login'}, status=405)
+    
     def post(self, request, *args, **kwargs):
         if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
             return respond_invalid_token(validate_token(request, self.auth_level))
@@ -219,17 +222,24 @@ class OAuthCallbackAPIView(APIView):
         except requests.RequestException as e:
             return {"error": str(e)}
 
+
     def get_or_create_user(self, user_info):
         login = user_info.get('login')
         email = user_info.get('email')
+        print(f"Attempting to get or create user with login: {login}, email: {email}")
+    
         user, created = User.objects.get_or_create(
         oauth_id=login,
         defaults={'username': login, 'email': email}
-    )
-        if not created:
-        # Mettre à jour les informations de l'utilisateur existant si nécessaire
-            user.email = email
-            user.save()
+            )
+    
+        if created:
+            print(f"New user created: {user}")
+        else:
+            print(f"Existing user found: {user}")
+        user.email = email
+        user.save()
+        print(f"User updated: {user}")
     
         return user
 
