@@ -7,10 +7,11 @@ export default class Login extends Component {
 		this.render();
 	}
 
+
 	async render() {
 
 		const view = /*html*/ `
-            <a href="" class="btn btn-md btn-fortytwo w-100 fs-5">
+            <a href="${process.env.WEBSITE_URL}" class="btn btn-md btn-fortytwo w-100 fs-5">
                 <img src=${btnLogo} style="width:20px" class="me-2">
                 Sign In with 42
 			</a>
@@ -18,11 +19,5 @@ export default class Login extends Component {
 
 		this.element = document.getElementById("btnAuth0");
 		this.element.innerHTML = view;
-	}
-
-	async handleEvent() {
-		this.element.querySelector("button").addEventListener("click", () => {
-			navigateTo("/login");
-		});
 	}
 }

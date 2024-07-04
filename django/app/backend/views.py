@@ -1,16 +1,23 @@
 import datetime
 import json
+import os
+import requests
 
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseRedirect
 from django.views import View
+from django.shortcuts import redirect
+from django.contrib.auth import login, logout
+
 
 from .enums import AuthLevel, TokenValidationResponse
 from .models import User
 
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from .serializers import UserSerializer
+
 
 
 
@@ -143,3 +150,94 @@ class UserListView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+#42Oauth-------------------------------------------------------------------------------------****
+
+# LoginAPIView : Pour initier le processus de connexion.
+class LoginAPIView(APIView):
+    def get(self, request):
+        main_url = os.getenv('WEBSITE_URL')
+        if request.user.is_authenticated:
+            return redirect(main_url)
+
+        client_id = os.getenv('CLIENT_ID')
+        redirect_uri = os.getenv('REDIRECT_URI')
+
+        if not client_id or not redirect_uri:
+            return redirect(main_url)
+
+        login_url = f"https://api.intra.42.fr/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code"
+        return redirect(login_url)
+    
+#OAuthCallbackAPIView :-------------------------------------------------------------------------------------****
+#Pour gérer le callback après l'autorisation.
+class OAuthCallbackAPIView(APIView):
+    def get(self, request):
+        main_url = os.getenv('WEBSITE_URL')
+        if request.user.is_authenticated:
+            return HttpResponseRedirect(main_url)
+
+        code = request.GET.get("code")
+        error = request.GET.get("error")
+        if error:
+            return HttpResponseRedirect(main_url)
+
+        access_token = self.get_access_token_data(code)
+        if 'error' in access_token or 'access_token' not in access_token:
+            return HttpResponseRedirect(main_url)
+
+        user_info = self.get_user_info(access_token['access_token'])
+        if 'error' in user_info:
+            return HttpResponseRedirect(main_url)
+
+        user = self.get_or_create_user(user_info)
+        login(request, user)
+        return HttpResponseRedirect(main_url)
+
+    def get_access_token_data(self, code):
+        data = {
+            "grant_type": "authorization_code",
+            "client_id": os.getenv("CLIENT_ID"),
+            "client_secret": os.getenv("CLIENT_SECRET"),
+            "code": code,
+            "redirect_uri": os.getenv("REDIRECT_URI"),
+            "scope": "public"
+        }
+        try:
+            response = requests.post('https://api.intra.42.fr/oauth/token', data=data)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            return {"error": str(e)}
+
+    def get_user_info(self, access_token):
+        try:
+            response = requests.get('https://api.intra.42.fr/v2/me',
+                                    headers={'Authorization': f'Bearer {access_token}'})
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as e:
+            return {"error": str(e)}
+
+    def get_or_create_user(self, user_info):
+        login = user_info.get('login')
+        email = user_info.get('email')
+        user, created = User.objects.get_or_create(
+        oauth_id=login,
+        defaults={'username': login, 'email': email}
+    )
+        if not created:
+        # Mettre à jour les informations de l'utilisateur existant si nécessaire
+            user.email = email
+            user.save()
+    
+        return user
+
+# LogOutAPIView :-------------------------------------------------------------------------------------****
+# Pour gérer la déconnexion.
+# class LogOutAPIView(APIView):
+#     def get(self, request):
+#         if request.user.is_authenticated:
+#             logout(request)
+#         main_url = os.getenv('WEBSITE_URL')
+#         return redirect(main_url)

@@ -26,6 +26,7 @@ window.addEventListener("popstate", (event) => {
 
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
+	console.log(process.env.WEBSITE_URL);
 
 	// if (!store.state.isLoggedIn) {
 	// 	try {
