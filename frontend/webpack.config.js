@@ -14,8 +14,18 @@ export default {
   devServer: {
     compress: true,
     port: 8080,
+    proxy: [
+
+         {
+          context: ['/api'],
+          target: 'https://api.intra.42.fr',
+          changeOrigin: true,
+          pathRewrite: {'^/api': ''}
+        }
+      
+    ],
     hot: true,
-    allowedHosts: "pong.ch",
+    allowedHosts: ["pong.ch"],
     static: {
       directory: path.resolve('dist'),
     },
