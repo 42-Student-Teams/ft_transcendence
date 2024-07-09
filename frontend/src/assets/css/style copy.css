@@ -305,15 +305,115 @@ body {
   background-color: #e9ecef;
 }
 
-#icon-send{
-  color:white;
+/* -- chat -- */
+#chat-container{
+  height:100%;
+  background-color: #36393e;
+  /* margin-bottom:15px; */
+}
+
+#nav-chat{
+  height:100%;
+}
+
+#chat-input-messages{
+  margin-bottom:0px;
+
+}
+
+#chat-messages{
+  display:flex;
+  flex-direction:column;
+  flex:1;
+  /* margin-bottom:30px; */
 }
 #chat-big-div{
   background-color:#36393e;
 }
+
+#chat-screen-container{
+  display:flex;
+  height:100%;
+
+  flex-direction:column;
+}
+
+.chat-screen .header {
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding:0px;
+}
+
+.chat-screen .header .logo {
+  font-size:18px;
+  color:#eee;
+  font-weight:600px;
+}
+
+.chat-screen .header button{
+  padding:5px 10px;
+  background: transparent;
+  color: #eee;
+  cursor: pointer;
+  font-size:15px;
+  outline: none;
+}
+
 .sb-sidenav-menu{
   height:100%;
 }
+
+.chat-screen .messages {
+  width: 100%;
+}
+
+.chat-screen .messages .message{
+  padding: 0px;
+  display:flex;
+}
+
+.chat-screen .messages .message > div {
+  max-width: 80%;
+  box-shadow: 0px 0px 20px 5px rgba(0,0,0,0.05);
+}
+.other-message > div > .chat-text  {
+  /* background: #374151; */
+  color: #fff;
+  padding:10px;
+  padding-left:20px;
+  padding-right:20px;
+  border-radius: 1px 10px 10px 10px;
+}
+
+.my-message > div > .chat-text  {
+  /* background: #115E59; */
+  color: #fff;
+  padding:10px;
+  padding-left:20px;
+  padding-right:20px;
+  border-radius: 10px 1px 10px 10px;
+}
+
+.chat-screen .messages .message.my-message {
+  justify-content: flex-end;
+}
+
+.chat-screen .messages .message.other-message {
+  justify-content: flex-start;
+}
+
+.chat-screen .messages .message .chat-name {
+  font-size: 13px;
+  margin-bottom:5px;
+}
+
+.chat-name {
+  font-weight: 500;
+  /* color:red; */
+}
+
 .my-message .chat-name {
   color: #25CF9C;
 }
@@ -322,7 +422,49 @@ body {
   color: #53A6FD;
 }
 
-.custom-chat{
-  height:600px;
+
+.chat-screen .messages .message .chat-text {
+  word-wrap:break-word;
+  font-size:13px;
 }
 
+.chat-screen .messages .update {
+  text-align: center;
+  padding:10px;
+  font-size: 12px;
+  font-style:italic;
+}
+
+.chat-screen .typebox {
+  width:100%;
+  display:flex;
+  /* height: 40px; */
+}
+
+.chat-screen .typebox input {
+  flex:1;
+  height: 40px;
+  background:	#424549;
+  border:none;
+  color:white;
+  padding-left: 20px;
+  padding-right: 20px;
+  outline:none;
+  font-size:14px;
+  border-radius: 10px;
+}
+
+#icon-send{
+  color:white;
+}
+
+.chat-screen .typebox button{
+  width: 40px;
+  height: 100%;
+  margin-left: 10px;
+  border-radius: 10px;
+  background: #7289da;
+  outline:none;
+  border:none;
+  cursor: pointer;
+}
