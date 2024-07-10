@@ -17,18 +17,18 @@ export default class Home extends Component {
 
     const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
-            <div class="row cst-test ">
+            <div class="row chat-rm-margin ">
               <nav class="navbar navbar-expand navbar-dark bg-dark pl-4" id="navBar"></nav>
             </div>
             <div class="flex-grow-1 d-flex">
-              <div class="cst-test row  flex-grow-1 h-100">
-                <div class="cst-test1 col bg-dark h-100 d-flex flex-column">
-                  <div class="d-flex flex-column h-100 gap-2 p-4 overflow-auto">
+              <div class="chat-rm-margin row flex-grow-1 h-100">
+                <div class="chat-flex col bg-dark h-100 d-flex flex-column">
+                  <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto">
                     <div class="header-text">
                       <div class="logo text-white">Chatroom</div>
                     </div>
-                    <div class="custom-chat overflow-auto flex-grow-1">
-                      <div class="message my-message pl-2">
+                    <div class="gap-3 row custom-chat overflow-auto flex-grow-1">
+                      <div class="message my-message ">
                         <div>
                           <div class="chat-name">You</div>
                           <div class="chat-text text-white">Hello !</div>
