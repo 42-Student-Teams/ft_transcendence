@@ -17,12 +17,12 @@ export default class Home extends Component {
 
     const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
-            <div class="row">
+            <div class="row cst-test ">
               <nav class="navbar navbar-expand navbar-dark bg-dark pl-4" id="navBar"></nav>
             </div>
             <div class="flex-grow-1 d-flex">
-              <div class="row flex-grow-1 h-100">
-                <div class="col bg-dark h-100 d-flex flex-column">
+              <div class="cst-test row  flex-grow-1 h-100">
+                <div class="cst-test1 col bg-dark h-100 d-flex flex-column">
                   <div class="d-flex flex-column h-100 gap-2 p-4 overflow-auto">
                     <div class="header-text">
                       <div class="logo text-white">Chatroom</div>

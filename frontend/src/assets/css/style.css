@@ -326,3 +326,14 @@ body {
   height:600px;
 }
 
+.cst-test {
+  margin:0px;
+}
+
+.cst-test1{
+  max-width:450px;
+}
+
+.chat-text{
+  font-size :16px;
+}
