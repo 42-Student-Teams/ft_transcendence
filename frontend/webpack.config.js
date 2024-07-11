@@ -16,6 +16,14 @@ export default {
     port: 8080,
     hot: true,
     allowedHosts: "pong.ch",
+    proxy: [
+         {
+          context: ['/api'],
+          target: 'https://api.intra.42.fr',
+          changeOrigin: true,
+          pathRewrite: {'^/api': ''}
+        }
+    ],
     static: {
       directory: path.resolve('dist'),
     },
