@@ -7,6 +7,11 @@ body {
   margin: 0;
 }
 
+h1{
+	font-size: 13px;
+	font-weight:300;
+}
+
 .divider:after,
 .divider:before {
   content: '';
@@ -98,6 +103,11 @@ button.btn.btn-primary:active {
 }
 
 
+.btn.active {
+	background-color:  #E0E1E5;
+	color:#4E5057;
+}
+
 
 
 #send-message{
@@ -148,4 +158,42 @@ button.btn.btn-primary:active {
 
 #main-home{
 	background-color: #EBECEE;
+}
+
+
+/* friends list */
+
+.friends-list{
+	padding-left: 0px ;
+	padding-right: 0px;
+	margin-right:0px;
+	height:600px;
+}
+
+
+
+.friend{
+	height:80px;
+	border-top:1px solid #EBEBED;
+	border-bottom:1px solid transparent;
+	
+}
+
+.friend-img{
+	width:50px;
+	border-radius:50%;
+}
+
+.friend:hover{
+	border-radius: 4px;
+	background-color:#EBEBED !important;
+}
+
+.friend-status{
+	font-size:13px;
+	color:green;
+}
+
+.friend-image{
+
 }

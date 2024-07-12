@@ -1,4 +1,6 @@
 import Component from "../../library/component.js";
+import ProfilePicture1 from "../../assets/image/pp-6.jpg";
+
 
 export default class SideFriendList extends Component {
     constructor() {
@@ -9,97 +11,33 @@ export default class SideFriendList extends Component {
     async render() {
 
         const view = /*html*/ `
-            <div class="gap-3 row chat-messages overflow-auto flex-grow-1">
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Hello !</div>
-                </div>
-              </div>
-              <div class="message other-message">
-                <div>
-                  <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text text-white text-white">Hi! How are you?</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white text-white">I'm good, thanks! How about you?</div>
-                </div>
-              </div>
-              <div class="message other-message">
-                <div>
-                  <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text text-white"> I'm doing well. Started a new project recently, so that's been taking up most of my time. It's exciting, though!</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <!-- More messages here -->
-            </div>
-            <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
-              <input type="text" id="message-input" class="form-control" placeholder="Message" />
-              <button id="send-message" class="btn btn-primary"><i id="icon-send" class="ml-4 fa-regular fa-paper-plane"></i></button>
-            </div>
+			<div>
+				<h1>You can add friends with their username.</h1>
+			</div>
+			<div  class="d-flex flex-grow-0 gap-3 pb-4">
+				<input type="text" id="" class="form-control" placeholder="Username" />
+				<button id="btn-add-friend" class="btn btn-success flex-fill"><i id="icon-send" class="ml-4 fa fa-user-plus "></i></button>
+			</div>
+			<div class="friends-list overflow-auto flex-grow-1">
+				<div class="friend container py-3" >
+					<div class="row">
+						<div class="col-9 container user-info">
+							<div class="row">
+								<div class="col friend-image">
+									<img class=" friend-img" src=${ProfilePicture1} />
+								</div>
+							<div class="col friend-info">
+								<span>Lsaba-qu</span>
+								<span class="friend-status">Online</span>
+							</div>
+						</div>
+					</div>
+					<div class="col-3 d-flex gap-2 friend-action">
+						<button class="btn rounded"><i class="fa-solid fa-comment"></i></button>
+						<button class="btnrounded"><i class="fa-solid fa-user-large-slash"></i></button>
+					</div>
+				</div>
+			</div>
         `;
 
         this.element = document.getElementById("side-friend-list");
