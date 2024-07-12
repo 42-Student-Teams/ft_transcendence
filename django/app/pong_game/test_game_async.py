@@ -2,6 +2,7 @@
 
 import pynput, time, random, math
 import threading
+import asyncio
 from pynput.keyboard import Key, Listener
 
 class Ball:
@@ -31,34 +32,21 @@ class Game:
 		self.winner = 0
 		self.run = True
 
-	def run_listener(self):
-		with Listener(on_press=self.on_press, on_release=self.on_release) as listener:
-			listener.join()
-
-	def ball_loop(self):
+	async def ball_loop(self):
 		print(self.ball.dir)
-		while self.run :
-			if self.board.width/2 - abs(self.ball.pos[0]) > self.ball.speed * abs(math.cos(self.ball.dir)):
-				self.ball.pos[0] += self.ball.speed * math.cos(self.ball.dir)
-			else:
-				self.ball.pos[0] += self.ball.speed * math.cos(self.ball.dir)  (self.board.width/2 - abs(self.ball.pos[0]))
-
-			if self.board.height/2 - abs(self.ball.pos[0]) > self.ball.speed * math.cos(self.ball.dir):
-				self.ball.pos[0] += self.ball.speed * math.cos(self.ball.dir)
-			else:
-				self.ball.pos[0] += self.ball.speed * math.cos(self.ball.dir) - (self.board.height/2 - abs(self.ball.pos[0]))
+		while self.run:
+			self.ball.pos[0] += self.ball.speed * math.cos(self.ball.dir)
 			self.ball.pos[1] += self.ball.speed * math.sin(self.ball.dir)
 			print(self.ball.pos[0], self.ball.pos[1])
-			# time.sleep(1)
 			if abs(self.ball.pos[1]) >= self.board.height/2:
-				self.ball.dir -= 2 * self.ball.dir
+				self.ball.dir = -self.ball.dir
 			if abs(self.ball.pos[1] - self.player_r.pos) > self.player_r.size and self.ball.pos[0] >= self.board.length/2:
 				self.winner = 1
-				print('Second while loop is running...')
 				self.run = False
 			elif abs(self.ball.pos[1] - self.player_l.pos) > self.player_l.size and self.ball.pos[0] <= -self.board.length/2:
 				self.winner = 2
 				self.run = False
+			await asyncio.sleep(1 / self.ball.times)
 
 
 	def on_press(self, key):
@@ -76,12 +64,19 @@ class Game:
 		except AttributeError:
 				print('special key {0} pressed'.format(key))
 
-
-
 	def on_release(self, key):
 		if key == Key.esc:
 				return False
 		
+	async def key_input(self):
+		loop = asyncio.get_event_loop()
+		with Listener(on_press=self.on_press, on_release=self.on_release) as listener:
+			await loop.run_in_executor(None, listener.join)
+
+		# with Listener(on_press = self.on_press,
+		# 			on_release = self.on_release) as listener:
+							
+		# 	listener.join()
 
 class Match:
 	def __init__(self, win):
@@ -91,31 +86,31 @@ class Match:
 		self.right = 0
 		self.board = Board()
 
-# Create an instance of KeyLogger
+
+async def start_game(match):
+	new_game = Game(board = match.board)
+
+	# with Listener(on_press = new_game.on_press,
+	# 			on_release = new_game.on_release) as listener:
+						
+	# 	listener.join()
+	task1 = asyncio.create_task(new_game.key_input())
+	task2 = asyncio.create_task(new_game.ball_loop())
+
+	await task1
+	await task2
+	print('winner : {0}'.format(new_game.winner))
+	if new_game.winner == 1:
+		match.left += 1
+	elif new_game.winner == 2:
+		match.right += 1
+
+	print('match_win : {0}'.format(match.win))
+	print('new_match.left : {0}'.format(match.left))
+	print('new_match.right : {0}'.format(match.right))
+
+	print('----')
+
+
 new_match= Match(win=3)
-new_game = Game(board = new_match.board)
-
-listener_thread = threading.Thread(target=new_game.run_listener)
-ball_thread = threading.Thread(target=new_game.ball_loop)
-
-listener_thread.start()
-ball_thread.start()
-
-# Wait for the listener thread to finish
-listener_thread.join()
-
-# Ensure ball_thread ends if the listener ends early
-new_game.run = False
-ball_thread.join()
-
-print('winner : {0}'.format(new_game.winner))
-if new_game.winner == 1:
-	new_match.left += 1
-elif new_game.winner == 2:
-	new_match.right += 1
-
-print('match_win : {0}'.format(new_match.win))
-print('new_match.left : {0}'.format(new_match.left))
-print('new_match.right : {0}'.format(new_match.right))
-
-print('----')
+asyncio.run(start_game(new_match))
