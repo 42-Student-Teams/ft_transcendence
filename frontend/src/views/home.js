@@ -1,5 +1,6 @@
 import NavBar from '../components/home/navbar.js';
 import SideChat from '../components/home/side-chat.js';
+import SideFriendList from '../components/home/side-chat.js';
 import Component from "../library/component.js";
 
 export default class Home extends Component {
@@ -10,6 +11,7 @@ export default class Home extends Component {
     this.components = {
       navBar: new NavBar(),
       sideChat: new SideChat(),
+	  sideFriendList: new SideFriendList(),
     };
   }
 
@@ -19,30 +21,32 @@ export default class Home extends Component {
     const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
             <div class="row chat-rm-margin ">
-              <nav class="navbar navbar-expand navbar-dark bg-dark pl-4" id="navBar"></nav>
+              <nav class="navbar navbar-expand  pl-4 bg-white shadow-sm" id="navBar"></nav>
             </div>
             <div class="flex-grow-1 d-flex">
               <div class="chat-rm-margin row flex-grow-1 h-100">
-                <div class="chat-flex col bg-dark h-100 d-flex flex-column">
+                <div class="chat-flex col bg-white h-100 d-flex flex-column">
                   <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto">
-                    <div class="header-text">
-                      <div class="logo text-white">Chatroom</div>
-                    </div>
-                    <div id="side-chat"></div>
-                    <div id="side-chatrooms"></div>
-                    <div id="side-friends"></div>
+                    <div class="btn-group" role="group" aria-label="Basic button group">
+  						<button type="button" class="btn btn-primary">Friends</button>
+  						<button type="button" class="btn btn-primary">Channels</button>
+  						<button type="button" class="btn btn-primary">Blocked</button>
+					</div>
+                    <div id="side-chat" class="d-flex flex-column h-100 gap-3"></div>
+                    <div id="side-chatrooms" class="d-none"></div>
+                    <div id="side-friend-list" class="d-none"></div>
                   </div>
                 </div>
-                <div class="col bg-success d-flex flex-column justify-content-center align-items-center">
-                  <!-- Content for the second column -->
-                  <h3>Column 2 Content</h3>
-                  <p>This column takes up 9 units of the grid.</p>
+                <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
+					<div class="gap-3">
+					  <button class="btn btn-primary btn-game-init btn-lg" type="button"><i class="fa-solid fa-dice-one"></i> Local</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
+					</div>
                 </div>
               </div>
             </div>
           </div>
         `;
     this.element.innerHTML = view;
-
   }
 }

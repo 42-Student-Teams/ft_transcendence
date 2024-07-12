@@ -1,8 +1,8 @@
 import Component from "../../library/component.js";
 
-export default class SideChat extends Component {
+export default class SideFriendList extends Component {
     constructor() {
-        super({ element: document.getElementById("side-chat") });
+        super({ element: document.getElementById("side-friend-list") });
         this.render();
     }
 
@@ -13,96 +13,96 @@ export default class SideChat extends Component {
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Hello !</div>
+                  <div class="chat-text text-white">Hello !</div>
                 </div>
               </div>
               <div class="message other-message">
                 <div>
                   <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text  ">Hi! How are you?</div>
+                  <div class="chat-text text-white text-white">Hi! How are you?</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text  ">I'm good, thanks! How about you?</div>
+                  <div class="chat-text text-white text-white">I'm good, thanks! How about you?</div>
                 </div>
               </div>
               <div class="message other-message">
                 <div>
                   <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text "> I'm doing well. Started a new project recently, so that's been taking up most of my time. It's exciting, though!</div>
+                  <div class="chat-text text-white"> I'm doing well. Started a new project recently, so that's been taking up most of my time. It's exciting, though!</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
+                  <div class="chat-text text-white">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
                 </div>
               </div>
               <!-- More messages here -->
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
               <input type="text" id="message-input" class="form-control" placeholder="Message" />
-              <button id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
+              <button id="send-message" class="btn btn-primary"><i id="icon-send" class="ml-4 fa-regular fa-paper-plane"></i></button>
             </div>
         `;
 
-        this.element = document.getElementById("side-chat");
+        this.element = document.getElementById("side-friend-list");
         this.element.innerHTML = view;
     }
 }
