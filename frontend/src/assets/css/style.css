@@ -189,11 +189,45 @@ button.btn.btn-primary:active {
 	background-color:#EBEBED !important;
 }
 
-.friend-status{
+.friend-status-online, .friend-status-offline, .friend-status-absent{
 	font-size:13px;
-	color:green;
+	font-weight:600;
 }
 
-.friend-image{
+.friend-status{
+	font-size:13px;
+}
 
+.friend-status-online{
+	color:#228B21;
+}
+
+.friend-status-offline{
+	color:gray;
+}
+
+.friend-status-absent{
+	color:#CB5600;
+}
+
+
+/* Blocked list */
+
+
+.btn-unblock:hover{
+	border:none;
+	color:#ED5554;
+	background-color: #bcbcbc;
+}
+
+.btn-unblock{
+	border:none;
+}
+
+
+/* Modal */
+
+.btn-danger{
+	color:white;
+	border:none;
 }
