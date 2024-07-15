@@ -148,3 +148,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 TOKEN_EXPIRATION_MINUTES:int = os.getenv("TOKEN_EXPIRATION_MINUTES", 15)
+
+
+AUTH_USER_MODEL = 'backend.jwtuser'

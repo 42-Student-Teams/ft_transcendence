@@ -1,18 +1,21 @@
 import datetime
 import json
+import os
 
+from django.conf import settings
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
-from django.views import View
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.views import APIView
 
 from .enums import AuthLevel, TokenValidationResponse
-from .models import User
+from .models import User, JwtUser
 
-from rest_framework import generics, permissions
+from rest_framework import, status
 from rest_framework.response import Response
-from .serializers import UserSerializer
+from .serializers import JwtUserSerializer
 
-
+import jwt
 
 def jsonget(request, key):
     try:
@@ -62,84 +65,72 @@ def index(request):
 def create_user(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
 
+class UserCreateView(APIView):
+    def post(self, request):
+        print('--------------------')
+        print(request.data)
+        print('--------------------')
+        serializer = JwtUserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-class UserCreateView(View):
-    http_method_names = ['post']
-    auth_level: AuthLevel = AuthLevel.NOAUTH
+class UserLoginView(APIView):
+    def post(self, request):
+        username = request.data['username']
+        password = request.data['password']
 
-    def post(self, request, *args, **kwargs):
-        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request, self.auth_level))
-
-        err_resp = {'reason': 'unknown'}
-        if jsonget(request, 'username') is None:
-            err_resp['reason'] = 'missing username'
-            return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if jsonget(request, 'password') is None and jsonget(request, 'oauth_token') is None:
-            err_resp['reason'] = 'missing password or oauth token'
-            return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if jsonget(request, 'password') is not None and jsonget(request, 'oauth_token') is not None:
-            err_resp['reason'] = 'need only password or oauth token'
-            return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-
-        if User.objects.user_by_username(jsonget(request, 'username')) is not None:
-            err_resp['reason'] = 'duplicate username'
-            return HttpResponseBadRequest(
-                json.dumps(err_resp, default=str),
-                content_type='application/json')
-        new_user = User.objects.create_user(username=jsonget(request, 'username'),
-                                            password=jsonget(request, 'password'),
-                                            oauth_token=jsonget(request, 'oauth_token'))
-        return HttpResponse(
-            json.dumps({'token': new_user.session_token, 'expires': new_user.session_token_expires}, default=str),
-            content_type='application/json')
-
-
-class UserLoginView(View):
-    http_method_names = ['post']
-    auth_level: AuthLevel = AuthLevel.NOAUTH
-
-    def post(self, request, *args, **kwargs):
-        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request, self.auth_level))
-
-        err_resp = {'reason': 'unknown'}
-        if jsonget(request, 'username') is None:
-            err_resp['reason'] = 'missing username'
-            return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-        if jsonget(request, 'password') is None:
-            err_resp['reason'] = 'missing password'
-            return HttpResponseBadRequest(json.dumps(err_resp), content_type='application/json')
-
-        user: User = User.objects.user_by_username(jsonget(request, 'username'))
+        user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
-            err_resp['reason'] = 'user not found'
-            return HttpResponseBadRequest(
-                json.dumps(err_resp, default=str),
-                content_type='application/json')
-        if not user.validate_password(jsonget(request, 'password')):
-            err_resp['reason'] = 'invalid password'
-            return HttpResponseForbidden(
-                json.dumps(err_resp, default=str),
-                content_type='application/json')
+            raise AuthenticationFailed('User not found')
+        if not user.can_login(password):
+            raise AuthenticationFailed('Incorrect username or password')
 
-        user.refresh_session_token()
-        return HttpResponse(
-            json.dumps({'token': user.session_token, 'expires': user.session_token_expires}, default=str),
-            content_type='application/json')
+        payload = {
+            'username': user.username,
+            'expires': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.TOKEN_EXPIRATION_MINUTES),
+            'iat': datetime.datetime.utcnow(),
+        }
 
+        token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256').decode('utf-8')
 
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    http_method_names = ['get']
-    auth_level = AuthLevel.AUTH
+        res = Response()
+        res.data = {
+            'jwt': token,
+        }
 
-    def get(self, request, *args, **kwargs):
-        if validate_token(request, self.auth_level) != TokenValidationResponse.VALID:
-            return respond_invalid_token(validate_token(request, self.auth_level))
+        return Response({'jwt': token})
 
-        # Proceed with normal view logic if the parameter is present
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+class UserListView(APIView):
+    def get(self, request):
+        token = request.GET.get('jwt')
+        if token is None:
+            raise AuthenticationFailed('Unauthenticated')
+        try:
+            payload = jwt.decode(token, os.getenv('JWT_SECRET'), algorithm=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated')
+
+        user = JwtUser.objects.get(username=payload['username'])
+
+        return ({'status': 'success'})
+
+class UserExistsView(APIView):
+    def get(self, request):
+        username = request.data['username']
+        user = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            return ({'status': False})
+        else:
+            return ({'status': True})
+
+class UserIsOauth(APIView):
+    def get(self, request):
+        username = request.data['username']
+        user = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            return ({'status': False})
+        elif user.isoauth:
+            return ({'status': True})
+        else:
+            return ({'status': False})

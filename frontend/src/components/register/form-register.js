@@ -1,6 +1,7 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
+import { registerUser } from "../../utils/apiutils.js";
 
 export default class FormRegister extends Component {
     constructor() {
@@ -45,31 +46,13 @@ export default class FormRegister extends Component {
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
 
-            try {
-
-                const data = {
-                    firstname: firstname,
-                    lastname: lastname,
-                    username: username,
-                    email: email,
-                    password: password
-                };
-                const apiurl = process.env.API_URL;
-                const response = await fetch(`${apiurl}/create_user`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },body: JSON.stringify(data)
-                });
-
-                if (response.ok) {
-                    store.dispatch("logIn");
-                    navigateTo("/");
-                } else {
-                    console.error("Registration failed:");
-                }
-            } catch (error) {
-                console.error("An error occurred:", error);
+            let response = await registerUser(firstname, lastname, username, email, password, false);
+            if (response.ok) {
+                console.log('Successfully created account');
+                store.dispatch("logIn");
+                navigateTo("/");
+            } else {
+                console.error("Registration failed:");
             }
         });
     }
