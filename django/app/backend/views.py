@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from django.views import View
 
 from .enums import AuthLevel, TokenValidationResponse
-from .models import User, Friendship
+from .models import User
 
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -147,26 +147,28 @@ class UserListView(generics.ListAPIView):
 
 class AddFriendView(View):
     def post(self, request):
-        data = json.loads(request.body)
-        username = data.get('username')
-        token = data.get('token')
-
-        if not username or not token:
-            return JsonResponse({'status': 'error', 'message': 'Missing username or token'}, status=400)
-
         try:
-            user = User.objects.get(session_token=token)
-            friend = User.objects.get(username=username)
-
-            if user == friend:
-                return JsonResponse({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=400)
-
-            friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
+            data = json.loads(request.body)
+            friend_username = data.get('friend_username')
             
-            if created:
-                return JsonResponse({'status': 'success', 'message': f'Friend {username} added successfully'})
-            else:
-                return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
-
-        except User.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+            if not friend_username:
+                return JsonResponse({'status': 'error', 'message': 'Missing friend username'}, status=400)
+            
+            try:
+                user = User.objects.get(id=1)  # Utilisateur fixe pour les tests
+                friend = User.objects.get(username=friend_username)
+                
+                if user == friend:
+                    return JsonResponse({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=400)
+                
+                if friend in user.friends.all():
+                    return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
+                
+                user.friends.add(friend)
+                return JsonResponse({'status': 'success', 'message': f'Friend {friend_username} added successfully'})
+                
+            except User.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
+            
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)

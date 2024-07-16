@@ -108,31 +108,32 @@ export default class SideFriendList extends Component {
 
     async handleEvent() {
         const addFriendButton = this.element.querySelector("#btn-add-friend");
-        const usernameInput = this.element.querySelector("#friend-username-input");
+        const friendUsernameInput = this.element.querySelector("#friend-username-input");
 
         addFriendButton.addEventListener("click", async (event) => {
             event.preventDefault();
-            const username = usernameInput.value.trim();
-            if (username) {
+            const friendUsername = friendUsernameInput.value.trim();
+            
+            if (friendUsername) {
                 try {
-                    const token = localStorage.getItem('sessionToken');
-                    const response = await fetch('/api/add_friend/', {
+                    const response = await fetch('http://localhost:8069/backend/add_friend/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            username: username,
-                            token: token
+                            friend_username: friendUsername
                         })
                     });
                     const data = await response.json();
                     console.log(data);
-                    alert(data.message); // Affiche le message de succès ou d'erreur
+                    alert(data.message);
                 } catch (error) {
                     console.error('Error:', error);
                     alert('An error occurred while adding friend');
                 }
+            } else {
+                alert('Please enter a username');
             }
         });
 

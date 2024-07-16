@@ -22,6 +22,7 @@ class User(models.Model):
     session_token_expires = models.DateTimeField(blank=True, null=True)
     oauth_token = models.DateTimeField(blank=True, null=True)
     is_admin = models.BooleanField(default=False)
+    friends = models.ManyToManyField('self', symmetrical=False, blank=True)
 
     def validate_password(self, password):
         ph = PasswordHasher()
@@ -51,13 +52,3 @@ class User(models.Model):
     def __str__(self):
         return self.username
     
-class Friendship(models.Model):
-    user = models.ForeignKey(User, related_name='friendships', on_delete=models.CASCADE)
-    friend = models.ForeignKey(User, related_name='friend_of', on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('user', 'friend')
-
-    def __str__(self):
-        return f"{self.user.username} is friends with {self.friend.username}"
