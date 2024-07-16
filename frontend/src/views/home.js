@@ -3,6 +3,7 @@ import SideBlockedList from '../components/home/side-blocked-list.js';
 import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import Component from "../library/component.js";
+import { navigateTo } from "../utils/router.js";
 
 export default class Home extends Component {
 	constructor() {
@@ -151,6 +152,7 @@ export default class Home extends Component {
 				speed: speed
 			};
 			console.log(game);
+			navigateTo("/local-game");
 		});
 
 		this.element.querySelector("#btn-play-tournament").addEventListener("click", async (event) => {
@@ -164,6 +166,7 @@ export default class Home extends Component {
 				speed: speed
 			};
 			console.log(game);
+			navigateTo("/tournament-game");
 		});
 
 		this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {

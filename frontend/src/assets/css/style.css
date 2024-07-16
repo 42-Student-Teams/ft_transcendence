@@ -237,3 +237,15 @@ button.btn.btn-primary:active {
 	color:white;
 	border:none;
 }
+
+/* Game */
+
+.game-container{
+  height:600px;
+}
+
+.game-canva{
+  height:500px;
+  width:900px;;
+  background-color:#EBEBED;
+}
