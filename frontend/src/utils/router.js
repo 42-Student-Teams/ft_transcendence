@@ -1,5 +1,5 @@
 import store from "../store/index.js";
-import Home from "../views/home.js.old";
+import Home from "../views/home.js";
 import Login from "../views/login.js";
 import Register from "../views/register.js";
 import Profile from "../views/profile.js";
