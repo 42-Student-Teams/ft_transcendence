@@ -2,11 +2,11 @@ import datetime
 import json
 
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 from django.views import View
 
 from .enums import AuthLevel, TokenValidationResponse
-from .models import User
+from .models import User, Friendship
 
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -143,3 +143,30 @@ class UserListView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class AddFriendView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        username = data.get('username')
+        token = data.get('token')
+
+        if not username or not token:
+            return JsonResponse({'status': 'error', 'message': 'Missing username or token'}, status=400)
+
+        try:
+            user = User.objects.get(session_token=token)
+            friend = User.objects.get(username=username)
+
+            if user == friend:
+                return JsonResponse({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=400)
+
+            friendship, created = Friendship.objects.get_or_create(user=user, friend=friend)
+            
+            if created:
+                return JsonResponse({'status': 'success', 'message': f'Friend {username} added successfully'})
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
