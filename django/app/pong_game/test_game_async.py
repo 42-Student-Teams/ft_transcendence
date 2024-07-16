@@ -1,7 +1,8 @@
 # keylogger using pynput module
 
-import pynput, time, random, math
-import threading
+import random
+import pynput
+import math
 import asyncio
 from pynput.keyboard import Key, Listener
 
@@ -52,12 +53,19 @@ class Game:
 	def on_press(self, key):
 
 		try:
+			print('alphanumeric key {0} pressed'.format(key.char))
 			if format(key.char) == '1':
-				print('alphanumeric key {0} pressed'.format(key.char))
 				self.winner = 1
 			elif format(key.char) == '2':
-				print('alphanumeric key {0} pressed'.format(key.char))
 				self.winner = 2
+			elif format(key.char) == 'w' and sefl.player_l.pos < self.board.height/2 - self.player_l.height/2:
+				self.player_l += 1
+			elif format(key.char) == 's' and sefl.player_l.pos > - self.board.height/2 + self.player_l.height/2:
+				self.player_l -= 1
+			elif format(key.char) == 'i' and sefl.player_r.pos < self.board.height/2 - self.player_r.height/2:
+				self.player_r += 1
+			elif format(key.char) == 'k' and sefl.player_r.pos > - self.board.height/2 + self.player_r.height/2:
+				self.player_r -= 1
 			else:
 				self.run = False
 				return False
