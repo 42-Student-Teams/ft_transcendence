@@ -9,7 +9,7 @@ export default class ProfileInfo extends Component {
     async render() {
         const view = /*html*/ `
             <div class="card mb-2 p-3">
-                <button class="btn btn-dark btn-sm mb-3">Edit profil</button>
+                <button class="btn btn-dark btn-sm mb-3 edit-profil-btn" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">Edit profil</button>
                 <div class="d-flex align-items-center mb-3">
                     <img src="https://via.placeholder.com/80" alt="Profile" class="img-fluid rounded mr-3">
                     <div class="ml-3 mx-2">
