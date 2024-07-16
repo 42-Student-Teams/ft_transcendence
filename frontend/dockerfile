@@ -11,5 +11,9 @@ WORKDIR /app
 # RUN mkdir -p /app/dist/assets
 # COPY ./src/assets/ /app/dist/assets/
 
+#RUN chown -R node /app/node_modules
+
+#USER node
+
 
 CMD ["sh", "-c", "npm install && npm run build && npm run start"]

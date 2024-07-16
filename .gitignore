@@ -11,3 +11,8 @@ node_modules
 
 nginx/logs/*
 nginx/data/ssl
+
+frontend/node_modules
+frontend/node_modules/*
+
+frontend/dist/bundle.js
