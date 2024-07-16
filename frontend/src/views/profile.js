@@ -1,7 +1,7 @@
 import Component from "../library/component.js";
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
-import ChartComponent from "../components/profile/Chart.js";
+import ChartComponent from "../components/profile/chart.js";
 import Statistics from "../components/profile/Statistics.js";
 import NavBar from '../components/home/navbar.js';
 
@@ -15,11 +15,11 @@ export default class Profile extends Component {
 
     async render() {
         const view = /*html*/ `
-        <div class="container-fluid d-flex flex-column min-vh-100 py-3 bg-custom">
-            <div class="row flex-fill">
+        <div class="h-100 d-flex flex-column bg-custom">
+            <div class="row chat-rm-margin">
                 <nav class="navbar navbar-expand pl-4 bg-white shadow-sm w-100" id="navBar"></nav>
             </div>
-            <div class="row flex-fill">
+            <div class="container-fluid p-5 row flex-fill">
                 <div class="col-md-4 d-flex flex-column">
                     <div id="profileInfo" class="mb-3"></div>
                     <div id="chart" class="flex-grow-1 d-flex flex-column"></div>
@@ -63,8 +63,8 @@ export default class Profile extends Component {
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Save changes</button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success">Save changes</button>
                         </div>
                     </form>
                 </div>

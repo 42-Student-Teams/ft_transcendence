@@ -238,11 +238,24 @@ button.btn.btn-primary:active {
 	border:none;
 }
 
+.btn-blue{
+	background-color:#0a58ca;
+}
+
+.btn-blue:hover{
+	background-color:blue;
+	color:white;
+}
 
 /* Profile */
 .bg-custom {
   background-color: #f6f8fb !important;
 }
+
+.profile-user-info{
+	font-weight: 500;
+}
+
 .edit-profil-btn {
   color: white;
 }
