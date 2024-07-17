@@ -27,15 +27,19 @@ window.addEventListener("popstate", (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
-	// if (!store.state.isLoggedIn) {
-	// 	try {
-	// 		await checkAuthStatus();
-	// 	} catch (error) {
-	// 		//console.log(error);
-	// 		navigateTo("/login");
-	// 		return;
-	// 	}
-	// }
+	try {
+        const isLoggedIn = await checkAuthStatus();
+        if (isLoggedIn) {
+            // L'utilisateur est connecté, vous pouvez le rediriger vers la page d'accueil ou une autre page appropriée
+            navigateTo("/");
+        } else {
+            // L'utilisateur n'est pas connecté, redirigez-le vers la page de connexion
+            navigateTo("/login");
+        }
+    } catch (error) {
+        console.error("Error checking authentication status:", error);
+        navigateTo("/login");
+    }
 
 	handleDefaultRoute();
 });
@@ -72,9 +76,9 @@ async function checkAuthStatus() {
 
 	if (data.isLoggedIn) {
 		store.dispatch("logIn");
-		// await setUserInfo();
+		await setUserInfo();
 		navigateTo("/");
-		// console.log("login state: redirect to /");
+		console.log("login state: redirect to /");
 	} else {
 		throw new Error("Not logged in");
 	}

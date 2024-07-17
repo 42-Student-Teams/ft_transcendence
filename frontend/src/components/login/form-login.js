@@ -59,12 +59,11 @@ export default class Login extends Component {
 
                 console.log(response);
 
-                // if (username.trim() !== "" && password.trim() !== "") {
-                //     store.dispatch("logIn");
-                //     navigateTo("/");
-                // }
+            
                 if (response.ok) {
                     store.dispatch("logIn");
+                    console.log("After login - isLoggedIn:", store.state.isLoggedIn);
+                    alert("Login successful!");
                     navigateTo("/");
                 }
                 else {
@@ -72,18 +71,7 @@ export default class Login extends Component {
                     throw new Error("Login failed: Invalid username or password.");
                 }
 
-                // Check if the request was successful
-                // if (response.ok) {
-                // 	const data = await response.json();
-                // 	// Handle successful login here
-                // 	store.dispatch("logIn");
-                // } else {
-                // 	// Handle login failure here
-                // 	const error = await response.json();
-                // 	console.error("Login failed:", error.message);
-                // }
             } catch (error) {
-                // Handle network or other errors here
                 console.error("An error occurred:", error);
             }
         });
