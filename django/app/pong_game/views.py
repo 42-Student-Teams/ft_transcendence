@@ -1,4 +1,3 @@
-from django.shortcuts import render
 
 # Create your views here.
 
@@ -6,6 +5,7 @@ from django.http import HttpResponse
 
 from rest_framework import generics
 from rest_framework.response import Response
+from django.shortcuts import render
 
 
 def index(request):
@@ -14,6 +14,9 @@ def index(request):
 
 def pong_game(request):
     return HttpResponse("This is the Pong game view.")
+
+def hello_view(request):
+    return render(request, 'pong_game/hello.html')
 
 # class TestView(generics.ListAPIView):
 #     # queryset = User.objects.all()
