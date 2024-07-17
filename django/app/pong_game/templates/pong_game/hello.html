@@ -1,11 +1,59 @@
+<!-- bouncing_ball/templates/bouncing_ball/bouncing_ball.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title>Bouncing Ball Animation</title>
+    <style>
+        canvas {
+            background-color: white;
+            display: block;
+            margin: auto;
+            border: 1px solid black;
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World</h1>
+    <canvas id="myCanvas" width="600" height="600"></canvas>
+
+    <script>
+        // JavaScript for bouncing ball animation
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Initial ball properties
+        let x = canvas.width / 2;
+        let y = canvas.height / 2;
+        let dx = 2; // Move 2 pixels to the right
+        let dy = -2; // Move 2 pixels up
+        const ballRadius = 20;
+        
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "red";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+
+            // Boundary collision detection
+            if (y + dy < ballRadius || y + dy > canvas.height - ballRadius) {
+                dy = -dy; // Reverse vertical direction
+            }
+            if (x + dx < ballRadius || x + dx > canvas.width - ballRadius) {
+                dx = -dx; // Reverse horizontal direction
+            }
+
+            x += dx;
+            y += dy;
+        }
+
+        setInterval(draw, 10); // Update every 10 milliseconds
+    </script>
 </body>
 </html>
