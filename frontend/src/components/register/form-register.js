@@ -1,5 +1,5 @@
 import Component from "../../library/component.js";
-import { addInputEventListeners, handleEvent, resetErrors, showError } from "./formValidation.js";
+import { addInputEventListeners, handleEvent, resetErrors, showError } from "../../utils/formValidation.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 
