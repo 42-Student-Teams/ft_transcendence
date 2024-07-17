@@ -21,6 +21,7 @@ export default class SideFriendList extends Component {
                 </button>
             </div>
             <div class="friends-list flex-grow-1 overflow-auto">
+                <!-- Existing static friends list -->
                 <div class="friend container py-3">
                     <div class="row mr-4">
                         <div class="col-8 container user-info">
@@ -40,46 +41,7 @@ export default class SideFriendList extends Component {
                         </div>
                     </div>
                 </div>
-                <div class="friend container py-3 ">
-                    <div class="row mr-4">
-                        <div class="col-8 container user-info">
-                            <div class="row">
-                                <div class="col friend-image">
-                                    <img class="friend-img" src=${ProfilePicture2} />
-                                </div>
-                                <div class="col friend-info">
-                                    <span>nmuminov</span>
-                                    <span class="friend-status-offline">Offline</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4 d-flex gap-2 friend-action">
-                            <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-                            <button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal">
-                                <i class="fa-solid fa-user-large-slash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="friend container py-3">
-                    <div class="row mr-4">
-                        <div class="col-8 container user-info">
-                            <div class="row">
-                                <div class="col friend-image">
-                                    <img class="friend-img" src=${ProfilePicture3} />
-                                </div>
-                                <div class="col friend-info">
-                                    <span>inaranjo</span>
-                                    <span class="friend-status-absent">Absent</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4 d-flex gap-2 friend-action">
-                            <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-                            <button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
-                        </div>
-                    </div>
-                </div>
+                <!-- More static friends can be added here -->
             </div>
             <!-- Modal -->
             <div class="modal" id="block-friend-modal" tabindex="-1">
@@ -106,6 +68,33 @@ export default class SideFriendList extends Component {
         this.handleEvent();
     }
 
+    addFriendToList(friendUsername) {
+        const friendsList = this.element.querySelector('.friends-list');
+        const newFriendElement = document.createElement('div');
+        newFriendElement.className = 'friend container py-3';
+        newFriendElement.innerHTML = `
+            <div class="row mr-4">
+                <div class="col-8 container user-info">
+                    <div class="row">
+                        <div class="col friend-image">
+                            <img class="friend-img" src="${ProfilePicture1}" />
+                        </div>
+                        <div class="col friend-info">
+                            <span>${friendUsername}</span>
+                            <span class="friend-status-offline">Offline</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 d-flex gap-2 friend-action">
+                    <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
+                    <button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
+                </div>
+            </div>
+        `;
+        friendsList.appendChild(newFriendElement);
+        this.attachDirectMessageEvent(newFriendElement.querySelector('.btn-direct-message'));
+    }
+
     async handleEvent() {
         const addFriendButton = this.element.querySelector("#btn-add-friend");
         const friendUsernameInput = this.element.querySelector("#friend-username-input");
@@ -127,7 +116,13 @@ export default class SideFriendList extends Component {
                     });
                     const data = await response.json();
                     console.log(data);
-                    alert(data.message);
+                    if (data.status === 'success') {
+                        alert(data.message);
+                        this.addFriendToList(friendUsername);
+                        friendUsernameInput.value = ''; // Clear input after success
+                    } else {
+                        alert(data.message);
+                    }
                 } catch (error) {
                     console.error('Error:', error);
                     alert('An error occurred while adding friend');
@@ -137,25 +132,31 @@ export default class SideFriendList extends Component {
             }
         });
 
-        const directMessageButtons = this.element.querySelectorAll(".btn-direct-message");
-        directMessageButtons.forEach(button => {
-            button.addEventListener("click", (event) => {
-                event.preventDefault();
-                const sideChat = document.getElementById('side-chat');
-                const friendlist = document.getElementById('side-friend-list');
-                const btnBlocked = document.getElementById('btn-toggle-blocked');
-                const btnFriends = document.getElementById('btn-toggle-friends');
+        this.attachAllDirectMessageEvents();
+    }
 
-                console.log("Direct messages")
-                if (sideChat.classList.contains('d-none')) {
-                    friendlist.classList.remove('d-flex');
-                    friendlist.classList.add('d-none');
-                    sideChat.classList.remove('d-none');
-                    sideChat.classList.add('d-flex');
-                    btnBlocked.classList.remove('active');
-                    btnFriends.classList.remove('active');
-                }
-            });
+    attachAllDirectMessageEvents() {
+        const directMessageButtons = this.element.querySelectorAll(".btn-direct-message");
+        directMessageButtons.forEach(button => this.attachDirectMessageEvent(button));
+    }
+
+    attachDirectMessageEvent(button) {
+        button.addEventListener("click", (event) => {
+            event.preventDefault();
+            const sideChat = document.getElementById('side-chat');
+            const friendlist = document.getElementById('side-friend-list');
+            const btnBlocked = document.getElementById('btn-toggle-blocked');
+            const btnFriends = document.getElementById('btn-toggle-friends');
+
+            console.log("Direct messages")
+            if (sideChat.classList.contains('d-none')) {
+                friendlist.classList.remove('d-flex');
+                friendlist.classList.add('d-none');
+                sideChat.classList.remove('d-none');
+                sideChat.classList.add('d-flex');
+                btnBlocked.classList.remove('active');
+                btnFriends.classList.remove('active');
+            }
         });
     }
 }

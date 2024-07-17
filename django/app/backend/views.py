@@ -150,25 +150,26 @@ class AddFriendView(View):
         try:
             data = json.loads(request.body)
             friend_username = data.get('friend_username')
-            
             if not friend_username:
                 return JsonResponse({'status': 'error', 'message': 'Missing friend username'}, status=400)
-            
             try:
                 user = User.objects.get(id=1)  # Utilisateur fixe pour les tests
                 friend = User.objects.get(username=friend_username)
-                
                 if user == friend:
                     return JsonResponse({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=400)
-                
                 if friend in user.friends.all():
                     return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
-                
                 user.friends.add(friend)
-                return JsonResponse({'status': 'success', 'message': f'Friend {friend_username} added successfully'})
-                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Friend {friend_username} added successfully',
+                    'friend': {
+                        'username': friend.username,
+                        'status': 'Offline',  # Vous pouvez ajuster cela en fonction de votre logique de statut
+                        'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
+                    }
+                })
             except User.DoesNotExist:
                 return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
-            
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
