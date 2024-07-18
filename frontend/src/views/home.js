@@ -30,9 +30,10 @@ export default class Home extends Component {
               <div class="chat-rm-margin row flex-grow-1 h-100">
                 <div id="" class="chat-flex col bg-white h-100 d-flex flex-column collapse collapse">
                   <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto ">
-                    <div class="btn-group" role="group" aria-label="Basic button group">
+					<div class="btn-group" role="group" aria-label="Basic button group">
   						<button type="button" id="btn-toggle-friends" class="btn btn-primary active">Friends</button>
-  						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
+						<button type="button" id="btn-toggle-pending" class="btn btn-primary">Pending</button>
+						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
 					</div>
                     <div id="side-chat" class="d-none flex-column h-100 gap-3"></div>
                     <div id="side-friend-list" class="d-flex flex-column h-100 gap-3"></div>
@@ -143,6 +144,9 @@ export default class Home extends Component {
 
 	async handleEvent() {
 
+
+		
+
 		this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
 			event.preventDefault();
 			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
@@ -208,7 +212,27 @@ export default class Home extends Component {
 				btnFriends.classList.add('active');
 			}
 		});
+/*
+		this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
+			event.preventDefault();
+			var sideChat = document.getElementById('side-chat');
+			var blockedList = document.getElementById('side-blocked-list');
+			var friendlist = document.getElementById('side-friend-list');
+			var pendinglist = document.getElementById('side-pending-list');
+			var btnBlocked = document.getElementById('btn-toggle-blocked');
+			var btnPending = document.getElementById('btn-toggle-pending');
+			var btnFriends = document.getElementById('btn-toggle-friends');
 
-
+			if (pendinglist.classList.contains('d-none')) {
+				friendlist.classList.remove('d-none');
+				btnBlocked.classList.remove('active');
+				friendlist.classList.add('d-flex');
+				blockedList.classList.remove('d-flex');
+				blockedList.classList.add('d-none');
+				sideChat.classList.remove('d-flex');
+				sideChat.classList.add('d-none');
+				btnFriends.classList.add('active');
+			}
+		}); */
 	}
 }
