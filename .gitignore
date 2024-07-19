@@ -4,9 +4,6 @@
 .idea/
 django/app/app/__pycache__/
 
-bundle.js
-
-node_modules
 
 */__pycache__/
 **/__pycache__/
@@ -18,3 +15,4 @@ frontend/node_modules
 frontend/node_modules/*
 
 frontend/dist/bundle.js
+frontend/package-lock.js
