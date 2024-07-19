@@ -4,6 +4,8 @@
 .idea/
 django/app/app/__pycache__/
 
+bundle.js
+
 node_modules
 
 */__pycache__/
