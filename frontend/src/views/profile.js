@@ -15,21 +15,21 @@ export default class Profile extends Component {
 
     async render() {
         const view = /*html*/ `
-        <div class="h-100 d-flex flex-column bg-custom vh-100">
-            <div class="row chat-rm-margin">
-                <nav class="navbar navbar-expand pl-4 bg-white shadow-sm w-100" id="navBar"></nav>
-            </div>
-            <div class="container-fluid p-2 row flex-fill overflow-hidden">
-                <div class="col-md-4 d-flex flex-column overflow-auto px-2">
-                    <div id="profileInfo" class="mb-2"></div>
-                    <div id="chart" class="flex-grow-1 d-flex flex-column"></div>
-                </div>
-                <div class="col-md-8 d-flex flex-column overflow-auto px-2">
-                    <div id="statistics" class="mb-2"></div>
-                    <div id="matchHistory" class="flex-grow-1 d-flex flex-column"></div>
-                </div>
-            </div>
+       <div class="h-100 d-flex flex-column bg-custom vh-100">
+    <div class="row m-0">
+        <nav class="navbar navbar-expand bg-white shadow-sm w-100" id="navBar"></nav>
+    </div>
+    <div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
+        <div class="col-md-4 d-flex flex-column overflow-auto p-2">
+            <div id="profileInfo" class="mb-2"></div>
+            <div id="chart" class="flex-grow-1 d-flex flex-column"></div>
         </div>
+        <div class="col-md-8 d-flex flex-column overflow-auto p-2">
+            <div id="statistics" class="mb-2"></div>
+            <div id="matchHistory" class="flex-grow-1 d-flex flex-column"></div>
+        </div>
+    </div>
+</div>
 
         <!-- Modal Edit Profile -->
         <div class="modal" id="edit-profile-modal" tabindex="-1">
