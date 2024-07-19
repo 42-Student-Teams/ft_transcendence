@@ -46,7 +46,7 @@ export default class FormRegister extends Component {
             const email = document.getElementById("register-email").value;
             const password = document.getElementById("register-password").value;
 
-            let response = await registerUser(firstname, lastname, username, email, password, false);
+            let response = await registerUser(username, password);
             if (response.ok) {
                 console.log('Successfully created account');
                 store.dispatch("logIn");

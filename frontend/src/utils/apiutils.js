@@ -1,15 +1,11 @@
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
 
-async function registerUser(firstname, lastname, username, email, password, isoauth=false) {
+async function registerUser(usernam, password) {
     try {
         const data = {
-            firstname: firstname,
-            lastname: lastname,
             username: username,
-            email: email,
-            password: password,
-            isoauth: isoauth
+            password: password
         };
         const apiurl = process.env.API_URL;
         const response = await fetch(`${apiurl}/create_user`, {
@@ -20,6 +16,28 @@ async function registerUser(firstname, lastname, username, email, password, isoa
         });
 
         return (response);
+    } catch (error) {
+        console.error("An error occurred:", error);
+        return ({ok: false});
+    }
+}
+
+async function loginOauth(oauth_token) {
+    try {
+        const data = {
+            oauth_token: oauth_token
+        };
+        const apiurl = process.env.API_URL;
+        const response = await fetch(`${apiurl}/login_oauth`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },body: JSON.stringify(data)
+        });
+
+        //return (response);
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error("An error occurred:", error);
         return ({ok: false});
@@ -69,3 +87,4 @@ async function userIsOauth(username) {
 export { registerUser };
 export { userExists };
 export  { userIsOauth };
+export { loginOauth }

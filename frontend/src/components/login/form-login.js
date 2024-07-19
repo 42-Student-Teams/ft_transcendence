@@ -46,7 +46,8 @@ export default class Login extends Component {
 
                 const data = {
                     username: username,
-                    password: password
+                    password: password,
+                    oauth_token: null
                 };
 
                 const response = await fetch(`${apiurl}/login`, {

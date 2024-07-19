@@ -11,56 +11,17 @@ from rest_framework.views import APIView
 from .enums import AuthLevel, TokenValidationResponse
 from .models import User, JwtUser
 
-from rest_framework import, status
+from rest_framework import status
 from rest_framework.response import Response
 from .serializers import JwtUserSerializer
 
 import jwt
 
-def jsonget(request, key):
-    try:
-        data = json.loads(request.body)
-    except:
-        return None
-    if key not in data:
-        return None
-    return data[key]
-
-
-def validate_token(request, auth_level: AuthLevel) -> TokenValidationResponse:
-    token = jsonget(request, 'token')
-    if token is None:
-        token = request.GET.get('token')
-    print(f'token: {token}, auth_level: {auth_level}')
-    if auth_level.value > AuthLevel.NOAUTH.value:
-        requesting_user: User = User.objects.user_by_token(token)
-        if requesting_user is None:
-            return TokenValidationResponse.INVALID
-        if auth_level == AuthLevel.ADMIN:
-            if not requesting_user.is_admin:
-                return TokenValidationResponse.MISSING_PERMS
-        time_now = timezone.localtime()
-        print(time_now.strftime("%Y-%m-%d-%H-%M-%S"))
-        print(requesting_user.session_token_expires.strftime("%Y-%m-%d-%H-%M-%S"))
-        if requesting_user.session_token_expires < time_now:
-            return TokenValidationResponse.EXPIRED
-    return TokenValidationResponse.VALID
-
-
-def respond_invalid_token(reason: TokenValidationResponse):
-    match reason.value:
-        case TokenValidationResponse.MISSING_PERMS.value:
-            return HttpResponseForbidden('{"reason":"missing permissions"}', content_type='application/json')
-        case TokenValidationResponse.INVALID.value:
-            return HttpResponseForbidden('{"reason":"invalid token"}', content_type='application/json')
-        case TokenValidationResponse.EXPIRED.value:
-            return HttpResponseForbidden('{"reason":"expired token"}', content_type='application/json')
-    return HttpResponseForbidden('{"reason":"unknown error"}', content_type='application/json')
+from .util import timestamp_now, date_to_timestamp, get_user_info
 
 
 def index(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
-
 
 def create_user(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
@@ -75,31 +36,79 @@ class UserCreateView(APIView):
         user = serializer.save()
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-class UserLoginView(APIView):
+class UserOauthLoginView(APIView):
     def post(self, request):
-        username = request.data['username']
-        password = request.data['password']
+        print('LOOOOOL')
+        oauth_token = None
+        username = None
+        if 'oauth_token' in request.data:
+            oauth_token = request.data['oauth_token']
+        if oauth_token is not None:
+            user_info = get_user_info(oauth_token)
+            if user_info is not None:
+                username = user_info['login']
+            else:
+                raise AuthenticationFailed()
+        else:
+            raise AuthenticationFailed()
+
+        payload = {
+            'username': username,
+            'expires': date_to_timestamp(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
+                minutes=settings.TOKEN_EXPIRATION_MINUTES)),
+            'iat': timestamp_now(),
+        }
+        token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256')
+        res = Response()
+        res.data = {
+            'jwt': token,
+        }
 
         user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
-            raise AuthenticationFailed('User not found')
-        if not user.can_login(password):
+            #raise AuthenticationFailed('Incorrect username or password')
+            new_user = JwtUser.objects.create()
+            new_user.username = username
+            new_user.set_unusable_password()
+            new_user.isoauth = True
+            new_user.save()
+            return res
+        else:
+            if user.isoauth:
+                return res
+            else:
+                raise AuthenticationFailed("Non-oauth user already registered with this username")
+
+class UserLoginView(APIView):
+    def post(self, request):
+        username, password, oauth_token = None, None, None
+        if 'username' in request.data:
+            username = request.data['username']
+        if 'password' in request.data:
+            password = request.data['password']
+
+        user: JwtUser = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            raise AuthenticationFailed('Incorrect username or password')
+        if oauth_token is None and not user.check_password(password):
             raise AuthenticationFailed('Incorrect username or password')
 
+        # https://github.com/jpadilla/pyjwt/issues/407
         payload = {
             'username': user.username,
-            'expires': datetime.datetime.utcnow() + datetime.timedelta(minutes=settings.TOKEN_EXPIRATION_MINUTES),
-            'iat': datetime.datetime.utcnow(),
+            'expires': date_to_timestamp(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=settings.TOKEN_EXPIRATION_MINUTES)),
+            'iat': timestamp_now(),
         }
 
-        token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256').decode('utf-8')
+        token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256') #.decode('utf-8')
+        print(f'generated token: {token}')
 
         res = Response()
         res.data = {
             'jwt': token,
         }
 
-        return Response({'jwt': token})
+        return res
 
 class UserListView(APIView):
     def get(self, request):
@@ -122,15 +131,15 @@ class UserExistsView(APIView):
         if user is None:
             return ({'status': False})
         else:
-            return ({'status': True})
+            return {'status': True}
 
 class UserIsOauth(APIView):
     def get(self, request):
         username = request.data['username']
         user = JwtUser.objects.filter(username=username).first()
         if user is None:
-            return ({'status': False})
+            return {'status': False}
         elif user.isoauth:
-            return ({'status': True})
+            return {'status': True}
         else:
-            return ({'status': False})
+            return {'status': False}

@@ -17,7 +17,18 @@ export default {
     hot: true,
     allowedHosts: "pong.ch",
     proxy: [
-         {
+        {
+          context: ['/backend'],
+          //target: 'https://google.ch',
+          logLevel: 'debug',
+          //router: () => 'https://api.pong.ch',
+          //target: 'https://api.pong.ch',
+          target: 'http://backend:8069',
+          changeOrigin: true,
+          secure: false,
+          //pathRewrite: {'^/backend': ''}
+        },
+        {
           context: ['/api'],
           target: 'https://api.intra.42.fr',
           changeOrigin: true,

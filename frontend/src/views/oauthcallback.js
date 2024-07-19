@@ -1,5 +1,5 @@
 import Component from "../library/component.js";
-import {registerUser, userExists, userIsOauth} from "../utils/apiutils.js";
+import {loginOauth, registerUser, userExists, userIsOauth} from "../utils/apiutils.js";
 import store from "../store/index.js";
 import {navigateTo} from "../utils/router.js";
 
@@ -83,39 +83,23 @@ export default class OauthCallback extends Component {
                 stateMessage = 'State parameter matches and is valid.';
                 const tokenResponse = await getAccessToken(urlParams.get('code'));
                 console.log(tokenResponse);
-                const userInfo = await getUserInfo(tokenResponse['access_token']);
-                console.log(userInfo);
-                console.log('----------');
-                console.log(await userExists(userInfo['info']));
-                console.log('----------');
 
-                let userDoesExist = await userExists(userInfo['info']);
-                let userDoesIsOauth = await userIsOauth(userInfo['info']);
+                // TODO: we might actually return the username too..
+                let regStatus = await loginOauth(tokenResponse['access_token']);
+                stateMessage = `Registration status: ${regStatus}`;
+
+                console.log(regStatus)
+
+                console.log(`regStatus: ${JSON.stringify(regStatus)}`);
 
                 // TODO: if logged in, also need jwt token
-                if (userDoesExist && !userDoesIsOauth) {
-                    stateMessage = 'User exists and is not oauth.';
-                } else if (userDoesExist && userDoesIsOauth) {
-                    stateMessage = 'Welcome back, logging in.';
-                    //store.dispatch("logIn");
-                    //navigateTo("/");
+                if ('jwt' in regStatus) {
+                    stateMessage = 'Logged in';
+                    store.dispatch("logIn");
+                    navigateTo("/");
                 } else {
-                    let regStatus = await registerUser(null, null, userInfo['info'], userInfo['email'], userInfo['password'], true);
-                    stateMessage = `Registration status: ${regStatus}`;
-                    //store.dispatch("logIn");
-                    //navigateTo("/");
+                    stateMessage = 'Error';
                 }
-                /* TODO: check if we actually got userInfo and not some error */
-                /*if () {
-                    let response = await registerUser(firstname, lastname, username, email, password);
-                    if (response.ok) {
-                        console.log('Successfully created account');
-                        store.dispatch("logIn");
-                        navigateTo("/");
-                    } else {
-                        console.error("Registration failed:");
-                    }
-                }*/
             } else if (currentTime >= expirationTime) {
                 stateMessage = 'State parameter has expired.';
             }
