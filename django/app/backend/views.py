@@ -81,7 +81,7 @@ class UserOauthLoginView(APIView):
 
 class UserLoginView(APIView):
     def post(self, request):
-        username, password, oauth_token = None, None, None
+        username, password = None, None
         if 'username' in request.data:
             username = request.data['username']
         if 'password' in request.data:
@@ -90,7 +90,7 @@ class UserLoginView(APIView):
         user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
             raise AuthenticationFailed('Incorrect username or password')
-        if oauth_token is None and not user.check_password(password):
+        if not user.check_password(password):
             raise AuthenticationFailed('Incorrect username or password')
 
         # https://github.com/jpadilla/pyjwt/issues/407
