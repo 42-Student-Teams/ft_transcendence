@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
 
-
 urlpatterns=[
     path('', views.index),
     path('create_user', views.UserCreateView.as_view(), name='create_user'),
@@ -9,6 +8,4 @@ urlpatterns=[
     path('users', views.UserListView.as_view(), name='user_list'),
     path('add_friend/',views.AddFriendView.as_view(), name='add_friend'),
     # path('backend/get_friends/', views.GetFriendsView.as_view(), name='get_friends'),
-
-    
 ]

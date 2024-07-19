@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,20 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'app.wsgi.application'
+ASGI_APPLICATION = 'app.asgi.application'
+
+AUTH_USER_MODEL = 'backend.User'
+
+#doc : https://channels.readthedocs.io/en/latest/topics/channel_layers.html
+# channel setup with redis
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 
 
 # Database

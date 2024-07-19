@@ -68,6 +68,14 @@ services:
       - backend
       - frontend
     # command: ["sleep", "infinity"]
+
+  redis:
+    image: "redis:alpine"
+    restart: unless-stopped
+    ports:
+     - 6379:6379
+    networks:
+      - backnet
 volumes:
   db-data:
   nginx-data:

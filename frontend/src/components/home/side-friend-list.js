@@ -1,4 +1,5 @@
 import Component from "../../library/component.js";
+import SideChat from './side-chat.js';
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
@@ -143,6 +144,8 @@ export default class SideFriendList extends Component {
         directMessageButtons.forEach(button => this.attachDirectMessageEvent(button));
     }
 
+
+
     attachDirectMessageEvent(button) {
         button.addEventListener("click", (event) => {
             event.preventDefault();
@@ -159,6 +162,11 @@ export default class SideFriendList extends Component {
                 sideChat.classList.add('d-flex');
                 btnBlocked.classList.remove('active');
                 btnFriends.classList.remove('active');
+
+                const friendElement = event.target.closest('.friend');
+                const friendUsername = friendElement.querySelector('.friend-info span').textContent;
+                const sideChartInstance = new SideChat(friendUsername);
+                sideChartInstance.initializeChat();
             }
         });
     }
