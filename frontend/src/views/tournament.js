@@ -2,21 +2,21 @@ import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
 
 export default class Tournament extends Component {
-    constructor() {
-        super({ element: document.getElementById("app") });
+  constructor() {
+    super({ element: document.getElementById("app") });
 
-        // store.events.subscribe("languageIdChange", () => this.renderAll());
+    // store.events.subscribe("languageIdChange", () => this.renderAll());
 
-        this.render();
-        this.components = { 
-            navBar: new NavBar(),
-            // btnAuth0: new BtnAuth0(),
-         };
-    }
+    this.render();
+    this.components = {
+      navBar: new NavBar(),
+      // btnAuth0: new BtnAuth0(),
+    };
+  }
 
-    async render() {
+  async render() {
 
-        const view = /*html*/ `
+    const view = /*html*/ `
 		<div class="h-100 d-flex flex-column">
   <div class="row chat-rm-margin">
     <nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
@@ -45,6 +45,6 @@ export default class Tournament extends Component {
 </div>
         `;
 
-        this.element.innerHTML = view;
-    }
+    this.element.innerHTML = view;
+  }
 }
