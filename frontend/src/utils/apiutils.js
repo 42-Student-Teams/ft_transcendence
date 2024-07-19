@@ -1,19 +1,22 @@
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
 
-async function registerUser(usernam, password) {
+async function registerUser(username, password) {
     try {
         const data = {
             username: username,
             password: password
         };
         const apiurl = process.env.API_URL;
+
         const response = await fetch(`${apiurl}/create_user`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },body: JSON.stringify(data)
         });
+
+        console.log(`url: ${apiurl}/create_user - response: ${response}`);
 
         return (response);
     } catch (error) {
