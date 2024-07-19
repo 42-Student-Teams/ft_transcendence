@@ -34,6 +34,7 @@ export default class LocalGame extends Component {
           </div>
           <div class="col text-center">
             <div class="game-canva rounded">
+			<canvas id="myCanvas"></canvas>
 
             </div>
           </div>
@@ -50,6 +51,132 @@ export default class LocalGame extends Component {
     }
 
     async handleEvent() {
-      // mettre le jeu ici
-    }
+
+		// JavaScript for bouncing ball and moving rectangle animation
+		const canvas = document.getElementById('myCanvas');
+		const ctx = canvas.getContext('2d');
+ 
+		// Initial ball properties
+		let x = canvas.width / 2;
+		let y = canvas.height / 2;
+		const ballRadius = 8;
+		let isMoving = true; // Flag to check if the ball is moving
+ 
+		// Rectangle properties
+		let rectY1 = canvas.height / 2;
+		let rectY2 = canvas.height / 2;
+		const rectHeight = 20;
+		const rectWidth = 6;
+		const rectSpeed = 10; // Speed at which the rectangle moves
+		
+		// Function to generate random velocity
+		function getRandomVelocity() {
+			let speed = 2 + Math.random() * 3; // Random speed between 2 and 5
+			let angle = Math.random() * 2 * Math.PI; // Random angle between 0 and 2*PI
+			return {
+				dx: speed * Math.cos(angle),
+				dy: speed * Math.sin(angle)
+			};
+		}
+			
+		let { dx, dy } = getRandomVelocity();
+			
+		function drawBall() {
+			ctx.beginPath();
+			ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+			ctx.fillStyle = "red";
+			ctx.fill();
+			ctx.closePath();
+		}
+		
+		function drawRectangle(rectX, rectY, color) {
+			ctx.beginPath();
+			ctx.rect(rectX, rectY, rectWidth, rectHeight); 
+			ctx.fillStyle = color;
+			ctx.fill();
+			ctx.closePath();
+		}
+		
+		function draw() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			drawRectangle(0, rectY1, "blue"); // Draw the rectangle
+			drawRectangle(canvas.width - rectWidth, rectY2,  "green"); // Draw the rectangle
+			drawBall(); // Draw the ball
+			
+			if (isMoving) {
+				// Boundary collision detection for the ball
+				if (y + dy < ballRadius || y + dy > canvas.height - ballRadius) {
+					dy = -dy; // Reverse vertical direction
+				}
+				if (x + dx < ballRadius || x + dx > canvas.width - ballRadius) {
+					dx = -dx; // Reverse horizontal direction
+				}
+				
+				x += dx;
+				y += dy;
+			}
+		}
+		
+		// Start the animation
+		let intervalId = setInterval(draw, 10); // Update every 10 milliseconds
+		
+		// Event listener for keydown to stop the ball or move the rectangle
+		
+		
+		// document.addEventListener('keydown', (event) => {
+		//     if (event.code === 'Space') {
+		//         isMoving = !isMoving; // Toggle the movement flag
+		//         if (!isMoving) {
+		//             clearInterval(intervalId); // Stop the animation
+		//         } else {
+		//             intervalId = setInterval(draw, 10); // Restart the animation
+		//         }
+		//     }
+		//     // Move rectangle with W/S keys
+		// 	if (event.code === 'KeyW' && rectY1 > 0 ) {
+		// 		rectY1 -= rectSpeed; // Move up
+		// 	} else if (event.code === 'KeyS' && rectY1 < canvas.height - rectHeight) {
+		// 		rectY1 += rectSpeed; // Move down
+		// 	}
+		//     // Move rectangle with arrow keys
+		//     if (event.code === 'ArrowUp' && rectY2 > 0 ) {
+		//         rectY2 -= rectSpeed; // Move up
+		//     } else if (event.code === 'ArrowDown' && rectY2 < canvas.height - rectHeight) {
+		//         rectY2 += rectSpeed; // Move down
+		//     }
+		// });
+							
+		let keysPressed = {};
+		document.addEventListener('keydown', (event) => {
+			keysPressed[event.code] = true;
+			
+			// if (keysPressed['Space']) {
+			//     isMoving = !isMoving; // Toggle the movement flag
+			//     if (!isMoving) {
+			//         clearInterval(intervalId); // Stop the animation
+			//     } else {
+			//         intervalId = setInterval(draw, 10); // Restart the animation
+			//     }
+			// }
+			if (keysPressed['KeyW'] && rectY1 > 0 ) {
+				rectY1 -= rectSpeed; // Move up
+			} 
+			if (keysPressed['KeyS'] && rectY1 < canvas.height - rectHeight) {
+				rectY1 += rectSpeed; // Move down
+			}
+			// Move rectangle with arrow keys
+			if (keysPressed['ArrowUp'] && rectY2 > 0 ) {
+				rectY2 -= rectSpeed; // Move up
+			} 
+			if (keysPressed['ArrowDown']  && rectY2 < canvas.height - rectHeight) {
+				rectY2 += rectSpeed; // Move down
+			}
+					console.log(rectY1);
+			});
+			
+			document.addEventListener('keyup', (event) => {
+				delete keysPressed[event.code];
+			});
+			// mettre le jeu ici
+	}
 }

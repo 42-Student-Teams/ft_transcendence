@@ -1,251 +1,261 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
 body {
-  display: block;
-  font-family: 'Poppins', sans-serif;
-  background: #ffffff;
-  line-height: 1.5;
-  margin: 0;
+	display: block;
+	font-family: 'Poppins', sans-serif;
+	background: #ffffff;
+	line-height: 1.5;
+	margin: 0;
 }
 
-h1{
+h1 {
 	font-size: 13px;
-	font-weight:300;
+	font-weight: 300;
 }
 
 .divider:after,
 .divider:before {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #eee;
-  color: #eee;
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: #eee;
+	color: #eee;
 }
 
 .divider-or {
-  color: #ececec;
+	color: #ececec;
 }
 
 .box-area {
-  width: 930px;
+	width: 930px;
 }
 
 .right-box {
-  padding: 40px 30px 40px 40px;
+	padding: 40px 30px 40px 40px;
 }
 
 .btn-fortytwo {
-  background: #00babc;
-  color: #fff;
+	background: #00babc;
+	color: #fff;
 }
 
 .btn-fortytwo:hover {
-  background: #00a5a5;
-  color: #fff;
+	background: #00a5a5;
+	color: #fff;
 }
 
 ::placeholder {
-  font-size: 16px;
+	font-size: 16px;
 }
+
 .rounded-4 {
-  border-radius: 20px;
+	border-radius: 20px;
 }
+
 .rounded-5 {
-  border-radius: 30px;
+	border-radius: 30px;
 }
 
 @media only screen and (max-width: 768px) {
-  .box-area {
-    margin: 0 10px;
-  }
-  .left-box {
-    height: 100px;
-    overflow: hidden;
-  }
-  .right-box {
-    padding: 20px;
-  }
+	.box-area {
+		margin: 0 10px;
+	}
+
+	.left-box {
+		height: 100px;
+		overflow: hidden;
+	}
+
+	.right-box {
+		padding: 20px;
+	}
 }
 
 #BtnRegisterInLogin,
 #BtnRegisterInLogin:visited,
 #btn-login-from-signup,
 #btn-login-from-signup:visited {
-  text-decoration: underline;
-  color: #0a58ca;
-  cursor: pointer;
+	text-decoration: underline;
+	color: #0a58ca;
+	cursor: pointer;
 }
 
 /* -- sidebar + nav -- */
 
-#app{
-  height:100vh;
-  display:flex;
-  flex-direction: column;
+#app {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
-.btn{
-	color:#4E5057;
+.btn {
+	color: #4E5057;
 }
 
-.btn-primary{
+.btn-primary {
 	background-color: #F2F3F5;
-	border:none;
+	border: none;
 }
 
-.btn-primary:hover{
+.btn-primary:hover {
 	background-color: #E0E1E5;
-	color:#4E5057;
+	color: #4E5057;
 }
 
 button.btn.btn-primary:active {
 	background-color: #E0E1E5;
-	color:#4E5057;
+	color: #4E5057;
 }
 
 
 .btn.active {
-	background-color:  #E0E1E5;
-	color:#4E5057;
+	background-color: #E0E1E5;
+	color: #4E5057;
 }
 
 
 
-#send-message{
+#send-message {
 	background-color: #4E5057;
-	border:none;
+	border: none;
 }
 
 
 /*Chat messages */
 
-#message-input{
-	background-color:#F2F3F5;
-	color:#67686B;
+#message-input {
+	background-color: #F2F3F5;
+	color: #67686B;
 }
 
-#icon-send{
-  color:white;
+#icon-send {
+	color: white;
 }
-#chat-big-div{
-  background-color:#36393e;
+
+#chat-big-div {
+	background-color: #36393e;
 }
 
 
 .chat-name {
-  color: #2C2C2D;
-  font-weight: 500;
-  font-size:16px;
+	color: #2C2C2D;
+	font-weight: 500;
+	font-size: 16px;
 }
 
-.chat-messages{
-  height:600px;
-  margin-right:0px;
+.chat-messages {
+	height: 600px;
+	margin-right: 0px;
 }
 
 .chat-rm-margin {
-  margin:0px;
+	margin: 0px;
 }
 
-.chat-flex{
-  max-width:450px;
+.chat-flex {
+	max-width: 450px;
 }
 
-.chat-text{
+.chat-text {
 	font-size: 16px;
-	color:#7A7B7E;
+	color: #7A7B7E;
 }
 
 
-#main-home{
+#main-home {
 	background-color: #EBECEE;
 }
 
 
 /* friends list */
 
-.friends-list{
-	padding-left: 0px ;
+.friends-list {
+	padding-left: 0px;
 	padding-right: 0px;
-	margin-right:0px;
-	height:600px;
+	margin-right: 0px;
+	height: 600px;
 }
 
 
 
-.friend{
-	height:80px;
-	border-top:1px solid #EBEBED;
-	border-bottom:1px solid transparent;
-	
+.friend {
+	height: 80px;
+	border-top: 1px solid #EBEBED;
+	border-bottom: 1px solid transparent;
+
 }
 
-.friend-img{
-	width:50px;
-	border-radius:50%;
+.friend-img {
+	width: 50px;
+	border-radius: 50%;
 }
 
-.friend:hover{
+.friend:hover {
 	border-radius: 4px;
-	background-color:#EBEBED !important;
+	background-color: #EBEBED !important;
 }
 
-.friend-status-online, .friend-status-offline, .friend-status-absent{
-	font-size:13px;
-	font-weight:600;
+.friend-status-online,
+.friend-status-offline,
+.friend-status-absent {
+	font-size: 13px;
+	font-weight: 600;
 }
 
-.friend-status{
-	font-size:13px;
+.friend-status {
+	font-size: 13px;
 }
 
-.friend-status-online{
-	color:#228B21;
+.friend-status-online {
+	color: #228B21;
 }
 
-.friend-status-offline{
-	color:gray;
+.friend-status-offline {
+	color: gray;
 }
 
-.friend-status-absent{
-	color:#CB5600;
+.friend-status-absent {
+	color: #CB5600;
 }
 
 
 /* Btn  */
 
-.btn-success{
-  color:white;
+.btn-success {
+	color: white;
 }
 
 /* Blocked list */
 
 
-.btn-unblock:hover{
-	border:none;
-	color:#ED5554;
+.btn-unblock:hover {
+	border: none;
+	color: #ED5554;
 	background-color: #bcbcbc;
 }
 
-.btn-unblock{
-	border:none;
+.btn-unblock {
+	border: none;
 }
 
 
 /* Modal */
 
-.btn-danger{
-	color:white;
-	border:none;
+.btn-danger {
+	color: white;
+	border: none;
 }
 
 /* Game */
 
-.game-container{
-  height:600px;
+.game-container {
+	height: 500px;
 }
 
-.game-canva{
-  height:500px;
-  width:900px;;
-  background-color:#EBEBED;
+.game-canva {}
+
+canvas {
+	height: 500px;
+	width: 900px;
+	background-color: #EBEBED;
 }
