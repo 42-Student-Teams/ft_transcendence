@@ -86,28 +86,64 @@
         let intervalId = setInterval(draw, 10); // Update every 10 milliseconds
 
         // Event listener for keydown to stop the ball or move the rectangle
-        document.addEventListener('keydown', (event) => {
-            if (event.code === 'Space') {
-                isMoving = !isMoving; // Toggle the movement flag
-                if (!isMoving) {
-                    clearInterval(intervalId); // Stop the animation
-                } else {
-                    intervalId = setInterval(draw, 10); // Restart the animation
-                }
-            }
-            // Move rectangle with W/S keys
-			if (event.code === 'KeyW' && rectY1 > 0 ) {
+
+
+        // document.addEventListener('keydown', (event) => {
+        //     if (event.code === 'Space') {
+        //         isMoving = !isMoving; // Toggle the movement flag
+        //         if (!isMoving) {
+        //             clearInterval(intervalId); // Stop the animation
+        //         } else {
+        //             intervalId = setInterval(draw, 10); // Restart the animation
+        //         }
+        //     }
+        //     // Move rectangle with W/S keys
+		// 	if (event.code === 'KeyW' && rectY1 > 0 ) {
+		// 		rectY1 -= rectSpeed; // Move up
+		// 	} else if (event.code === 'KeyS' && rectY1 < canvas.height - rectHeight) {
+		// 		rectY1 += rectSpeed; // Move down
+		// 	}
+        //     // Move rectangle with arrow keys
+        //     if (event.code === 'ArrowUp' && rectY2 > 0 ) {
+        //         rectY2 -= rectSpeed; // Move up
+        //     } else if (event.code === 'ArrowDown' && rectY2 < canvas.height - rectHeight) {
+        //         rectY2 += rectSpeed; // Move down
+        //     }
+        // });
+
+		let keysPressed = {};
+		document.addEventListener('keydown', (event) => {
+			keysPressed[event.code] = true;
+			
+			// if (keysPressed['Space']) {
+            //     isMoving = !isMoving; // Toggle the movement flag
+            //     if (!isMoving) {
+            //         clearInterval(intervalId); // Stop the animation
+            //     } else {
+            //         intervalId = setInterval(draw, 10); // Restart the animation
+            //     }
+            // }
+			if (keysPressed['KeyW'] && rectY1 > 0 ) {
 				rectY1 -= rectSpeed; // Move up
-			} else if (event.code === 'KeyS' && rectY1 < canvas.height - rectHeight) {
+			} 
+			if (keysPressed['KeyS'] && rectY1 < canvas.height - rectHeight) {
 				rectY1 += rectSpeed; // Move down
 			}
-            // Move rectangle with arrow keys
-            if (event.code === 'ArrowUp' && rectY2 > 0 ) {
-                rectY2 -= rectSpeed; // Move up
-            } else if (event.code === 'ArrowDown' && rectY2 < canvas.height - rectHeight) {
-                rectY2 += rectSpeed; // Move down
-            }
-        });
+			// Move rectangle with arrow keys
+			if (keysPressed['ArrowUp'] && rectY2 > 0 ) {
+			    rectY2 -= rectSpeed; // Move up
+			} 
+			if (keysPressed['ArrowDown']  && rectY2 < canvas.height - rectHeight) {
+			    rectY2 += rectSpeed; // Move down
+			}
+		});
+
+		document.addEventListener('keyup', (event) => {
+   			delete keysPressed[event.code];
+		});
+
+
+
     </script>
 </body>
 </html>
