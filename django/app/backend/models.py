@@ -50,3 +50,14 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
+
+class JwtUser(AbstractUser):
+    #name = models.CharField(max_length=255)
+    #email = models.CharField(max_length=255, unique=True)
+    username = models.CharField(unique=True, max_length=255)
+    email = None
+    password = models.CharField(max_length=255)
+    isoauth = models.BooleanField(default=False)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []

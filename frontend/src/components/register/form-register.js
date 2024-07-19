@@ -2,6 +2,7 @@ import Component from "../../library/component.js";
 import { addInputEventListeners, handleEvent, resetErrors, showError } from "../../utils/formValidation.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
+import { registerUser } from "../../utils/apiutils.js";
 
 export default class FormRegister extends Component {
     constructor() {
