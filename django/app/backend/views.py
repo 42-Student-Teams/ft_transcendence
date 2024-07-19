@@ -1,6 +1,7 @@
 import datetime
 import json
 
+
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 from django.views import View
@@ -148,24 +149,35 @@ class UserListView(generics.ListAPIView):
 class AddFriendView(View):
     def post(self, request):
         try:
+            # On essaie de charger les données JSON de la requête
             data = json.loads(request.body)
             friend_username = data.get('friend_username')
+            
+            # Si le nom d'utilisateur de l'ami n'est pas fourni, on retourne une erreur
             if not friend_username:
                 return JsonResponse({'status': 'error', 'message': 'Missing friend username'}, status=400)
+            
             try:
                 user = User.objects.get(id=1)  # Utilisateur fixe pour les tests
+                # On essaie de récupérer l'utilisateur correspondant au nom d'utilisateur fourni
                 friend = User.objects.get(username=friend_username)
+                
+                # Vérification pour éviter que l'utilisateur ne s'ajoute lui-même comme ami
                 if user == friend:
                     return JsonResponse({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=400)
+                
+                # Vérification pour voir si l'utilisateur est déjà ami avec cette personne
                 if friend in user.friends.all():
                     return JsonResponse({'status': 'error', 'message': 'Already friends'}, status=400)
+                
+                # Si toutes les vérifications sont passées, on ajoute l'ami
                 user.friends.add(friend)
                 return JsonResponse({
                     'status': 'success',
                     'message': f'Friend {friend_username} added successfully',
                     'friend': {
                         'username': friend.username,
-                        'status': 'Offline',  # Vous pouvez ajuster cela en fonction de votre logique de statut
+                        'status': 'Offline',  # mettre en place une logic pour le statut
                         'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
                     }
                 })
@@ -173,3 +185,21 @@ class AddFriendView(View):
                 return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
         except json.JSONDecodeError:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+
+# class GetFriendsView(View):
+#    def get(self, request):
+#         try:
+#             user = User.objects.get(id=1)  # Utilisateur fixe pour les tests, à remplacer par l'utilisateur authentifié
+#             friends = user.friends.all()
+#             friends_data = [
+#                 {
+#                     'username': friend.username,
+#                     'status': 'Offline',  # Adapter la logique de statut
+#                     'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
+#                 }
+#                 for friend in friends
+#             ]
+#             return JsonResponse({'status': 'success', 'friends': friends_data})
+#         except User.DoesNotExist:
+#             return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)

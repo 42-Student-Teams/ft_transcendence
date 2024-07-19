@@ -21,27 +21,7 @@ export default class SideFriendList extends Component {
                 </button>
             </div>
             <div class="friends-list flex-grow-1 overflow-auto">
-                <!-- Existing static friends list -->
-                <div class="friend container py-3">
-                    <div class="row mr-4">
-                        <div class="col-8 container user-info">
-                            <div class="row">
-                                <div class="col friend-image">
-                                    <img class="friend-img" src=${ProfilePicture1} />
-                                </div>
-                                <div class="col friend-info">
-                                    <span>Lsaba-qu</span>
-                                    <span class="friend-status-online">Online</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-4 d-flex gap-2 friend-action">
-                            <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-                            <button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
-                        </div>
-                    </div>
-                </div>
-                <!-- More static friends can be added here -->
+                <!-- Friends list will be dynamically loaded here -->
             </div>
             <!-- Modal -->
             <div class="modal" id="block-friend-modal" tabindex="-1">
@@ -65,10 +45,32 @@ export default class SideFriendList extends Component {
 
         this.element = document.getElementById("side-friend-list");
         this.element.innerHTML = view;
+        // await this.loadFriends(); // Charger les amis lors de l'initialisation
         this.handleEvent();
     }
 
-    addFriendToList(friendUsername) {
+    // async loadFriends() {
+    //     try {
+    //         const response = await fetch('http://localhost:8069/backend/get_friends/', {
+    //             method: 'GET',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             }
+    //         });
+    //         const data = await response.json();
+    //         if (data.status === 'success') {
+    //             data.friends.forEach(friend => {
+    //                 this.addFriendToList(friend.username, friend.status, friend.profile_picture);
+    //             });
+    //         } else {
+    //             console.error(data.message);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error:', error);
+    //     }
+    // }
+
+    addFriendToList(friendUsername, status = 'Offline', profilePicture = null) {
         const friendsList = this.element.querySelector('.friends-list');
         const newFriendElement = document.createElement('div');
         newFriendElement.className = 'friend container py-3';
@@ -77,11 +79,11 @@ export default class SideFriendList extends Component {
                 <div class="col-8 container user-info">
                     <div class="row">
                         <div class="col friend-image">
-                            <img class="friend-img" src="${ProfilePicture1}" />
+                            <img class="friend-img" src="${profilePicture || ProfilePicture1}" />
                         </div>
                         <div class="col friend-info">
                             <span>${friendUsername}</span>
-                            <span class="friend-status-offline">Offline</span>
+                            <span class="friend-status-${status.toLowerCase()}">${status}</span>
                         </div>
                     </div>
                 </div>
@@ -119,6 +121,7 @@ export default class SideFriendList extends Component {
                     if (data.status === 'success') {
                         alert(data.message);
                         this.addFriendToList(friendUsername);
+                        print (friendUsername);
                         friendUsernameInput.value = ''; // Clear input after success
                     } else {
                         alert(data.message);

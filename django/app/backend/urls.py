@@ -8,5 +8,7 @@ urlpatterns=[
     path('login', views.UserLoginView.as_view(), name='login'),
     path('users', views.UserListView.as_view(), name='user_list'),
     path('add_friend/',views.AddFriendView.as_view(), name='add_friend'),
+    # path('backend/get_friends/', views.GetFriendsView.as_view(), name='get_friends'),
+
     
 ]
