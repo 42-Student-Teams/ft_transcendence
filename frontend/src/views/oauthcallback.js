@@ -33,30 +33,6 @@ async function getAccessToken(code) {
     }
 }
 
-
-export async function getUserInfo(accessToken) {
-    const url = '/api/v2/me';
-
-    try {
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching user info:', error);
-        throw error;
-    }
-}
-
 export default class OauthCallback extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
@@ -70,23 +46,35 @@ export default class OauthCallback extends Component {
     }
 
     async render() {
+        const view = /*html*/ `
+            <p>Please wait...</p>
+            <p id="state"></p>
+            <p id="statemessage"></p>
+        `;
+
+        this.element.innerHTML = view;
+        this.handleEvent();
+    }
+
+    async handleEvent() {
         const urlParams = new URLSearchParams(window.location.search);
         const state = urlParams.get('state');
+        document.getElementById('state').innerText = `State: ${state}`;
         const storedStateData = JSON.parse(sessionStorage.getItem('oauth_state'));
-        let stateMessage = 'Invalid state parameter.';
+        document.getElementById('statemessage').innerText = 'Invalid state parameter.';
 
         if (storedStateData) {
             const { state: storedState, expirationTime } = storedStateData;
             const currentTime = Date.now();
 
             if (state === storedState && currentTime < expirationTime) {
-                stateMessage = 'State parameter matches and is valid.';
+                document.getElementById('statemessage').innerText = 'State parameter matches and is valid.';
                 const tokenResponse = await getAccessToken(urlParams.get('code'));
                 console.log(tokenResponse);
 
                 // TODO: we might actually return the username too..
                 let regStatus = await loginOauth(tokenResponse['access_token']);
-                stateMessage = `Registration status: ${regStatus}`;
+                document.getElementById('statemessage').innerText = `Registration status: ${regStatus}`;
 
                 console.log(regStatus)
 
@@ -94,25 +82,15 @@ export default class OauthCallback extends Component {
 
                 // TODO: if logged in, also need jwt token
                 if ('jwt' in regStatus) {
-                    stateMessage = 'Logged in';
+                    document.getElementById('statemessage').innerText = 'Logged in';
                     store.dispatch("logIn");
                     navigateTo("/");
                 } else {
-                    stateMessage = 'Error';
+                    document.getElementById('statemessage').innerText = 'Error';
                 }
             } else if (currentTime >= expirationTime) {
-                stateMessage = 'State parameter has expired.';
+                document.getElementById('statemessage').innerText = 'State parameter has expired.';
             }
         }
-
-        const view = /*html*/ `
-            <p>Please wait...</p>
-            <p>State: ${state}</p>
-            <p>${stateMessage}</p>
-        `;
-
-        this.element.innerHTML = view;
-
-
     }
 }
