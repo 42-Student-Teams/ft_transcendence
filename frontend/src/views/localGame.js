@@ -50,6 +50,8 @@ export default class LocalGame extends Component {
     }
 
     async handleEvent() {
+
+      
       // mettre le jeu ici
     }
 }
