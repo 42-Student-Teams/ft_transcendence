@@ -37,5 +37,10 @@ export default class Register extends Component {
         `;
 
         this.element.innerHTML = view;
+        
+        this.components = { 
+            btnLoginInRegister: new BtnLoginInRegister(),
+            formRegister: new FormRegister()
+        };
     }
 }
