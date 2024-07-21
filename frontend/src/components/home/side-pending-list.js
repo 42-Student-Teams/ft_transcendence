@@ -23,7 +23,7 @@ export default class SidePendingList extends Component {
 								</div>
 								<div class="col friend-info">
 									<span>Lsaba-qu</span>
-									<span class="friend-status">Blocked</span>
+									<span class="friend-status">Pending</span>
 								</div>
 							</div>
 						</div>
@@ -40,8 +40,8 @@ export default class SidePendingList extends Component {
 									<img class="friend-img" src=${ProfilePicture2} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
-									<span class="friend-status">Blocked</span>
+									<span>nmuminov</span>
+									<span class="friend-status">Pending</span>
 								</div>
 							</div>
 						</div>
@@ -58,8 +58,8 @@ export default class SidePendingList extends Component {
 									<img class="friend-img" src=${ProfilePicture3} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
-									<span class="friend-status">Blocked</span>
+									<span>inaranjo</span>
+									<span class="friend-status">Pending</span>
 								</div>
 							</div>
 						</div>

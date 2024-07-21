@@ -22,7 +22,7 @@ export default class SideBlockedList extends Component {
 									<img class="friend-img" src=${ProfilePicture1} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
+									<span>lsaba-qu</span>
 									<span class="friend-status">Blocked</span>
 								</div>
 							</div>
@@ -40,7 +40,7 @@ export default class SideBlockedList extends Component {
 									<img class="friend-img" src=${ProfilePicture2} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
+									<span>nmuminov</span>
 									<span class="friend-status">Blocked</span>
 								</div>
 							</div>
@@ -58,7 +58,7 @@ export default class SideBlockedList extends Component {
 									<img class="friend-img" src=${ProfilePicture3} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
+									<span>inaranjo</span>
 									<span class="friend-status">Blocked</span>
 								</div>
 							</div>

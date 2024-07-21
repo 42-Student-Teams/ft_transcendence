@@ -30,7 +30,7 @@ export default class SideFriendList extends Component {
 									<img class="friend-img" src=${ProfilePicture1} />
 								</div>
 								<div class="col friend-info">
-									<span>Lsaba-qu</span>
+									<span>lsaba-qu</span>
 									<span class="friend-status-online">Online</span>
 								</div>
 						</div>
