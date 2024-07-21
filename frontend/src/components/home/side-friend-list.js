@@ -33,11 +33,11 @@ export default class SideFriendList extends Component {
 									<span>lsaba-qu</span>
 									<span class="friend-status-online">Online</span>
 								</div>
+							</div>
 						</div>
-						</div>
-						<div class="col-4 d-flex gap-2  friend-action">
+						<div class="col-4 d-flex gap-2 friend-action">
 							<button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-							<button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
+							<button class="btn rounded btn-unblock" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
 						</div>
 					</div>
 				</div>
@@ -52,11 +52,11 @@ export default class SideFriendList extends Component {
 									<span>nmuminov</span>
 									<span class="friend-status-offline">Offline</span>
 								</div>
-						</div>
+							</div>
 						</div>
 						<div class="col-4 d-flex gap-2 friend-action">
 							<button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-							<button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal">
+							<button class="btn rounded btn-unblock" data-bs-toggle="modal" data-bs-target="#block-friend-modal">
 								<i class="fa-solid fa-user-large-slash"></i>
 							</button>
 						</div>
@@ -73,11 +73,11 @@ export default class SideFriendList extends Component {
 									<span>inaranjo</span>
 									<span class="friend-status-absent">Absent</span>
 								</div>
-						</div>
+							</div>
 						</div>
 						<div class="col-4 d-flex gap-2  friend-action">
 							<button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
-							<button class="btn rounded" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
+							<button class="btn rounded btn-unblock" data-bs-toggle="modal" data-bs-target="#block-friend-modal"><i class="fa-solid fa-user-large-slash"></i></button>
 						</div>
 					</div>
 				</div>

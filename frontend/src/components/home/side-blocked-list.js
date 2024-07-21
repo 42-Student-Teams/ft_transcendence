@@ -28,7 +28,7 @@ export default class SideBlockedList extends Component {
 							</div>
 						</div>
 						<div class="col-4 d-flex gap-2  friend-action">
-							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-plus"></i></button>
+							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-xmark"></i></button>
 						</div>
 					</div>
 				</div>
@@ -46,7 +46,7 @@ export default class SideBlockedList extends Component {
 							</div>
 						</div>
 						<div class="col-4 d-flex gap-2  friend-action">
-							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-plus"></i></button>
+							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-xmark"></i></button>
 						</div>
 					</div>
 				</div>
@@ -64,7 +64,7 @@ export default class SideBlockedList extends Component {
 							</div>
 						</div>
 						<div class="col-4 d-flex gap-2 friend-action">
-							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-plus"></i></button>
+							<button class="btn rounded btn-unblock"><i class="fa-solid fa-user-xmark"></i></button>
 						</div>
 					</div>
 				</div>
@@ -79,8 +79,7 @@ export default class SideBlockedList extends Component {
     }
 
 	async handleEvent() {
-		this.element.querySelector(".btn-unblock").addEventListener("click", () => {
-
-		});
+		//this.element.querySelector(".btn-unblock").addEventListener("click", () => {
+		//});
 	}
 }

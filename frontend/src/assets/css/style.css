@@ -217,16 +217,34 @@ button.btn.btn-primary:active {
   color:white;
 }
 
-/* Blocked list */
+/*  Blocked, list, friends */
+
+
+.btn-add-friend:hover{
+	border:none;
+	color:#228B21;
+}
+
+.btn-add-friend{
+	border:none;
+}
 
 
 .btn-unblock:hover{
 	border:none;
 	color:#ED5554;
-	background-color: #bcbcbc;
 }
 
 .btn-unblock{
+	border:none;
+}
+
+.btn-pending-friend:hover{
+	border:none;
+	color:#228B21;
+}
+
+.btn-pending-friend{
 	border:none;
 }
 
