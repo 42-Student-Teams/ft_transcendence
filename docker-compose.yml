@@ -49,6 +49,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
     #command: ["sleep", "infinity"]
   nginx:
     build:
