@@ -61,6 +61,7 @@ class JwtUser(AbstractUser):
     email = None
     password = models.CharField(max_length=255)
     isoauth = models.BooleanField(default=False)
+    friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []

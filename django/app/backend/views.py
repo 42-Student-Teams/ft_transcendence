@@ -179,7 +179,7 @@ class FriendView(APIView):
                 'message': f'Friend {friend_username} added successfully',
                 'friend': {
                     'username': friend.username,
-                    'status': 'Offline',  # Implement status logic here
+                    'status': 'Offline', 
                     'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
                 }
             }, status=status.HTTP_200_OK)
