@@ -22,6 +22,9 @@ class User(models.Model):
     session_token_expires = models.DateTimeField(blank=True, null=True)
     oauth_token = models.DateTimeField(blank=True, null=True)
     is_admin = models.BooleanField(default=False)
+    friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
+    blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by')
+    friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
 
     def validate_password(self, password):
         ph = PasswordHasher()
