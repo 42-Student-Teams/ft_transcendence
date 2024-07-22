@@ -51,110 +51,176 @@ export default class LocalGame extends Component {
 		}
 		
 		async handleEvent() {
-			
-			// JavaScript for bouncing ball and moving rectangle animation
-			const canvas = document.getElementById('myCanvas');
-			const ctx = canvas.getContext('2d');
- 
-		// Initial ball properties
-		let x = canvas.width / 2;
-		let y = canvas.height / 2;
-		const ballRadius = 3;
-		let isMoving = true; // Flag to check if the ball is moving
-		
-		// Rectangle properties
-		let rectY1 = canvas.height / 2;
-		let rectY2 = canvas.height / 2;
-		const rectHeight = 20;
-		const rectWidth = 6;
-		const rectSpeed = 10; // Speed at which the rectangle moves
-		
-		// Function to generate random velocity
-		function getRandomVelocity() {
-			let speed = 2 + Math.random() * 3; // Random speed between 2 and 5
-			let angle = Math.random() * 2 * Math.PI; // Random angle between 0 and 2*PI
-			return {
-				dx: speed * Math.cos(angle),
-				dy: speed * Math.sin(angle)
-			};
-		}
-		
-		let { dx, dy } = getRandomVelocity();
-		
-		function drawBall() {
-			ctx.beginPath();
-			ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-			ctx.fillStyle = "red";
-			ctx.fill();
-			ctx.closePath();
-		}
-		
-		function drawRectangle(rectX, rectY, color) {
-			ctx.beginPath();
-			ctx.rect(rectX, rectY, rectWidth, rectHeight); 
-			ctx.fillStyle = color;
-			ctx.fill();
-			ctx.closePath();
-		}
-		
-		function draw() {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			drawRectangle(0, rectY1, "blue"); // Draw the rectangle
-			drawRectangle(canvas.width - rectWidth, rectY2,  "green"); // Draw the rectangle
-			drawBall(); // Draw the ball
-			
-			if (isMoving) {
-				// Boundary collision detection for the ball
-				if (y + dy < ballRadius || y + dy > canvas.height - ballRadius) {
-					dy = -dy; // Reverse vertical direction
+
+			class Paddle {
+				constructor(direction){
+					this.direction = direction
+					this.y = config.canvasHeight/2 - config.paddleHeight/2
+					direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
+					this.score = 0
 				}
-				if (x + dx < ballRadius || x + dx > canvas.width - ballRadius) {
-					dx = -dx; // Reverse horizontal direction
+			
+				render = () => {
+					ctx.fillStyle = "#FF0000";
+					ctx.fillRect(this.x, this.y, config.paddleWidth, config.paddleHeight);
+					ctx.font = "30px Arial";
+					ctx.fillText(this.score, canvas.width/2 + (200 * this.direction), 50);
 				}
-				
-				x += dx;
-				y += dy;
+			
+				checkCollision = (ball) => {
+					console.log("checking")
+					return !!((this.y <= (ball.y + ball.r)) && (this.y + config.paddleHeight >= (ball.y - ball.r)))
+				}
+			
+				moveDown = () => {
+					this.y += config.paddleSpeed;
+					(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight)
+				}
+			
+				moveUp = () => {
+					this.y -= config.paddleSpeed
+					this.y < 0 && (this.y = 0)
+				}
+			
+				win = () => this.score ++
+			
+			
+			
 			}
+			
+			console.log("hello world")
+
+			const canvas = document.getElementById("myCanvas")
+			const ctx = canvas.getContext("2d");
+
+			const config = {
+				canvasWidth: 1000,
+				canvasHeight: 800,
+				paddleWidth: 10,
+				paddleHeight: 80,
+				paddleSpeed: 8,
+				ballXSpeed: 9,
+				ballYSpeed: 3,
+				ballSlice: 4
+			}
+
+			canvas.width = config.canvasWidth
+			canvas.height = config.canvasHeight
+
+			const paddle1 = new Paddle(1)
+			const paddle2 = new Paddle(-1)
+
+			const controller = {
+				87: {pressed: false, func: paddle1.moveUp},
+				83: {pressed: false, func: paddle1.moveDown},
+				38: {pressed: false, func: paddle2.moveUp},
+				40: {pressed: false, func: paddle2.moveDown}
+			}
+
+			const ball = {
+				r: 8,
+			}
+
+			const resetBall = () => {
+				ball.x = canvas.width/2,
+				ball.y = canvas.height/2,
+				// let's delay before starting each round
+				ball.dx = 0
+				ball.dy = 0
+				setTimeout(() => {
+					// Math.sign shoots it in a random direction
+					ball.dx = config.ballXSpeed * Math.sign(Math.random()-.5)
+					ball.dy = config.ballYSpeed * Math.sign(Math.random()-.5)
+				}, 1000)
+					
+			}
+			resetBall()
+
+
+			const handleKeyDown = (e) => {
+				controller[e.keyCode] && (controller[e.keyCode].pressed = true)
+			}
+
+			const handleKeyUp = (e) => {
+				controller[e.keyCode] && (controller[e.keyCode].pressed = false)
+			}
+
+			const runPressedButtons = () => {
+				Object.keys(controller).forEach(key => {
+					controller[key].pressed && controller[key].func()
+				})
+			}
+
+			const moveBall = () => {
+				ball.x += ball.dx
+				ball.y += ball.dy
+			}
+
+			const checkWallCollisions = () => {
+				((ball.y - ball.r <= 0) || (ball.y + ball.r >= canvas.height)) && (ball.dy = ball.dy*(-1))
+			}
+
+			const reverseDirection = (paddle) => {
+				ball.dx = (-1) * ball.dx
+				// added this after lecture to make sure that if you clipped it while the ball was several pixels past the border, it wouldn't reverse direction twice.
+				ball.x += Math.sign(ball.dx)*8
+				// added this after lecture to add a slice to the hit.
+				ball.dy = (ball.y - (paddle.y + (config.paddleHeight/2)))/config.ballSlice
+
+			}
+
+			const checkPaddleCollisions = () => {
+				if (ball.x - ball.r <= config.paddleWidth){
+					if(paddle1.checkCollision(ball)){reverseDirection(paddle1)}
+				}
+				if (ball.x + ball.r >= canvas.width - config.paddleWidth){
+					if(paddle2.checkCollision(ball)){reverseDirection(paddle2)}
+				}
+			}
+
+			const checkWin = () => {
+				(ball.x + ball.r <= 0) && win(paddle1);
+				(ball.x - ball.r >= canvas.width) && win(paddle2)
+			}
+
+			const win = (paddle) => {
+				resetBall()
+				paddle.win()
+			}
+
+
+			const paintBall = () => {
+				ctx.beginPath();
+				ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
+				ctx.fillStyle = 'green';
+				ctx.fill();
+				ctx.lineWidth = 5;
+				ctx.strokeStyle = '#003300';
+				ctx.stroke();
+			}
+
+
+			document.addEventListener("keydown", handleKeyDown)
+			document.addEventListener("keyup", handleKeyUp)
+
+
+			const render = () => {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				paddle1.render()
+				paddle2.render()
+				paintBall()
+			}
+
+			const animate = () => {
+				render()
+				runPressedButtons()
+				checkWallCollisions()
+				checkPaddleCollisions()
+				moveBall()
+				checkWin()
+				window.requestAnimationFrame(animate)     
+			}
+
+			animate()				
 		}
-		
-		// Start the animation
-		let intervalId = setInterval(draw, 10); // Update every 10 milliseconds
-		// setInterval(dra	w, 10); // Update every 10 milliseconds
-		
-		// Event listener for keydown to stop the ball or move the rectangle
-							
-
-
-		
-		let keysPressed = {};
-		document.addEventListener('keydown', (event) => {
-			keysPressed[event.code] = true;
-			// if (keysPressed['Space']) {
-			//     isMoving = !isMoving; // Toggle the movement flag
-			//     if (!isMoving) {
-			//         clearInterval(intervalId); // Stop the animation
-			//     } else {
-			//         intervalId = setInterval(draw, 10); // Restart the animation
-			//     }
-			// }
-			if (keysPressed['KeyW'] && rectY1 > 0 ) {
-				rectY1 -= Math.min(rectY1, rectSpeed); // Move up
-			} 
-			if (keysPressed['KeyS'] && rectY1 < canvas.height - rectHeight) {
-				rectY1 += Math.min(canvas.height - rectY1, rectSpeed); // Move down
-			}
-			// Move rectangle with arrow keys
-			if (keysPressed['ArrowUp'] && rectY2 > 0 ) {
-				rectY2 -= Math.min(rectY2, rectSpeed); // Move up
-			} 
-			if (keysPressed['ArrowDown']  && rectY2 < canvas.height - rectHeight) {
-				rectY2 += Math.min(canvas.height - rectY2, rectSpeed); // Move down
-			}
-		});
-		
-		document.addEventListener('keyup', (event) => {
-			delete keysPressed[event.code];
-		});
-
-	}
 }
