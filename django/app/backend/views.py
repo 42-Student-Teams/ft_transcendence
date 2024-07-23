@@ -188,57 +188,91 @@ class FriendView(APIView):
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class AcceptFriendRequestView(APIView):
     def post(self, request):
+        token = request.data.get('jwt')
+        if token is None:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated')
+
+        user = JwtUser.objects.get(username=payload['username'])
         friend_username = request.data.get('friend_username')
+
         if not friend_username:
             return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             friend = JwtUser.objects.get(username=friend_username)
-            if request.user not in friend.friend_requests.all():
+            
+            if user not in friend.friend_requests.all():
                 return Response({'status': 'error', 'message': 'No friend request from this user'}, status=status.HTTP_400_BAD_REQUEST)
-
-            friend.friend_requests.remove(request.user)
-            request.user.friends.add(friend)
-            friend.friends.add(request.user)
-
+            
+            friend.friend_requests.remove(user)
+            user.friends.add(friend)
+            friend.friends.add(user)
+            
             return Response({
                 'status': 'success',
                 'message': f'Friend request from {friend_username} accepted'
             }, status=status.HTTP_200_OK)
+        
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class BlockUserView(APIView):
-
     def post(self, request):
+        token = request.data.get('jwt')
+        if token is None:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated')
+
+        user = JwtUser.objects.get(username=payload['username'])
         user_to_block_username = request.data.get('username')
+
         if not user_to_block_username:
             return Response({'status': 'error', 'message': 'Missing username to block'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user_to_block = JwtUser.objects.get(username=user_to_block_username)
-            if user_to_block == request.user:
+            
+            if user_to_block == user:
                 return Response({'status': 'error', 'message': 'Cannot block yourself'}, status=status.HTTP_400_BAD_REQUEST)
-
-            request.user.blocked_users.add(user_to_block)
-            request.user.friends.remove(user_to_block)
-            user_to_block.friends.remove(request.user)
-
+            
+            user.blocked_users.add(user_to_block)
+            user.friends.remove(user_to_block)
+            user_to_block.friends.remove(user)
+            
             return Response({
                 'status': 'success',
                 'message': f'User {user_to_block_username} has been blocked'
             }, status=status.HTTP_200_OK)
+        
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 class FriendListView(APIView):
-
     def get(self, request):
-        friends = request.user.friends.all()
+        token = request.GET.get('jwt')
+        if token is None:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Unauthenticated')
+
+        user = JwtUser.objects.get(username=payload['username'])
+        friends = user.friends.all()
         friend_list = [{'username': friend.username} for friend in friends]
+        
         return Response({
             'status': 'success',
             'friends': friend_list

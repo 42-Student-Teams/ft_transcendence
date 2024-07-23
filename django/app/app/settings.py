@@ -30,6 +30,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 ALLOWED_HOSTS = []
 
+JWT_SECRET = os.getenv('JWT_SECRET')
+
 
 # Application definition
 
