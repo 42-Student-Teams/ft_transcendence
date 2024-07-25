@@ -37,7 +37,7 @@ export default class ProfileInfo extends Component {
                 <button class="btn btn-secondary btn-sm mb-3 edit-profil-btn" data-bs-toggle="modal" data-bs-target="#edit-profile-modal"><i class="fa-solid fa-pen"></i> Edit profile</button>
             </div>
         `;
-
+		this.element = document.getElementById("profileInfo");
         this.element.innerHTML = view;
     }
 }

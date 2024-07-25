@@ -4,7 +4,6 @@ export default class ChartComponent extends Component {
     constructor() {
         super({ element: document.getElementById("chart") });
         this.render();
-        this.renderChart();
     }
 
     async render() {
@@ -23,12 +22,14 @@ export default class ChartComponent extends Component {
             </div>
         </div>
         `;
-
+		this.element = document.getElementById("chart");
         this.element.innerHTML = view;
+		this.handleEvent();
     }
 
-    renderChart() {
-        class PieChart {
+	async handleEvent() {
+		
+		class PieChart {
             constructor(elementId, data, colors) {
                 this.canvas = document.getElementById(elementId);
                 this.ctx = this.canvas.getContext('2d');
@@ -61,5 +62,5 @@ export default class ChartComponent extends Component {
         const colors = ['#28a745', '#dc3545', '#ffc107'];
         const pieChart = new PieChart('pie-chart', data, colors);
         pieChart.draw();
-    }
+	}
 }

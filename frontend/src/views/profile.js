@@ -6,30 +6,36 @@ import Statistics from "../components/profile/Statistics.js";
 import NavBar from '../components/home/navbar.js';
 
 export default class Profile extends Component {
-    constructor() {
-        super({ element: document.getElementById("app") });
+	constructor() {
+		super({ element: document.getElementById("app") });
+		this.render();
 
-        this.render();
-        this.initializeComponents();
-    }
+		this.components = {
+			navBar: new NavBar(),
+			profileInfo: new ProfileInfo(),
+			chartComponent: new ChartComponent(),
+			statitics: new Statistics(),
+			matchHistory: new MatchHistory(),
+		};
+	}
 
-    async render() {
-        const view = /*html*/ `
-       <div class="h-100 d-flex flex-column bg-custom vh-100">
-    <div class="row m-0">
-        <nav class="navbar navbar-expand bg-white shadow-sm w-100" id="navBar"></nav>
-    </div>
-    <div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
-        <div class="col-md-4 d-flex flex-column overflow-auto p-2">
-            <div id="profileInfo" class="mb-2"></div>
-            <div id="chart" class="flex-grow-1 d-flex flex-column"></div>
-        </div>
-        <div class="col-md-8 d-flex flex-column overflow-auto p-2">
-            <div id="statistics" class="mb-2"></div>
-            <div id="matchHistory" class="flex-grow-1 d-flex flex-column"></div>
-        </div>
-    </div>
-</div>
+	async render() {
+		const view = /*html*/ `
+		<div class="h-100 d-flex flex-column bg-custom vh-100">
+    		<div class="row m-0">
+    	    	<nav class="navbar navbar-expand bg-white shadow-sm w-100" id="navBar"></nav>
+    		</div>
+    		<div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
+    	    	<div class="col-md-4 d-flex flex-column overflow-auto p-2">
+    	        	<div id="profileInfo" class="mb-2"></div>
+    	        	<div id="chart" class="flex-grow-1 d-flex flex-column"></div>
+    	    	</div>
+    	    	<div class="col-md-8 d-flex flex-column overflow-auto p-2">
+					<div id="statistics" class="mb-2"></div>
+    	        	<div id="matchHistory" class="flex-grow-1 d-flex flex-column"></div>
+    	   		</div>
+    		</div>
+		</div>
 
         <!-- Modal Edit Profile -->
         <div class="modal" id="edit-profile-modal" tabindex="-1">
@@ -76,43 +82,31 @@ export default class Profile extends Component {
         </div>
         `;
 
-        this.element.innerHTML = view;
-    }
+		this.element.innerHTML = view;
+		this.handleEvent();
+	}
 
-    initializeComponents() {
-        new NavBar();
-        new ProfileInfo();
-        new ChartComponent();
-        new Statistics();
-        new MatchHistory();
+	async handleEvent() {
+		document.getElementById("edit-profile-form").addEventListener("submit", async (event) => {
+			event.preventDefault();
 
-        this.handleEvent();
-    }
+			const profilePicture = document.getElementById("edit-profile-picture").files[0];
+			const firstName = document.getElementById("edit-first-name").value;
+			const lastName = document.getElementById("edit-last-name").value;
+			const username = document.getElementById("edit-username").value;
+			const email = document.getElementById("edit-email").value;
+			const password = document.getElementById("edit-password").value;
 
-    handleEvent() {
-        document.getElementById("edit-profile-form").addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const profilePicture = document.getElementById("edit-profile-picture").files[0];
-            const firstName = document.getElementById("edit-first-name").value;
-            const lastName = document.getElementById("edit-last-name").value;
-            const username = document.getElementById("edit-username").value;
-            const email = document.getElementById("edit-email").value;
-            const password = document.getElementById("edit-password").value;
-
-            // valeurs stockées ici
-            const profileData = {
-                profilePicture,
-                firstName,
-                lastName,
-                username,
-                email,
-                password
-            };
-
-            console.log(profileData);
-
-            // backend pour sauvegarder les modifications
-        });
-    }
+			// valeurs stockées ici
+			const profileData = {
+				profilePicture,
+				firstName,
+				lastName,
+				username,
+				email,
+				password
+			};
+			console.log(profileData);
+		});
+	}
 }

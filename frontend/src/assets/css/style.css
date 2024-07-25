@@ -219,6 +219,9 @@ button.btn.btn-primary:active {
 
 /*  Blocked, list, friends */
 
+#home-page:hover{
+	cursor:pointer;
+}
 
 .btn-add-friend:hover{
 	border:none;
