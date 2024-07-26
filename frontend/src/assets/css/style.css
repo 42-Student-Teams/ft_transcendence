@@ -257,7 +257,8 @@ button.btn.btn-primary:active {
 canvas {
 	height: 500px;
 	width: 900px;
-	background-color: #EBEBED;
+	background-color: #9c9c9e;
+	/* background-color: #EBEBED; */
 }
 
 .score-display {
@@ -266,4 +267,17 @@ canvas {
     box-sizing: border-box; /* Ensure padding and borders are included in the element's total width and height */
     padding: 0rem; /* Add some padding */
 	margin: 3px;
+}
+
+.canvanbutton {
+    position: relative;
+    display: inline-block;
+}
+
+#start-game {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
 }

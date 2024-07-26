@@ -155,7 +155,9 @@ export default class Home extends Component {
 				color: colorRadio.value,
 				speed: speed
 			};
-			console.log(game);
+
+			localStorage.setItem("local-game", JSON.stringify(game));
+
 			navigateTo("/local-game");
 		});
 

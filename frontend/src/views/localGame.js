@@ -34,8 +34,10 @@ export default class LocalGame extends Component {
         	  		</div>
         			<div class="col text-center">
         	    		<div class="game-canva rounded">
-							<button id=start-game> New Game</button>
-							<canvas id="myCanvas"></canvas>
+        	    			<div class="canvanbutton">
+								<button class="btn btn-primary" id=start-game> New Game</button>
+								<canvas id="myCanvas"></canvas>
+        	    			</div>
         	    		</div>
 					</div>
 					<div class="score-display">
@@ -52,6 +54,11 @@ export default class LocalGame extends Component {
 
 	async handleEvent() {
 
+
+
+		const gameOptions = localStorage.getItem("local-game");
+
+		console.log(gameOptions);
 		class Paddle {
 			constructor(direction) {
 				this.direction = direction
@@ -122,7 +129,6 @@ export default class LocalGame extends Component {
 			83: { pressed: false, func: paddle1.moveDown },
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
-			// 39: {pressed: false, func: startBall},
 		}
 
 		const ball = {
@@ -132,18 +138,27 @@ export default class LocalGame extends Component {
 
 		const resetBall = () => {
 			ball.x = canvas.width / 2,
-				ball.y = canvas.height / 2,
+			ball.y = canvas.height / 2,
 				// let's delay before starting each round
-				ball.dx = 0
+			ball.dx = 0
 			ball.dy = 0
-			// setTimeout(() => {
-			// 	// Math.sign shoots it in a random direction
-			// 	ball.dx = config.ballXSpeed * Math.sign(Math.random() - .5)
-			// 	ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
-			// }, 1000)
+			if (paddle1.score === 3 || paddle2.score === 3) {
+				paddle1.score = 0;
+				paddle2.score = 0;
+				// document.getElementById('score-right').innerText = 0;
+				// document.getElementById('score-left').innerText = 0;
+				document.getElementById("start-game").style.display = "block";
+				canvas.style.backgroundColor = '#9c9c9e';
+			}
+			else{
+				canvas.style.backgroundColor = '#EBEBED';
+				setTimeout(() => {
+					startBall();
+				}, 1000);
+			}
 		}
 
-		resetBall()
+		// resetBall()
 
 
 		const handleKeyDown = (e) => {
@@ -151,7 +166,6 @@ export default class LocalGame extends Component {
 		}
 
 		const handleKeyUp = (e) => {
-			// if(e.keyCode == 39)
 			controller[e.keyCode] && (controller[e.keyCode].pressed = false)
 		}
 
@@ -194,8 +208,8 @@ export default class LocalGame extends Component {
 		}
 
 		const win = (paddle) => {
-			resetBall()
 			paddle.win()
+			resetBall()
 		}
 
 
@@ -212,9 +226,11 @@ export default class LocalGame extends Component {
 
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
+		
 		document.getElementById("start-game").addEventListener("click", () => {
-            // resetBall();
-            startBall();
+			document.getElementById("start-game").style.display = "none";
+			canvas.style.backgroundColor = '#EBEBED';
+			resetBall();
         });
 
 
