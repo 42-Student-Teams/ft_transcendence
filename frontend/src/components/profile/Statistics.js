@@ -41,7 +41,7 @@ export default class Statistics extends Component {
             </div>
         </div>
         `;
-
+		this.element = document.getElementById("statistics");
         this.element.innerHTML = view;
     }
 }

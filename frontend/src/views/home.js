@@ -88,7 +88,7 @@ export default class Home extends Component {
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-						<button id="btn-play-local" type="button" class="btn btn-success">Play</button>
+						<button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">Play</button>
 					</div>
 				</form>
 		    </div>
@@ -134,7 +134,7 @@ export default class Home extends Component {
 			  </div>
 		      <div class="modal-footer">
 				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-		    	<button id="btn-play-tournament" type="submit" class="px-2 btn btn-success">Play</button>
+		    	<button id="btn-play-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">Play</button>
 		      </div>
 			<form>
 		    </div>
@@ -156,6 +156,8 @@ export default class Home extends Component {
 				speed: speed
 			};
 			console.log(game);
+
+			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
 		});
 
@@ -169,6 +171,7 @@ export default class Home extends Component {
 				color: colorRadio.value,
 				speed: speed
 			};
+			
 			console.log(game);
 			navigateTo("/tournament-game");
 		});
