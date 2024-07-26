@@ -35,7 +35,7 @@ h1{
 
 .btn-fortytwo {
   background: #00babc;
-  color: #fff;
+  color: #fff !important;
 }
 
 .btn-fortytwo:hover {
@@ -86,6 +86,7 @@ h1{
 .btn{
 	color:#4E5057;
 }
+
 
 .btn-primary{
 	background-color: #F2F3F5;
@@ -216,6 +217,17 @@ button.btn.btn-primary:active {
 .btn-success{
   color:white;
 }
+
+#login-submit, #form-register-submit{
+  background-color: #0a57ca;
+  color:white;
+}
+
+#login-submit:hover, #form-register-submit:hover{
+  background-color: #073d8d;
+  color:white;
+}
+
 
 /*  Blocked, list, friends */
 
