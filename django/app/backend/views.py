@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from .enums import AuthLevel, TokenValidationResponse
 from .models import User, JwtUser
@@ -429,4 +430,49 @@ class BlockedListView(APIView):
         return Response({
             'status': 'success',
             'blocked_users': blocked_list
+        }, status=status.HTTP_200_OK)
+
+
+
+###-------------------------------------------------------------------------------------###
+
+class UpdateProfilePictureView(APIView):
+
+    parser_classes = (MultiPartParser, FormParser)
+
+    def put(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            token = auth_header.split()[1]
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token expired')
+        except (IndexError, jwt.DecodeError):
+            raise AuthenticationFailed('Invalid token')
+        
+        try:
+            user = JwtUser.objects.get(username=payload['username'])
+        except JwtUser.DoesNotExist:
+            raise AuthenticationFailed('User not found')
+        
+        avatar = request.FILES['avatar']
+        
+        # Vérifiez si le fichier est une image valide
+        if not avatar.content_type.startswith('image'):
+            return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Supprimez l'ancien avatar si il existe
+        if user.avatar:
+            user.avatar.delete(save=False)
+        
+        user.avatar = avatar
+        user.save()
+        
+        return Response({
+            'status': 'success',
+            'message': 'Avatar updated successfully',
+            'avatar_url': user.avatar.url if user.avatar else None
         }, status=status.HTTP_200_OK)

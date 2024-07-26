@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-#UnblockUserView
+#UpdateProfilePictureView
 
 urlpatterns=[
     path('', views.index),
@@ -17,5 +17,7 @@ urlpatterns=[
     path('block_user', views.BlockUserView.as_view(), name='block_user'),
     path('friend_list', views.FriendListView.as_view(), name='friend_list'),
     path('pending_list', views.PendingListView.as_view(), name='pending_list'),
-    path('block_list', views.BlockedListView.as_view(), name='block_list')
+    path('block_list', views.BlockedListView.as_view(), name='block_list'),
+    path('update_avatar', views.UpdateProfilePictureView.as_view(), name='update_avatar'),
+
 ]
