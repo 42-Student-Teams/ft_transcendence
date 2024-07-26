@@ -259,3 +259,11 @@ canvas {
 	width: 900px;
 	background-color: #EBEBED;
 }
+
+.score-display {
+    width: 100px; /* Set a fixed width */
+    text-align: center; /* Center-align the text */
+    box-sizing: border-box; /* Ensure padding and borders are included in the element's total width and height */
+    padding: 0rem; /* Add some padding */
+	margin: 3px;
+}
