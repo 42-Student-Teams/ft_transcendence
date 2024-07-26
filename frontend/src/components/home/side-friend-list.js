@@ -21,8 +21,7 @@ export default class SideFriendList extends Component {
           <i id="icon-send" class="ml-4 fa fa-user-plus"></i>
         </button>
       </div>
-      <div id="friend-list-display" class="friends-list flex-grow-1 overflow-auto">
-      </div>
+      <div id="friend-list-display" class="friends-list flex-grow-1 overflow-auto"></div>
       <!-- Modal -->
       <div class="modal" id="block-friend-modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -32,45 +31,39 @@ export default class SideFriendList extends Component {
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              Are you sure you want to block this <b>user</b> ?<br/>Blocking this user will also remove them from your friends list
+              Are you sure you want to block this <b>user</b> ?<br/>Blocking this user will also remove them from your friends list.
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-              <button type="button" class="btn btn-danger">Block</button>
+              <button type="button" class="btn btn-danger" id="confirm-block-button">Block</button>
             </div>
           </div>
         </div>
       </div>
     `;
 
-    this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
-    this.handleEvent();
+    this.handleEvents();
     this.getFriendList();
   }
 
-  async handleEvent() {
-    const directMessageButtons = this.element.querySelectorAll(
-      ".btn-direct-message"
-    );
-    directMessageButtons.forEach((button) => {
-      button.addEventListener("click", (event) => {
-        event.preventDefault();
-        const sideChat = document.getElementById("side-chat");
-        const friendlist = document.getElementById("side-friend-list");
-        const btnBlocked = document.getElementById("btn-toggle-blocked");
-        const btnFriends = document.getElementById("btn-toggle-friends");
+  handleEvents() {
+    this.element.querySelector("#btn-add-friend").addEventListener("click", async (event) => {
+      event.preventDefault();
+      const usernameInput = this.element.querySelector("#friend-username");
+      const username = usernameInput.value.trim();
+      if (username) {
+        await this.addFriend(username);
+        usernameInput.value = ''; // Clear input field after adding friend
+      }
+    });
 
-        console.log("Direct messages");
-        if (sideChat.classList.contains("d-none")) {
-          friendlist.classList.remove("d-flex");
-          friendlist.classList.add("d-none");
-          sideChat.classList.remove("d-none");
-          sideChat.classList.add("d-flex");
-          btnBlocked.classList.remove("active");
-          btnFriends.classList.remove("active");
-        }
-      });
+    this.element.addEventListener("click", (event) => {
+      if (event.target.closest(".btn-direct-message")) {
+        this.handleDirectMessage(event);
+      } else if (event.target.closest(".btn-unblock")) {
+        this.handleBlockFriend(event);
+      }
     });
   }
 
@@ -86,11 +79,8 @@ export default class SideFriendList extends Component {
         },
       });
 
-      console.log("Response:", response);
-
       if (response.ok) {
         const data = await response.json();
-        console.log("Friends Data received:", data);
         this.friends = data.friends || []; // Ensure it's an array
         this.renderFriendList();
       } else {
@@ -148,51 +138,65 @@ export default class SideFriendList extends Component {
     }
   }
 
+  handleDirectMessage(event) {
+    const sideChat = document.getElementById("side-chat");
+    const friendlist = document.getElementById("side-friend-list");
+    const btnBlocked = document.getElementById("btn-toggle-blocked");
+    const btnFriends = document.getElementById("btn-toggle-friends");
+
+    if (sideChat.classList.contains("d-none")) {
+      friendlist.classList.remove("d-flex");
+      friendlist.classList.add("d-none");
+      sideChat.classList.remove("d-none");
+      sideChat.classList.add("d-flex");
+      btnBlocked.classList.remove("active");
+      btnFriends.classList.remove("active");
+    }
+  }
+
   async handleBlockFriend(event) {
     const button = event.currentTarget;
-    const username = button.getAttribute("data-username");
-    const friendContainer = button.closest(".friend"); // Get the parent container of the friend
+    const username = button.getAttribute('data-username');
+    const friendContainer = button.closest('.friend');
 
     try {
-      const jwt = localStorage.getItem("jwt");
-      const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
+      const jwt = localStorage.getItem('jwt');
+      const apiurl = process.env.API_URL;
       const response = await fetch(`${apiurl}/block_user`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username })
       });
 
       if (response.ok) {
-        console.log(`Successfully unblocked friend ${username}`);
-        // Remove the friend container from the DOM
+        console.log(`Successfully blocked friend ${username}`);
         friendContainer.remove();
       } else {
-        console.error(`Failed to unblock friend ${username}`);
+        console.error(`Failed to block friend ${username}`);
       }
     } catch (error) {
-      console.error(`Error unblocking friend ${username}:`, error);
+      console.error(`Error blocking friend ${username}:`, error);
     }
   }
 
   async addFriend(username) {
     try {
-      const jwt = localStorage.getItem("jwt");
-      const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
-      const response = await fetch(`${apiurl}/add_friend`, {
-        method: "POST",
+      const jwt = localStorage.getItem('jwt');
+      const apiurl = process.env.API_URL;
+      const response = await fetch(`${apiurl}/send_friend_request`, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${jwt}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ friend_username: username }),
+        body: JSON.stringify({ 'friend_username': username })
       });
 
       if (response.ok) {
         console.log(`Successfully added friend ${username}`);
-        // Optionally, update the friend list after adding a new friend
         await this.getFriendList();
       } else {
         console.error(`Failed to add friend ${username}`);

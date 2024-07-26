@@ -38,11 +38,9 @@ export default class SideBlockedList extends Component {
                 }
             });
 
-            console.log('Response:', response);
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Blocked Data received:', data);
                 this.blocked = data.blocked_users || [];  // Ensure it's an array
                 this.renderBlockedList();
             } else {
@@ -56,7 +54,6 @@ export default class SideBlockedList extends Component {
     renderBlockedList() {
         const blockDisplayElement = document.getElementById("block-display");
         blockDisplayElement.innerHTML = ''; // Clear any existing content
-        console.log('Blocked Users:', this.blocked);
 
         if (this.blocked.length > 0) {
             this.blocked.forEach((user, index) => {
@@ -111,7 +108,6 @@ export default class SideBlockedList extends Component {
             });
 
             if (response.ok) {
-                console.log(`Successfully unblocked user ${username}`);
                 // Remove the user container from the DOM
                 userContainer.remove();
                 // Optionally, add the user back to the friends list

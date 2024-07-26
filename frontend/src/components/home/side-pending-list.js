@@ -34,11 +34,8 @@ export default class SidePendingList extends Component {
                 }
             });
 
-            console.log('Response:', response);
-
             if (response.ok) {
                 const data = await response.json();
-                console.log('Data received:', data);
                 this.pendingFriends = data.friends || []; // Ensure it's an array
                 this.renderPendingList();
             } else {
@@ -52,7 +49,6 @@ export default class SidePendingList extends Component {
     renderPendingList() {
         const friendDisplayElement = document.getElementById("friend-display");
         friendDisplayElement.innerHTML = ''; // Clear any existing content
-        console.log('Pending Friends:', this.pendingFriends);
 
         if (this.pendingFriends.length > 0) {
             this.pendingFriends.forEach((friend, index) => {
@@ -107,7 +103,6 @@ export default class SidePendingList extends Component {
             });
 
             if (response.ok) {
-                console.log(`Successfully accepted friend request for ${username}`);
                 // Remove the friend container from the DOM
                 friendContainer.remove();
             } else {

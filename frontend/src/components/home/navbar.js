@@ -41,13 +41,11 @@ export default class Navbar extends Component {
     async handleEvent() {
         this.element.querySelector("#profile-link").addEventListener("click", () => {
 			event.preventDefault();
-			console.log("Hello2");
 			navigateTo("/profile");
 		});
 
 		this.element.querySelector("#home-page").addEventListener("click", () => {
 			event.preventDefault();
-			console.log("Hello");
 			navigateTo("/");
 		});
 
