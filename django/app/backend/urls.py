@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+#PendingListView
 
 urlpatterns=[
     path('', views.index),
@@ -14,4 +15,5 @@ urlpatterns=[
     path('accept_friend_request', views.AcceptFriendRequestView.as_view(), name='accept_friend_request'),
     path('block_user', views.BlockUserView.as_view(), name='block_user'),
     path('friend_list', views.FriendListView.as_view(), name='friend_list'),
+    path('pending_list', views.PendingListView.as_view(), name='pending_list'),
 ]

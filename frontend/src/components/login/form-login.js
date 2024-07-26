@@ -58,7 +58,7 @@ export default class Login extends Component {
                     body: JSON.stringify(data)
                 });
 
-                console.log(response);
+                const jsonData = await response.json();
 
                 // if (username.trim() !== "" && password.trim() !== "") {
                 //     store.dispatch("logIn");
@@ -66,6 +66,7 @@ export default class Login extends Component {
                 // }
                 if (response.ok) {
                     store.dispatch("logIn");
+                    localStorage.setItem('jwt', jsonData.jwt);
                     navigateTo("/");
                 }
                 else {

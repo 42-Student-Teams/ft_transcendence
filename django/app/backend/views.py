@@ -168,30 +168,38 @@ class FriendView(APIView):
             raise AuthenticationFailed('Token expired')
         except (IndexError, jwt.DecodeError):
             raise AuthenticationFailed('Invalid token')
-
+        
         try:
             user = JwtUser.objects.get(username=payload['username'])
         except JwtUser.DoesNotExist:
             raise AuthenticationFailed('User not found')
-
+        
         friend_username = request.data.get('friend_username')
         if not friend_username:
             return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         try:
             friend = JwtUser.objects.get(username=friend_username)
             if user == friend:
-                return Response({'status': 'error', 'message': 'Cannot add yourself as a friend'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'status': 'error', 'message': 'Cannot send friend request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+            
             if friend in user.friends.all():
                 return Response({'status': 'error', 'message': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
             
-            user.friends.add(friend)
+            if friend in user.friend_requests.all():
+                return Response({'status': 'error', 'message': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if user in friend.friend_requests.all():
+                return Response({'status': 'error', 'message': 'This user has already sent you a friend request'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            friend.friend_requests.add(user)  # L'utilisateur actuel envoie une demande d'ami à l'ami
+            
             return Response({
                 'status': 'success',
-                'message': f'Friend {friend_username} added successfully',
+                'message': f'Friend request sent to {friend_username}',
                 'friend': {
                     'username': friend.username,
-                    'status': 'Offline',
+                    'status': 'Pending',
                     'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
                 }
             }, status=status.HTTP_200_OK)
@@ -201,28 +209,33 @@ class FriendView(APIView):
 
 class AcceptFriendRequestView(APIView):
     def post(self, request):
-        token = request.data.get('jwt')
-        if token is None:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
             raise AuthenticationFailed('Unauthenticated')
         
         try:
+            token = auth_header.split()[1]
             payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated')
-
-        user = JwtUser.objects.get(username=payload['username'])
+            raise AuthenticationFailed('Token expired')
+        except (IndexError, jwt.DecodeError):
+            raise AuthenticationFailed('Invalid token')
+        
+        try:
+            user = JwtUser.objects.get(username=payload['username'])
+        except JwtUser.DoesNotExist:
+            raise AuthenticationFailed('User not found')
+        
         friend_username = request.data.get('friend_username')
-
         if not friend_username:
             return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         try:
             friend = JwtUser.objects.get(username=friend_username)
-            
-            if user not in friend.friend_requests.all():
+            if friend not in user.friend_requests.all():  # Changement ici
                 return Response({'status': 'error', 'message': 'No friend request from this user'}, status=status.HTTP_400_BAD_REQUEST)
             
-            friend.friend_requests.remove(user)
+            user.friend_requests.remove(friend)  # L'utilisateur actuel retire la demande d'ami
             user.friends.add(friend)
             friend.friends.add(user)
             
@@ -230,7 +243,6 @@ class AcceptFriendRequestView(APIView):
                 'status': 'success',
                 'message': f'Friend request from {friend_username} accepted'
             }, status=status.HTTP_200_OK)
-        
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -314,6 +326,35 @@ class FriendListView(APIView):
 
         friends = user.friends.all()
         friend_list = [{'username': friend.username} for friend in friends]
+        
+        return Response({
+            'status': 'success',
+            'friends': friend_list
+        }, status=status.HTTP_200_OK)
+
+
+class PendingListView(APIView):
+    def get(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            # Le format attendu est "Bearer <token>"
+            token = auth_header.split()[1]
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token expired')
+        except (IndexError, jwt.DecodeError):
+            raise AuthenticationFailed('Invalid token')
+
+        try:
+            user = JwtUser.objects.get(username=payload['username'])
+        except JwtUser.DoesNotExist:
+            raise AuthenticationFailed('User not found')
+
+        friend_requests = user.friend_requests.all()
+        friend_list = [{'username': friend.username} for friend in friend_requests]
         
         return Response({
             'status': 'success',
