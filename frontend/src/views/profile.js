@@ -1,9 +1,9 @@
-import Component from "../library/component.js";
+import NavBar from '../components/home/navbar.js';
+import ChartComponent from "../components/profile/Chart.js";
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
-import ChartComponent from "../components/profile/Chart.js";
 import Statistics from "../components/profile/Statistics.js";
-import NavBar from '../components/home/navbar.js';
+import Component from "../library/component.js";
 
 export default class Profile extends Component {
 	constructor() {
@@ -52,24 +52,12 @@ export default class Profile extends Component {
                                 <input type="file" class="form-control" id="edit-profile-picture">
                             </div>
                             <div class="p-3">
-                                <label for="edit-first-name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="edit-first-name" required>
-                            </div>
-                            <div class="p-3">
-                                <label for="edit-last-name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="edit-last-name" required>
-                            </div>
-                            <div class="p-3">
                                 <label for="edit-username" class="form-label">Username</label>
                                 <input type="text" class="form-control" id="edit-username" required>
                             </div>
                             <div class="p-3">
                                 <label for="edit-email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="edit-email" required>
-                            </div>
-                            <div class="p-3">
-                                <label for="edit-password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="edit-password">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -91,11 +79,8 @@ export default class Profile extends Component {
 			event.preventDefault();
 
 			const profilePicture = document.getElementById("edit-profile-picture").files[0];
-			const firstName = document.getElementById("edit-first-name").value;
-			const lastName = document.getElementById("edit-last-name").value;
 			const username = document.getElementById("edit-username").value;
 			const email = document.getElementById("edit-email").value;
-			const password = document.getElementById("edit-password").value;
 
 			// valeurs stockées ici
 			const profileData = {
