@@ -247,6 +247,48 @@ class AcceptFriendRequestView(APIView):
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+
+
+class UnblockUserView(APIView):
+    def post(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            token = auth_header.split()[1]
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token expired')
+        except (IndexError, jwt.DecodeError):
+            raise AuthenticationFailed('Invalid token')
+        
+        try:
+            user = JwtUser.objects.get(username=payload['username'])
+        except JwtUser.DoesNotExist:
+            raise AuthenticationFailed('User not found')
+        
+        username_to_unblock = request.data.get('username')
+        if not username_to_unblock:
+            return Response({'status': 'error', 'message': 'Missing username to unblock'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user_to_unblock = JwtUser.objects.get(username=username_to_unblock)
+            if user_to_unblock not in user.blocked_users.all():
+                return Response({'status': 'error', 'message': 'This user is not blocked'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            user.blocked_users.remove(user_to_unblock)
+            user.friends.add(user_to_unblock)
+            user_to_unblock.friends.add(user)
+            
+            return Response({
+                'status': 'success',
+                'message': f'User {username_to_unblock} has been unblocked'
+            }, status=status.HTTP_200_OK)
+        except JwtUser.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 ##--------------------------------------BLOCK-FRIEND-REQUEST-----------------------------------------### 
 # 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
 # 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
@@ -359,4 +401,32 @@ class PendingListView(APIView):
         return Response({
             'status': 'success',
             'friends': friend_list
+        }, status=status.HTTP_200_OK)
+
+class BlockedListView(APIView):
+    def get(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            raise AuthenticationFailed('Unauthenticated')
+        
+        try:
+            # Le format attendu est "Bearer <token>"
+            token = auth_header.split()[1]
+            payload = jwt.decode(token, settings.JWT_SECRET, algorithms=['HS256'])
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed('Token expired')
+        except (IndexError, jwt.DecodeError):
+            raise AuthenticationFailed('Invalid token')
+        
+        try:
+            user = JwtUser.objects.get(username=payload['username'])
+        except JwtUser.DoesNotExist:
+            raise AuthenticationFailed('User not found')
+        
+        blocked_users = user.blocked_users.all()
+        blocked_list = [{'username': blocked_user.username} for blocked_user in blocked_users]
+        
+        return Response({
+            'status': 'success',
+            'blocked_users': blocked_list
         }, status=status.HTTP_200_OK)
