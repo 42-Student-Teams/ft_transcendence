@@ -248,8 +248,6 @@ class AcceptFriendRequestView(APIView):
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
 class UnblockUserView(APIView):
     def post(self, request):
         auth_header = request.headers.get('Authorization')
