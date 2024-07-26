@@ -38,7 +38,7 @@ export default class SidePendingList extends Component {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Data received:', data.friends);
+                console.log('Data received:', data);
                 this.pendingFriends = data.friends || []; // Ensure it's an array
                 this.renderPendingList();
             } else {
@@ -71,16 +71,48 @@ export default class SidePendingList extends Component {
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-4 d-flex gap-2  friend-action">
-                                <button class="btn rounded btn-pending-friend"><i class="fa-solid fa-user-plus"></i></button>
+                            <div class="col-4 d-flex gap-2 friend-action">
+                                <button class="btn rounded btn-pending-friend" data-username="${friend.username}"><i class="fa-solid fa-user-plus"></i></button>
                             </div>
                         </div>
                     </div>
                 `;
                 friendDisplayElement.insertAdjacentHTML('beforeend', friendHtml);
             });
+
+            // Add event listeners to the buttons after rendering
+            this.element.querySelectorAll('.btn-pending-friend').forEach(button => {
+                button.addEventListener('click', (event) => this.handleAcceptFriend(event));
+            });
         } else {
             friendDisplayElement.innerHTML = '<p>No pending friend requests.</p>';
+        }
+    }
+
+    async handleAcceptFriend(event) {
+        const button = event.currentTarget;
+        const username = button.getAttribute('data-username');
+
+        try {
+            const jwt = localStorage.getItem('jwt');
+            const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
+            const response = await fetch(`${apiurl}/accept_friend_request`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 'friend_username': username })
+            });
+
+            if (response.ok) {
+                console.log(`Successfully accepted friend request for ${username}`);
+                // Optionally, update the UI to reflect the accepted friend request
+            } else {
+                console.error(`Failed to accept friend request for ${username}`);
+            }
+        } catch (error) {
+            console.error(`Error accepting friend request for ${username}:`, error);
         }
     }
 }
