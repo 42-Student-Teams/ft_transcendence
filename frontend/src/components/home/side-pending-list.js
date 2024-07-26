@@ -92,6 +92,7 @@ export default class SidePendingList extends Component {
     async handleAcceptFriend(event) {
         const button = event.currentTarget;
         const username = button.getAttribute('data-username');
+		const friendContainer = button.closest('.friend'); // Get the parent container of the friend
 
         try {
             const jwt = localStorage.getItem('jwt');
@@ -107,7 +108,8 @@ export default class SidePendingList extends Component {
 
             if (response.ok) {
                 console.log(`Successfully accepted friend request for ${username}`);
-                // Optionally, update the UI to reflect the accepted friend request
+                // Remove the friend container from the DOM
+                friendContainer.remove();
             } else {
                 console.error(`Failed to accept friend request for ${username}`);
             }
