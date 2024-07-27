@@ -41,13 +41,13 @@ export default class SideFriendList extends Component {
         </div>
       </div>
     `;
-
+	this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
-    this.handleEvents();
-    this.getFriendList();
+    this.handleEvent();
+    //this.getFriendList();
   }
 
-  handleEvents() {
+  async handleEvent() {
     this.element.querySelector("#btn-add-friend").addEventListener("click", async (event) => {
       event.preventDefault();
       const usernameInput = this.element.querySelector("#friend-username");
@@ -65,6 +65,8 @@ export default class SideFriendList extends Component {
         this.handleBlockFriend(event);
       }
     });
+
+	this.getFriendList();
   }
 
   async getFriendList() {
@@ -82,7 +84,7 @@ export default class SideFriendList extends Component {
       if (response.ok) {
         const data = await response.json();
         this.friends = data.friends || []; // Ensure it's an array
-        this.renderFriendList();
+        await this.renderFriendList();
       } else {
         console.error("Failed to fetch friend list");
       }

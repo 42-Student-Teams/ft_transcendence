@@ -19,15 +19,10 @@ export default class SideBlockedList extends Component {
         this.element = document.getElementById("side-blocked-list");
         this.element.innerHTML = view;
         this.handleEvent();
-        this.getBlockedList();
     }
 
     async handleEvent() {
-        // This can be used for adding event listeners dynamically
-    }
-
-    async getBlockedList() {
-        try {
+		try {
             const jwt = localStorage.getItem('jwt');
             const apiurl = process.env.API_URL;
             const response = await fetch(`${apiurl}/block_list`, {
@@ -42,7 +37,7 @@ export default class SideBlockedList extends Component {
             if (response.ok) {
                 const data = await response.json();
                 this.blocked = data.blocked_users || [];  // Ensure it's an array
-                this.renderBlockedList();
+                await this.renderBlockedList();
             } else {
                 console.error('Failed to fetch blocked users');
             }

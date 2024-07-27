@@ -37,7 +37,7 @@ export default class SidePendingList extends Component {
             if (response.ok) {
                 const data = await response.json();
                 this.pendingFriends = data.friends || []; // Ensure it's an array
-                this.renderPendingList();
+                await this.renderPendingList();
             } else {
                 console.error('Failed to fetch pending friend requests');
             }
@@ -47,6 +47,7 @@ export default class SidePendingList extends Component {
     }
 
     renderPendingList() {
+		console.log(this.pendingFriends.length);
         const friendDisplayElement = document.getElementById("friend-display");
         friendDisplayElement.innerHTML = ''; // Clear any existing content
 
