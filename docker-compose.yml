@@ -41,6 +41,7 @@ services:
       - ${APP_PORT}:8000
     volumes:
       - ./django/app:/app
+      - staticfiles:/staticfiles
     env_file:
       - .env
     networks:
@@ -72,6 +73,7 @@ services:
 volumes:
   db-data:
   nginx-data:
+  staticfiles:
 
 networks:
   backnet:

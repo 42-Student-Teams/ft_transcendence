@@ -16,6 +16,9 @@ RUN \
 	pip3 install -r requirements.txt --no-cache-dir --break-system-packages && \
 	apk --purge del .build-deps
 
+RUN mkdir /staticfiles
+COPY ./files/default_avatar.png /staticfiles
+
 RUN mkdir /app
 WORKDIR /app
 #COPY ./app/requirements.txt /app

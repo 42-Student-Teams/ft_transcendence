@@ -127,6 +127,7 @@ class UserListView(APIView):
 
         return ({'status': 'success'})
 
+
 class UserExistsView(APIView):
     def get(self, request):
         username = request.data['username']
@@ -146,6 +147,19 @@ class UserIsOauth(APIView):
             return {'status': True}
         else:
             return {'status': False}
+
+class UserUpdateView(APIView):
+    def post(self, request):
+        username = request.POST.get('username')
+        avatar = request.FILES.get('avatar')
+        user = JwtUser.objects.get(username=username)
+        if user is None:
+            raise AuthenticationFailed('User not found')
+        if avatar is not None:
+            user.avatar = avatar
+            user.save()
+        return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
+
 
 ##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###       
 

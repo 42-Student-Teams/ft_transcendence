@@ -154,3 +154,6 @@ TOKEN_EXPIRATION_MINUTES:int = os.getenv("TOKEN_EXPIRATION_MINUTES", 15)
 
 
 AUTH_USER_MODEL = 'backend.jwtuser'
+
+MEDIA_ROOT = '/staticfiles'
+MEDIA_URL = '/staticfiles/'

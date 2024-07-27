@@ -62,7 +62,7 @@ class JwtUser(AbstractUser):
     friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by')
-    avatar = models.ImageField(null=True, blank=True) # setup to load the image, need the field and the img
+    avatar = models.ImageField(max_length=200, default="default_avatar.png", upload_to='avatars') # setup to load the image, need the field and the img
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []

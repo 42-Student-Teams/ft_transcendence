@@ -11,6 +11,7 @@ urlpatterns=[
     path('users', views.UserListView.as_view(), name='user_list'),
     path('user_exists', views.UserExistsView.as_view(), name='user_exists'),
     path('user_isoauth', views.UserIsOauth.as_view(), name='user_isoauth'),
+    path('user_update', views.UserUpdateView.as_view(), name='user_update'),
     path('send_friend_request', views.FriendView.as_view(), name='send_friend_request'),
     path('accept_friend_request', views.AcceptFriendRequestView.as_view(), name='accept_friend_request'),
     path('unblock_user', views.UnblockUserView.as_view(), name='unblock_user'),
