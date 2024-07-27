@@ -1,15 +1,13 @@
 import datetime
-import json
 import os
 
 from django.conf import settings
-from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 
-from .enums import AuthLevel, TokenValidationResponse
-from .models import User, JwtUser
+from .jwt_util import gen_jwt
+from .models import JwtUser
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -52,21 +50,10 @@ class UserOauthLoginView(APIView):
         else:
             raise AuthenticationFailed()
 
-        payload = {
-            'username': username,
-            'expires': date_to_timestamp(datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
-                minutes=settings.TOKEN_EXPIRATION_MINUTES)),
-            'iat': timestamp_now(),
-        }
-        token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256')
-        res = Response()
-        res.data = {
-            'jwt': token,
-        }
+        res = Response(data={'jwt': gen_jwt(username)})
 
-        user: JwtUser = JwtUser.objects.filter(username=username).first()
+        user: JwtUser = JwtUser.objects.get(username=username)
         if user is None:
-            #raise AuthenticationFailed('Incorrect username or password')
             new_user = JwtUser.objects.create()
             new_user.username = username
             new_user.set_unusable_password()

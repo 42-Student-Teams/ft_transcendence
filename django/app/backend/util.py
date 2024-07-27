@@ -18,14 +18,9 @@ def get_user_info(access_token):
     headers = {
         'Authorization': f'Bearer {access_token}'
     }
-
     try:
         response = requests.get(url, headers=headers)
-
-        # Check if the response status code is not OK (200)
         response.raise_for_status()
-
-        # Parse the JSON response
         data = response.json()
         return data
     except requests.exceptions.HTTPError as http_err:

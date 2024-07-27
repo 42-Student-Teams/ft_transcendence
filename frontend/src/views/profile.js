@@ -1,7 +1,7 @@
 import Component from "../library/component.js";
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
-import ChartComponent from "../components/profile/Chart.js";
+//import ChartComponent from "../components/profile/Chart.js";
 import Statistics from "../components/profile/Statistics.js";
 import NavBar from '../components/home/navbar.js';
 
@@ -82,7 +82,7 @@ export default class Profile extends Component {
     initializeComponents() {
         new NavBar();
         new ProfileInfo();
-        new ChartComponent();
+        //new ChartComponent();
         new Statistics();
         new MatchHistory();
 

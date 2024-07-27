@@ -28,12 +28,16 @@ DEBUG = True
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+    os.getenv('BACKEND_IP', '0.0.0.0'),
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -59,7 +63,8 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'app.urls'
 
 CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:8000",  
+    "http://127.0.0.1:8000",
+    "https://api.pong.ch"
 ]
 
 TEMPLATES = [
@@ -78,8 +83,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'app.wsgi.application'
-
+#WSGI_APPLICATION = 'app.wsgi.application'
+ASGI_APPLICATION = 'app.asgi.application'
+#ASGI_APPLICATION = 'app.routing.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -145,6 +151,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
         'rest_framework.authentication.BasicAuthentication',
     ],
 }'''
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 
 TOKEN_EXPIRATION_MINUTES:int = os.getenv("TOKEN_EXPIRATION_MINUTES", 15)
