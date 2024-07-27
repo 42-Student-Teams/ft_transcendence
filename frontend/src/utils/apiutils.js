@@ -47,47 +47,5 @@ async function loginOauth(oauth_token) {
     }
 }
 
-async function userExists(username) {
-    try {
-        const data = {
-            username: username
-        };
-        const apiurl = process.env.API_URL;
-        const response = await fetch(`${apiurl}/user_exists`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },body: JSON.stringify(data)
-        });
-
-        return (response.json()['status']);
-    } catch (error) {
-        console.error("An error occurred:", error);
-        return false;
-    }
-}
-
-async function userIsOauth(username) {
-    try {
-        const data = {
-            username: username
-        };
-        const apiurl = process.env.API_URL;
-        const response = await fetch(`${apiurl}/user_isoauth`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json"
-            },body: JSON.stringify(data)
-        });
-
-        return (response.json()['status']); // TODO: check this
-    } catch (error) {
-        console.error("An error occurred:", error);
-        return false;
-    }
-}
-
 export { registerUser };
-export { userExists };
-export  { userIsOauth };
 export { loginOauth }
