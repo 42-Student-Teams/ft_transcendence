@@ -2,7 +2,9 @@ import NavBar from '../components/home/navbar.js';
 import SideBlockedList from '../components/home/side-blocked-list.js';
 import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
+import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
+import { navigateTo } from "../utils/router.js";
 
 export default class Home extends Component {
 	constructor() {
@@ -13,6 +15,7 @@ export default class Home extends Component {
 			navBar: new NavBar(),
 			sideChat: new SideChat(),
 			sideFriendList: new SideFriendList(),
+			sidePendingList: new SidePendingList(),
 			sideBlockedList: new SideBlockedList(),
 		};
 	}
@@ -29,13 +32,15 @@ export default class Home extends Component {
               <div class="chat-rm-margin row flex-grow-1 h-100">
                 <div id="" class="chat-flex col bg-white h-100 d-flex flex-column collapse collapse">
                   <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto ">
-                    <div class="btn-group" role="group" aria-label="Basic button group">
+					<div class="btn-group" role="group" aria-label="Basic button group">
   						<button type="button" id="btn-toggle-friends" class="btn btn-primary active">Friends</button>
-  						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
+						<button type="button" id="btn-toggle-pending" class="btn btn-primary">Pending</button>
+						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
 					</div>
                     <div id="side-chat" class="d-none flex-column h-100 gap-3"></div>
                     <div id="side-friend-list" class="d-flex flex-column h-100 gap-3"></div>
 					<div id="side-blocked-list" class="d-none flex-column h-100 gap-3"></div>
+					<div id="side-pending-list" class="d-none flex-column h-100 gap-3"></div>
                   </div>
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
@@ -83,7 +88,7 @@ export default class Home extends Component {
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-						<button id="btn-play-local" type="button" class="btn btn-success">Play</button>
+						<button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">Play</button>
 					</div>
 				</form>
 		    </div>
@@ -129,7 +134,7 @@ export default class Home extends Component {
 			  </div>
 		      <div class="modal-footer">
 				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-		    	<button id="btn-play-tournament" type="submit" class="px-2 btn btn-success">Play</button>
+		    	<button id="btn-play-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">Play</button>
 		      </div>
 			<form>
 		    </div>
@@ -151,6 +156,9 @@ export default class Home extends Component {
 				speed: speed
 			};
 			console.log(game);
+
+			//document.getElementById('local-game-modal').hide();
+			navigateTo("/local-game");
 		});
 
 		this.element.querySelector("#btn-play-tournament").addEventListener("click", async (event) => {
@@ -163,49 +171,74 @@ export default class Home extends Component {
 				color: colorRadio.value,
 				speed: speed
 			};
+			
 			console.log(game);
+			navigateTo("/tournament-game");
 		});
+
+		// Helper function to toggle visibility
+		function toggleVisibility(activeList, buttonToActivate, lists, buttons) {
+			lists.forEach(list => {
+				if (list === activeList) {
+					list.classList.remove('d-none');
+					list.classList.add('d-flex');
+				} else {
+					list.classList.remove('d-flex');
+					list.classList.add('d-none');
+				}
+			});
+
+			buttons.forEach(button => {
+				if (button === buttonToActivate) {
+					button.classList.add('active');
+				} else {
+					button.classList.remove('active');
+				}
+			});
+		}
+
 
 		this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
 			event.preventDefault();
-			var blockedList = document.getElementById('side-blocked-list');
+
 			var sideChat = document.getElementById('side-chat');
+			var pendingList = document.getElementById('side-pending-list');
+			var blockedList = document.getElementById('side-blocked-list');
 			var friendlist = document.getElementById('side-friend-list');
 			var btnBlocked = document.getElementById('btn-toggle-blocked');
 			var btnFriends = document.getElementById('btn-toggle-friends');
+			var btnPending = document.getElementById('btn-toggle-pending');
 
-			if (blockedList.classList.contains('d-none')) {
-				blockedList.classList.remove('d-none');
-				blockedList.classList.add('d-flex');
-				btnBlocked.classList.add('active');
-				friendlist.classList.remove('d-flex');
-				friendlist.classList.add('d-none');
-				btnFriends.classList.remove('active');
-				sideChat.classList.remove('d-flex');
-				sideChat.classList.add('d-none');
-			}
+			toggleVisibility(blockedList, btnBlocked, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 		});
 
 		this.element.querySelector("#btn-toggle-friends").addEventListener("click", async (event) => {
 			event.preventDefault();
+
 			var sideChat = document.getElementById('side-chat');
+			var pendingList = document.getElementById('side-pending-list');
 			var blockedList = document.getElementById('side-blocked-list');
 			var friendlist = document.getElementById('side-friend-list');
 			var btnBlocked = document.getElementById('btn-toggle-blocked');
 			var btnFriends = document.getElementById('btn-toggle-friends');
+			var btnPending = document.getElementById('btn-toggle-pending');
 
-			if (friendlist.classList.contains('d-none')) {
-				friendlist.classList.remove('d-none');
-				btnBlocked.classList.remove('active');
-				friendlist.classList.add('d-flex');
-				blockedList.classList.remove('d-flex');
-				blockedList.classList.add('d-none');
-				sideChat.classList.remove('d-flex');
-				sideChat.classList.add('d-none');
-				btnFriends.classList.add('active');
-			}
+			toggleVisibility(friendlist, btnFriends, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 		});
 
+		this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
+			event.preventDefault();
+
+			var sideChat = document.getElementById('side-chat');
+			var pendingList = document.getElementById('side-pending-list');
+			var blockedList = document.getElementById('side-blocked-list');
+			var friendlist = document.getElementById('side-friend-list');
+			var btnBlocked = document.getElementById('btn-toggle-blocked');
+			var btnFriends = document.getElementById('btn-toggle-friends');
+			var btnPending = document.getElementById('btn-toggle-pending');
+
+			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
+		});
 
 	}
 }

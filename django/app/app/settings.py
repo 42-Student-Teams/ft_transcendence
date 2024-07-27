@@ -33,6 +33,8 @@ ALLOWED_HOSTS = [
     os.getenv('BACKEND_IP', '0.0.0.0'),
 ]
 
+JWT_SECRET = os.getenv('JWT_SECRET')
+
 
 # Application definition
 
@@ -64,7 +66,6 @@ ROOT_URLCONF = 'app.urls'
 
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
-    "https://api.pong.ch"
 ]
 
 TEMPLATES = [
