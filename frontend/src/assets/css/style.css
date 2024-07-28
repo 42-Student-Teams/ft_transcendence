@@ -171,8 +171,6 @@ button.btn.btn-primary:active {
 	height:600px;
 }
 
-
-
 .friend{
 	height:80px;
 	border-top:1px solid #EBEBED;
@@ -185,9 +183,16 @@ button.btn.btn-primary:active {
 	border-radius:50%;
 }
 
-.friend:hover{
+.friend:hover, .ia-player-display:hover{
 	border-radius: 4px;
 	background-color:#EBEBED !important;
+}
+
+.ia-player-display{
+	padding-left: 10px ;
+	border-top:1px solid #EBEBED;
+	height:45px;
+	border-bottom:1px solid transparent;
 }
 
 .friend-status-online, .friend-status-offline, .friend-status-absent{
@@ -244,7 +249,6 @@ button.btn.btn-primary:active {
 	border:none;
 }
 
-
 .btn-unblock:hover{
 	border:none;
 	color:#ED5554;
@@ -262,7 +266,6 @@ button.btn.btn-primary:active {
 .btn-pending-friend{
 	border:none;
 }
-
 
 /* Modal */
 
@@ -282,6 +285,19 @@ button.btn.btn-primary:active {
   width:900px;;
   background-color:#EBEBED;
 }
+
+.btn-add-ai{
+	background-color:#0a57ca;
+  	color:white;
+}
+
+.btn-add-ai:hover, .btn-add-ai:active{
+	background-color:blue !important;
+  	color:white !important;
+}
+
+
+
 .btn-blue{
 	background-color:#0a58ca;
 }
