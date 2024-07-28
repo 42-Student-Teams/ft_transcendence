@@ -58,6 +58,7 @@ export default class SideFriendList extends Component {
       }
     });
 
+    /* Here the user clicked on the chat icon next to a friend */
     this.element.addEventListener("click", (event) => {
       if (event.target.closest(".btn-direct-message")) {
         this.handleDirectMessage(event);
