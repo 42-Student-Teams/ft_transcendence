@@ -21,7 +21,7 @@ export default class SideBlockedList extends Component {
         this.handleEvent();
     }
 
-    async handleEvent() {
+	async handleEvent() {
 		try {
             const jwt = localStorage.getItem('jwt');
             const apiurl = process.env.API_URL;
@@ -104,7 +104,7 @@ export default class SideBlockedList extends Component {
 
             if (response.ok) {
                 // Remove the user container from the DOM
-                userContainer.remove();
+                userContainer.remove(); 
                 // Optionally, add the user back to the friends list
                 // You could call a method here to update the friends list if needed
             } else {

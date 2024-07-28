@@ -12,6 +12,7 @@ export default class SidePendingList extends Component {
     }
 
     async render() {
+
         const view = /*html*/ `
             <div id="friend-display" class="blocked-list flex-grow-1 overflow-auto">
             </div>
@@ -19,39 +20,41 @@ export default class SidePendingList extends Component {
 
         this.element = document.getElementById("side-pending-list");
         this.element.innerHTML = view;
-        this.handleEvent();
+    	this.handleEvent();
     }
 
-    async handleEvent() {
-        try {
-            const jwt = localStorage.getItem('jwt');
-            const apiurl = process.env.API_URL;
-            const response = await fetch(`${apiurl}/pending_list`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.pendingFriends = data.friends || []; // Ensure it's an array
-                await this.renderPendingList();
-            } else {
-                console.error('Failed to fetch pending friend requests');
-            }
-        } catch (error) {
-            console.error('Error fetching pending friend requests:', error);
-        }
-    }
+	async handleEvent() {
+		try {
+		  const jwt = localStorage.getItem("jwt");
+		  const apiurl = process.env.API_URL;
+		  const response = await fetch(`${apiurl}/pending_list`, {
+			method: "GET",
+			headers: {
+			  Authorization: `Bearer ${jwt}`,
+			  "Content-Type": "application/json",
+			},
+		  });
+	
+		  if (response.ok) {
+			const data = await response.json();
+			console.log(data);
+			this.pendingFriends = data.friends || [];
+			await this.renderPendingList();
+		  } else {
+			console.error("Failed to fetch pending list");
+		  }
+		} catch (error) {
+		  console.error("Error fetching pending list:", error);
+		}
+	  }
 
     renderPendingList() {
-		console.log(this.pendingFriends.length);
         const friendDisplayElement = document.getElementById("friend-display");
         friendDisplayElement.innerHTML = ''; // Clear any existing content
+		console.log('Pending:', this.pendingFriends);
 
         if (this.pendingFriends.length > 0) {
+			console.log('hheerererere');
             this.pendingFriends.forEach((friend, index) => {
                 const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
                 const friendHtml = /*html*/ `

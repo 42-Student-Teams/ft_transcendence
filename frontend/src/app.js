@@ -27,15 +27,10 @@ window.addEventListener("popstate", (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
-	// if (!store.state.isLoggedIn) {
-	// 	try {
-	// 		await checkAuthStatus();
-	// 	} catch (error) {
-	// 		//console.log(error);
-	// 		navigateTo("/login");
-	// 		return;
-	// 	}
-	// }
+	if (!store.state.isLoggedIn) {
+		navigateTo("/login");
+	}
+	console.log("app.js: store.state.isLoggedIn", store.state.isLoggedIn);
 
 	handleDefaultRoute();
 });
