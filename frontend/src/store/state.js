@@ -3,4 +3,5 @@ export default {
 	isLoggedIn: false,
 	languageId: "en",
 	intraId: "intraId(lsaba-qu)",
+	socketConnection: null,
 };

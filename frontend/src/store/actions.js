@@ -1,3 +1,5 @@
+import state from "./state.js";
+
 function updateLocation(context, payload) {
 	context.commit("updateLocation", payload);
 }

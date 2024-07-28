@@ -28,72 +28,7 @@ export default class SideChat extends Component {
                   <div class="chat-text  ">I'm good, thanks! How about you?</div>
                 </div>
               </div>
-              <div class="message other-message">
-                <div>
-                  <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text "> I'm doing well. Started a new project recently, so that's been taking up most of my time. It's exciting, though!</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Wow, that’s really impressive. Greening up the city sounds like a fantastic idea. If you need any help or volunteers, let me know.</div>
-                </div>
-              </div>
+              
               <!-- More messages here -->
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
