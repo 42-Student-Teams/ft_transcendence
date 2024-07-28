@@ -7,6 +7,7 @@ function logIn(context) {
 }
 
 function logOut(context) {
+	localStorage.clear();
 	context.commit("logOut");
 }
 

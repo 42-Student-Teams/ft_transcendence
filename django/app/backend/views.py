@@ -87,8 +87,17 @@ class UserListView(APIView):
         else:
             raise AuthenticationFailed()
 
-##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###
+class UserUpdateView(APIView):
+    def post(self, request):
+        user = JwtUser.objects.get(username=check_jwt(request))
+        avatar = request.FILES.get('avatar')
+        if avatar is not None:
+            user.avatar = avatar
+            user.save()
+        return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
+
+##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###
 
 ##--------------------------------------FRIEND-REQUEST-----------------------------------------###
 # 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
