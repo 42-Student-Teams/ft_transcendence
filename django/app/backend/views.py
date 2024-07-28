@@ -89,11 +89,8 @@ class UserListView(APIView):
 
 class UserUpdateView(APIView):
     def post(self, request):
-        username = request.POST.get('username')
+        user = JwtUser.objects.get(username=check_jwt(request))
         avatar = request.FILES.get('avatar')
-        user = JwtUser.objects.get(username=username)
-        if user is None:
-            raise AuthenticationFailed('User not found')
         if avatar is not None:
             user.avatar = avatar
             user.save()
