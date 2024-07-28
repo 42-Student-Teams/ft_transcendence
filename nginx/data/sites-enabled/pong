@@ -1,12 +1,12 @@
 server {
     listen 80;
-    server_name pong.ch;
+    #server_name %BACKEND_IP%;
     return 301 https://$host$request_uri;
 }
 
 server {
     listen 443 ssl;
-    server_name pong.ch;
+    #server_name pong.ch;
 
     include snippets/self-signed.conf;
 
@@ -14,10 +14,33 @@ server {
 
 	location / {
         proxy_pass http://frontend:8080;
-	include proxy_params;
+        include proxy_params;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
 
-	proxy_http_version 1.1;
-    	proxy_set_header Upgrade $http_upgrade;
-    	proxy_set_header Connection "upgrade";
+    location /backend/ {
+        proxy_pass http://backend:8069;
+        include proxy_params;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    location /ws/ {
+        proxy_pass http://backend:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        #proxy_set_header Connection "Upgrade";
+        #proxy_set_header Host $host;
+        proxy_set_header Connection $connection_upgrade;
+    }
+
+    location /wss/ {
+        proxy_pass http://backend:8069;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
     }
 }
