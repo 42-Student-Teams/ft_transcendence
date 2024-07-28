@@ -54,7 +54,7 @@ export default class SidePendingList extends Component {
 		console.log('Pending:', this.pendingFriends);
 
         if (this.pendingFriends.length > 0) {
-			console.log('hheerererere');
+
             this.pendingFriends.forEach((friend, index) => {
                 const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
                 const friendHtml = /*html*/ `

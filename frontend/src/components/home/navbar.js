@@ -51,9 +51,8 @@ export default class Navbar extends Component {
 
 		this.element.querySelector("#btnLogout").addEventListener("click", () => {
 			event.preventDefault();
-			store.dispatch("logout");
+			store.dispatch("logOut");
 			navigateTo("/login");
 		});
-
     }
 }
