@@ -1,33 +1,37 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
+import { login } from '../../utils/langPack.js'; 
 
 export default class Login extends Component {
     constructor() {
         super({ element: document.getElementById("formLogin") });
+        store.events.subscribe("stateChange", () => this.render());
         this.render();
     }
 
     async render() {
 
-        const view = /*html*/ `
-            <form id="form-login">
-                <div class="input-group mb-3">
-                    <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="Login">
-                </div>
-                <div class="input-group mb-3">
-                    <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password">
-                </div>
-                <div class="input-group mb-3">
-                    <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">Login</button>
-                </div>
-            </form>
-        `;
+        const languageId = store.state.languageId;
+        const translations = login[languageId]; 
 
-        this.element = document.getElementById("formLogin");
-        this.element.innerHTML = view;
-        this.handleEvent();
-    }
+        const view = /*html*/ `
+      <form id="form-login">
+        <div class="input-group mb-3">
+          <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="${translations.username}">
+        </div>
+        <div class="input-group mb-3">
+          <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="${translations.password}">
+        </div>
+        <div class="input-group mb-3">
+          <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">${translations.loginButton}</button>
+        </div>
+      </form>
+    `;
+    this.element = document.getElementById("formLogin");
+    this.element.innerHTML = view;
+    this.handleEvent();
+  }
 
     async handleEvent() {
 
