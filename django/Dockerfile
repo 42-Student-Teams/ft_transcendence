@@ -16,6 +16,9 @@ RUN \
 	pip3 install -r requirements.txt --no-cache-dir --break-system-packages && \
 	apk --purge del .build-deps
 
+RUN mkdir /staticfiles
+COPY ./files/default_avatar.png /staticfiles
+
 RUN mkdir /app
 WORKDIR /app
 #COPY ./app/requirements.txt /app
@@ -29,7 +32,9 @@ EXPOSE 8000
 # RUN chmod +x /tmp/entrypoint.sh
 # ENTRYPOINT [ "sh" , "/tmp/entrypoint.sh"]
 USER $USER
-#CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
-CMD ["python", "-m", "uvicorn", "--host", "0.0.0.0", "app.asgi:application"]
+
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
+#CMD ["python", "-m", "uvicorn", "--reload", "--host", "0.0.0.0", "app.asgi:application"]
+
 
 #CMD ["sleep", "infinity"]

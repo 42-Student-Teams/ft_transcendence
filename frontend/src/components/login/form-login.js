@@ -41,12 +41,13 @@ export default class Login extends Component {
 
             try {
                 // Make the POST request with the login credentials
-                const apiurl = process.env.API_URL;
+                const apiurl = "/backend"; //process.env.API_URL;
 
 
                 const data = {
                     username: username,
-                    password: password
+                    password: password,
+                    oauth_token: null
                 };
 
                 const response = await fetch(`${apiurl}/login`, {
@@ -57,7 +58,7 @@ export default class Login extends Component {
                     body: JSON.stringify(data)
                 });
 
-                console.log(response);
+                const jsonData = await response.json();
 
                 // if (username.trim() !== "" && password.trim() !== "") {
                 //     store.dispatch("logIn");
@@ -65,6 +66,7 @@ export default class Login extends Component {
                 // }
                 if (response.ok) {
                     store.dispatch("logIn");
+                    localStorage.setItem('jwt', jsonData.jwt);
                     navigateTo("/");
                 }
                 else {

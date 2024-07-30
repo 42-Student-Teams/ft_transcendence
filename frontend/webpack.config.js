@@ -4,6 +4,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
+import {env} from "process";
 
 const __filename =  fileURLToPath(import.meta.url);
 const __dirname = path.resolve();
@@ -12,10 +13,32 @@ export default {
   entry: './src/app.js',
   mode: 'development',
   devServer: {
+    webSocketServer: false,
     compress: true,
     port: 8080,
     hot: true,
     allowedHosts: "pong.ch",
+    proxy: [
+        /*{
+          context: ['/backend'],
+          //target: 'https://google.ch',
+          logLevel: 'debug',
+          //router: () => 'https://api.pong.ch',
+          //target: 'https://api.pong.ch',
+          //target: 'http://backend:8069',
+          target: `${env.BACKEND_IP}:8069`,
+          //target: '192.168.1.249:8069',
+          changeOrigin: true,
+          secure: false,
+          //pathRewrite: {'^/backend': ''}
+        },*/
+        {
+          context: ['/api'],
+          target: 'https://api.intra.42.fr',
+          changeOrigin: true,
+          pathRewrite: {'^/api': ''}
+        }
+    ],
     static: {
       directory: path.resolve('dist'),
     },

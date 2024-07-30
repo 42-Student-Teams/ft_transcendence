@@ -4,10 +4,16 @@
 .idea/
 django/app/app/__pycache__/
 
-node_modules
 
 */__pycache__/
 **/__pycache__/
 
 nginx/logs/*
 nginx/data/ssl
+
+frontend/node_modules
+frontend/node_modules/*
+
+frontend/dist/bundle.js
+frontend/package-lock.js
+frontend/node_modules/.package-lock.json

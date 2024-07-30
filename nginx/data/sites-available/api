@@ -1,0 +1,22 @@
+server {
+    listen 80;
+    server_name api.pong.ch;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name api.pong.ch;
+
+    include snippets/self-signed.conf;
+
+    include snippets/ssl-params.conf;
+
+	location / {
+        proxy_pass http://backend:8000;
+	    include proxy_params;
+	    proxy_http_version 1.1;
+    	proxy_set_header Upgrade $http_upgrade;
+    	proxy_set_header Connection "upgrade";
+    }
+}

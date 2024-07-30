@@ -35,8 +35,8 @@ h1 {
 }
 
 .btn-fortytwo {
-	background: #00babc;
-	color: #fff;
+  background: #00babc;
+  color: #fff !important;
 }
 
 .btn-fortytwo:hover {
@@ -92,7 +92,8 @@ h1 {
 	color: #4E5057;
 }
 
-.btn-primary {
+
+.btn-primary{
 	background-color: #F2F3F5;
 	border: none;
 }
@@ -176,13 +177,11 @@ button.btn.btn-primary:active {
 	height: 600px;
 }
 
-
-
-.friend {
-	height: 80px;
-	border-top: 1px solid #EBEBED;
-	border-bottom: 1px solid transparent;
-
+.friend{
+	height:80px;
+	border-top:1px solid #EBEBED;
+	border-bottom:1px solid transparent;
+	
 }
 
 .friend-img {
@@ -190,16 +189,21 @@ button.btn.btn-primary:active {
 	border-radius: 50%;
 }
 
-.friend:hover {
+.friend:hover, .ia-player-display:hover{
 	border-radius: 4px;
 	background-color: #EBEBED !important;
 }
 
-.friend-status-online,
-.friend-status-offline,
-.friend-status-absent {
-	font-size: 13px;
-	font-weight: 600;
+.ia-player-display{
+	padding-left: 10px ;
+	border-top:1px solid #EBEBED;
+	height:45px;
+	border-bottom:1px solid transparent;
+}
+
+.friend-status-online, .friend-status-offline, .friend-status-absent{
+	font-size:13px;
+	font-weight:600;
 }
 
 .friend-status {
@@ -225,19 +229,49 @@ button.btn.btn-primary:active {
 	color: white;
 }
 
-/* Blocked list */
+#login-submit, #form-register-submit{
+  background-color: #0a57ca;
+  color:white;
+}
+
+#login-submit:hover, #form-register-submit:hover{
+  background-color: #073d8d;
+  color:white;
+}
 
 
-.btn-unblock:hover {
-	border: none;
-	color: #ED5554;
-	background-color: #bcbcbc;
+/*  Blocked, list, friends */
+
+#home-page:hover{
+	cursor:pointer;
+}
+
+.btn-add-friend:hover{
+	border:none;
+	color:#228B21;
+}
+
+.btn-add-friend{
+	border:none;
+}
+
+.btn-unblock:hover{
+	border:none;
+	color:#ED5554;
 }
 
 .btn-unblock {
 	border: none;
 }
 
+.btn-pending-friend:hover{
+	border:none;
+	color:#228B21;
+}
+
+.btn-pending-friend{
+	border:none;
+}
 
 /* Modal */
 
@@ -252,7 +286,6 @@ button.btn.btn-primary:active {
 	height: 500px;
 }
 
-.game-canva {}
 
 canvas {
 	height: 500px;
@@ -294,4 +327,43 @@ canvas {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
+}
+.game-canva{
+  height:500px;
+  width:900px;;
+  background-color:#EBEBED;
+}
+
+.btn-add-ai{
+	background-color:#0a57ca;
+  	color:white;
+}
+
+.btn-add-ai:hover, .btn-add-ai:active{
+	background-color:blue !important;
+  	color:white !important;
+}
+
+
+
+.btn-blue{
+	background-color:#0a58ca;
+}
+
+.btn-blue:hover{
+	background-color:blue;
+	color:white;
+}
+
+/* Profile */
+.bg-custom {
+  background-color: #f6f8fb !important;
+}
+
+.profile-user-info{
+	font-weight: 500;
+}
+
+.edit-profil-btn {
+  color: white;
 }

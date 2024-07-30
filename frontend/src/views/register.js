@@ -7,8 +7,6 @@ export default class Register extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
 
-        // store.events.subscribe("languageIdChange", () => this.renderAll());
-
         this.render();
         this.components = { 
             btnLoginInRegister: new BtnLoginInRegister(),
@@ -39,5 +37,10 @@ export default class Register extends Component {
         `;
 
         this.element.innerHTML = view;
+        
+        this.components = { 
+            btnLoginInRegister: new BtnLoginInRegister(),
+            formRegister: new FormRegister()
+        };
     }
 }

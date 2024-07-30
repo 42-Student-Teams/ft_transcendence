@@ -22,6 +22,7 @@ class User(models.Model):
     session_token_expires = models.DateTimeField(blank=True, null=True)
     oauth_token = models.DateTimeField(blank=True, null=True)
     is_admin = models.BooleanField(default=False)
+    friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
 
     def validate_password(self, password):
         ph = PasswordHasher()
@@ -50,3 +51,18 @@ class User(models.Model):
 
     def __str__(self):
         return self.username
+
+class JwtUser(AbstractUser):
+    #name = models.CharField(max_length=255)
+    #email = models.CharField(max_length=255, unique=True)
+    username = models.CharField(unique=True, max_length=255)
+    email = None
+    password = models.CharField(max_length=255)
+    isoauth = models.BooleanField(default=False)
+    friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
+    friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
+    blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by')
+    avatar = models.ImageField(max_length=200, default="default_avatar.png", upload_to='avatars') # setup to load the image, need the field and the img
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = []
