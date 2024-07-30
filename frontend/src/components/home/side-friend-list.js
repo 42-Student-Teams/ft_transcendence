@@ -61,7 +61,7 @@ export default class SideFriendList extends Component {
     /* Here the user clicked on the chat icon next to a friend */
     this.element.addEventListener("click", (event) => {
       if (event.target.closest(".btn-direct-message")) {
-        this.handleDirectMessage(event);
+        this.handleDirectMessage(event, document.getElementById("message_button").getAttribute('data-username'));
       } else if (event.target.closest(".btn-unblock")) {
         this.handleBlockFriend(event);
       }
@@ -121,7 +121,7 @@ export default class SideFriendList extends Component {
                 </div>
               </div>
               <div class="col-4 d-flex gap-2 friend-action">
-                <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
+                <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
                 <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
               </div>
             </div>
@@ -141,8 +141,9 @@ export default class SideFriendList extends Component {
     }
   }
 
-  handleDirectMessage(event) {
+  handleDirectMessage(event, friend_username) {
     const sideChat = document.getElementById("side-chat");
+    sideChat.setAttribute('data-username', friend_username);
     const friendlist = document.getElementById("side-friend-list");
     const btnBlocked = document.getElementById("btn-toggle-blocked");
     const btnFriends = document.getElementById("btn-toggle-friends");

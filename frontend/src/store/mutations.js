@@ -26,11 +26,17 @@ function setLanguage(state, payload) {
 	return state;
 }
 
+function setWebSocket(state, payload) {
+	state.socket = payload;
+	return state;
+}
+
 
 export default {
 	updateLocation,
 	logIn,
 	logOut,
 	setLanguage,
+	setWebSocket,
 	// setIntraId,
 };

@@ -23,10 +23,15 @@ function setIntraId(context, payload) {
 	context.commit("setIntraId", payload);
 }
 
+function setWebSocket(context, payload) {
+	context.commit("setWebSocket", payload);
+}
+
 export default {
 	updateLocation,
 	logIn,
 	logOut,
 	setLanguage,
 	setIntraId,
+	setWebSocket,
 };

@@ -1,4 +1,8 @@
 import Component from "../../library/component.js";
+import state from "../../store/state.js";
+import store from "../../store/index.js";
+import {handleMessage} from "../../websocket/wshandler.js";
+import {navigateTo} from "../../utils/router.js";
 
 export default class SideChat extends Component {
     constructor() {
@@ -9,7 +13,7 @@ export default class SideChat extends Component {
     async render() {
 
         const view = /*html*/ `
-            <div class="gap-3 row chat-messages overflow-auto flex-grow-1">
+            <div id="messages-container" class="gap-3 row chat-messages overflow-auto flex-grow-1">
               <div class="message my-message">
                 <div>
                   <div class="chat-name">You</div>
@@ -33,11 +37,26 @@ export default class SideChat extends Component {
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
               <input type="text" id="message-input" class="form-control" placeholder="Message" />
-              <button id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
+              <button onclick="sendMessage()" id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
             </div>
         `;
 
         this.element = document.getElementById("side-chat");
         this.element.innerHTML = view;
+        this.handleEvent();
+    }
+
+    async handleEvent() {
+        window.sendMessage = function () {
+            //alert('lol');
+            //console.log(store.state.socket);
+            let msg = document.getElementById("message-input").value.trim();
+            if (msg.length == 0) {
+                return;
+            }
+            let friend_name = document.getElementById("side-chat").getAttribute("data-username");
+            console.log(`sending message '${msg}' to user ${friend_name}`);
+            state.socket.send(JSON.stringify({"func": "direct_message", "friend_username": friend_name, "message": msg}));
+        }
     }
 }
