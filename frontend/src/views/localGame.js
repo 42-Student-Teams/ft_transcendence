@@ -58,12 +58,14 @@ export default class LocalGame extends Component {
 
 
 
-// 		const gameOptions = localStorage.getItem("local-game");
+		const gameOptions = localStorage.getItem("local-game");
 
-// 		let obj = JSON.parse(text);
-// document.getElementById("demo").innerHTML = obj.name;
+		let obj = JSON.parse(gameOptions);
+		// document.getElementById("demo").innerHTML = obj.name;
 
-		// console.log(gameOptions);
+		console.log(gameOptions);
+		console.log(obj.color);
+		console.log(obj.speed);
 		class Paddle {
 			constructor(direction) {
 				this.direction = direction
@@ -118,12 +120,17 @@ export default class LocalGame extends Component {
 		const timerElement = document.getElementById("Timer");
 
 		const config = {
+			// if (obj.speed)
+			// {
+				
+			// 	canvasWidth: 900,
+			// };
 			canvasWidth: 900,
 			canvasHeight: 500,
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: 9,
+			ballXSpeed: obj.speed * 6 || 3,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
@@ -152,6 +159,7 @@ export default class LocalGame extends Component {
 
 		const ball = {
 			r: 8,
+			color: obj.color,
 		}
 
 
@@ -185,7 +193,6 @@ export default class LocalGame extends Component {
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-				console.log("hello");
 			}
 			else {
 				const minutes = Math.floor(endTime / 60000);
@@ -250,11 +257,11 @@ export default class LocalGame extends Component {
 		const paintBall = () => {
 			ctx.beginPath();
 			ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
-			ctx.fillStyle = 'green';
+			ctx.fillStyle = ball.color;
 			ctx.fill();
-			ctx.lineWidth = 5;
-			ctx.strokeStyle = '#003300';
-			ctx.stroke();
+			// ctx.lineWidth = 5;
+			// ctx.strokeStyle = '#003300';
+			// ctx.stroke();
 		}
 		
 		const render = () => {
