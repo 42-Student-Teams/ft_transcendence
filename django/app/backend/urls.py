@@ -18,4 +18,5 @@ urlpatterns=[
     path('pending_list', views.PendingListView.as_view(), name='pending_list'),
     path('block_list', views.BlockedListView.as_view(), name='block_list'),
     path('update_avatar', views.UpdateProfilePictureView.as_view(), name='update_avatar'),
+    path('chat_get_messages', views.ChatGetMessagesView.as_view(), name='chat_get_messages'),
 ]

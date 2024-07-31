@@ -47,5 +47,36 @@ async function loginOauth(oauth_token) {
     }
 }
 
+async function get_messages(friend_username, amount, start_id=null) {
+    try {
+        const jwt = localStorage.getItem("jwt");
+        let data = {
+            friend_username: friend_username,
+            message_amount: amount
+        };
+        if (start_id != null) {
+            data.start_id = start_id;
+        }
+        const apiurl = process.env.API_URL;
+
+        const response = await fetch(`${apiurl}/chat_get_messages`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${jwt}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        console.log(response);
+
+        return (response.json());
+    } catch (error) {
+        console.error("An error occurred:", error);
+        return ({ok: false});
+    }
+}
+
 export { registerUser };
-export { loginOauth }
+export { loginOauth };
+export { get_messages };

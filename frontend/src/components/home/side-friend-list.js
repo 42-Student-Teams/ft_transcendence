@@ -2,6 +2,8 @@ import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
+import {get_messages} from "../../utils/apiutils.js";
+import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -60,8 +62,9 @@ export default class SideFriendList extends Component {
 
     /* Here the user clicked on the chat icon next to a friend */
     this.element.addEventListener("click", (event) => {
-      if (event.target.closest(".btn-direct-message")) {
-        this.handleDirectMessage(event, document.getElementById("message_button").getAttribute('data-username'));
+      let button = event.target.closest(".btn-direct-message");
+      if (button) {
+        this.handleDirectMessage(event, button.getAttribute('data-username'));
       } else if (event.target.closest(".btn-unblock")) {
         this.handleBlockFriend(event);
       }
@@ -141,7 +144,7 @@ export default class SideFriendList extends Component {
     }
   }
 
-  handleDirectMessage(event, friend_username) {
+  async handleDirectMessage(event, friend_username) {
     const sideChat = document.getElementById("side-chat");
     sideChat.setAttribute('data-username', friend_username);
     const friendlist = document.getElementById("side-friend-list");
@@ -156,6 +159,8 @@ export default class SideFriendList extends Component {
       btnBlocked.classList.remove("active");
       btnFriends.classList.remove("active");
     }
+
+    await fetchChatHistory(friend_username);
   }
 
   async handleBlockFriend(event) {

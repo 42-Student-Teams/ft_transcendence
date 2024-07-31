@@ -12,7 +12,7 @@ from .models import JwtUser
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer
+from .serializers import JwtUserSerializer, MessageSerializer
 
 from .util import get_user_info
 
@@ -300,4 +300,39 @@ class UpdateProfilePictureView(APIView):
             'status': 'success',
             'message': 'Avatar updated successfully',
             'avatar_url': user.avatar.url if user.avatar else None
+        }, status=status.HTTP_200_OK)
+
+class ChatGetMessagesView(APIView):
+    def post(self, request):
+        user = JwtUser.objects.get(username=check_jwt(request))
+        print(f'Serving messages to user `{user.username}`', flush=True)
+
+        message_amount = 10
+        if request.data.get('message_amount') is None:
+            return Response({
+                'status': 'Param message_amount missing',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        gotten_message_amount = int(request.data.get('message_amount'))
+        # limiting to 10
+        if gotten_message_amount < message_amount:
+            message_amount = gotten_message_amount
+        if request.data.get('friend_username') is None:
+            return Response({
+                'status': 'Param friend_username missing',
+            }, status=status.HTTP_400_BAD_REQUEST)
+        friend = JwtUser.objects.get(username=request.data.get('friend_username'))
+        if friend is None:
+            return Response({
+                'status': 'Friend not found',
+            }, status=status.HTTP_404_NOT_FOUND)
+        start_id = None
+        if request.data.get('start_id') is not None:
+            start_id = int(request.data.get('start_id'))
+        messages = user.get_last_x_messages_with_friend(friend, message_amount, start_id)
+
+        serialized_messages = MessageSerializer(messages, many=True).data
+        return Response({
+            'status': 'success',
+            'messages': serialized_messages,
+            'got_all': len(messages) < message_amount
         }, status=status.HTTP_200_OK)

@@ -1,8 +1,7 @@
 import Component from "../../library/component.js";
 import state from "../../store/state.js";
-import store from "../../store/index.js";
-import {handleMessage} from "../../websocket/wshandler.js";
-import {navigateTo} from "../../utils/router.js";
+import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
+import {get_messages} from "../../utils/apiutils.js";
 
 export default class SideChat extends Component {
     constructor() {
@@ -14,26 +13,7 @@ export default class SideChat extends Component {
 
         const view = /*html*/ `
             <div id="messages-container" class="gap-3 row chat-messages overflow-auto flex-grow-1">
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text ">Hello !</div>
-                </div>
-              </div>
-              <div class="message other-message">
-                <div>
-                  <div class="chat-name">PolonaisTresSerieux92</div>
-                  <div class="chat-text  ">Hi! How are you?</div>
-                </div>
-              </div>
-              <div class="message my-message">
-                <div>
-                  <div class="chat-name">You</div>
-                  <div class="chat-text  ">I'm good, thanks! How about you?</div>
-                </div>
-              </div>
-              
-              <!-- More messages here -->
+              <!-- Messages go here -->
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
               <input type="text" id="message-input" class="form-control" placeholder="Message" />
@@ -52,6 +32,7 @@ export default class SideChat extends Component {
     }
 
     async handleEvent() {
+        window.fetchChatHistory = fetchChatHistory;
         window.sendMessage = function () {
             //alert('lol');
             //console.log(store.state.socket);
@@ -63,12 +44,7 @@ export default class SideChat extends Component {
             console.log(`sending message '${msg}' to user ${friend_name}`);
             state.socket.send(JSON.stringify({"func": "direct_message", "friend_username": friend_name, "message": msg}));
             document.getElementById("message-input").value = '';
-            document.getElementById("messages-container").innerHTML += `<div class="message my-message">
-            <div>
-              <div class="chat-name">You</div>
-              <div class="chat-text ">${msg}</div>
-            </div>
-          </div>`;
+            chatInsertMessage("You", msg);
         }
     }
 }

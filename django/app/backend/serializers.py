@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from .models import User, JwtUser
+from .models import User, JwtUser, Message
 from .util import get_user_info
 
 
@@ -36,3 +36,11 @@ class JwtUserSerializer(serializers.ModelSerializer):
             raise PermissionDenied'''
         instance.save()
         return instance
+
+class MessageSerializer(serializers.ModelSerializer):
+    author_username = serializers.CharField(source='author.username', read_only=True)
+    recipient_username = serializers.CharField(source='recipient.username', read_only=True)
+
+    class Meta:
+        model = Message
+        fields = ('id', 'author_username', 'recipient_username', 'content', 'timestamp')

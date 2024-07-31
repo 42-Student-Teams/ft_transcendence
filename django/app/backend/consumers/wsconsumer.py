@@ -7,6 +7,10 @@ from channels.generic.websocket import WebsocketConsumer
 
 from backend.models import JwtUser
 
+from backend.models import Message
+
+from backend.util import timestamp_now
+
 
 class WsConsumer(WebsocketConsumer):
     def __init__(self, *args, **kwargs):
@@ -110,6 +114,7 @@ class WsConsumer(WebsocketConsumer):
         friend = JwtUser.objects.get(username=friend_username)
         if friend is None:
             return
+        Message.objects.create(author=self.user, recipient=friend, content=msg_obj.get('message'), timestamp=timestamp_now())
         msg_obj['author'] = self.user.username
         print(f"Relaying message {msg_obj.get('message')} to channel", flush=True)
         print('Groups I\'m in:', flush=True)
@@ -124,6 +129,7 @@ class WsConsumer(WebsocketConsumer):
         if msg_obj.get('friend_username') == self.user.username:
             # it could contain more fields, which is not desirable
             sanitized_msg_obj = {
+                'type': 'dm',
                 'author': msg_obj.get('author'),
                 'message': msg_obj.get('message'),
             }
