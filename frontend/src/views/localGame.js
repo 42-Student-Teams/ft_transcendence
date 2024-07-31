@@ -56,16 +56,14 @@ export default class LocalGame extends Component {
 
 	async handleEvent() {
 
-
-
 		const gameOptions = localStorage.getItem("local-game");
 
-		let obj = JSON.parse(gameOptions);
+		const obj = JSON.parse(gameOptions);
 		// document.getElementById("demo").innerHTML = obj.name;
 
-		console.log(gameOptions);
-		console.log(obj.color);
-		console.log(obj.speed);
+		console.log('gameOptions',gameOptions);
+		console.log('obj',obj);
+		
 		class Paddle {
 			constructor(direction) {
 				this.direction = direction
