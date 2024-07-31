@@ -3,7 +3,7 @@ import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import {get_messages} from "../../utils/apiutils.js";
-import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
+import {chatClear, chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -160,6 +160,7 @@ export default class SideFriendList extends Component {
       btnFriends.classList.remove("active");
     }
 
+    chatClear();
     await fetchChatHistory(friend_username);
   }
 

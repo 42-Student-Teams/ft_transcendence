@@ -12,7 +12,7 @@ function chatInsertMessage(from, content, atEnd=true, isFirst=false, id=null) {
     let msgId = "";
     if (id) {
         msgId = `id="${id}"`;
-        console.log('got id ' + msgId);
+        //console.log('got id ' + msgId);
     }
     let msgHtml = `<div ${msgId} class="message my-message" ${firstMarker}>
             <div>
@@ -46,7 +46,7 @@ async function fetchChatHistory(friend_username) {
     console.log(message_response);
     if (message_response['status'] == 'success' && 'messages' in message_response) {
       message_response['messages'].forEach((message) => {
-          console.log(`${message['id']} vs ${firstMsgId}`);
+          //console.log(`${message['id']} vs ${firstMsgId}`);
           if (parseInt(message['id']) == parseInt(firstMsgId)) {
               return;
           }
@@ -59,12 +59,22 @@ async function fetchChatHistory(friend_username) {
 
 
         if (!message_response['got_all']) {
-            chatContainer.innerHTML = ` <button id="fetch-chat-button" onclick="window.fetchChatHistory('${friend_username}')">Load more</button>  ${chatContainer.innerHTML}`;
+            chatContainer.innerHTML = ` <button class="btn btn-primary" id="fetch-chat-button" onclick="window.fetchChatHistory('${friend_username}')">Load more</button>  ${chatContainer.innerHTML}`;
         }
     } else {
       chatInsertMessage("Error, failed loading messages", "", false);
     }
 }
 
+function chatClear() {
+    let chatContainer = document.getElementById("messages-container");
+    if (!chatContainer) {
+        return;
+    }
+    console.log("Clearing chat component");
+    chatContainer.innerHTML = "";
+}
+
 export { chatInsertMessage };
 export { fetchChatHistory };
+export { chatClear };
