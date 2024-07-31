@@ -11,8 +11,11 @@ from backend.models import JwtUser
 class WsConsumer(WebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # todo: instead of comm, groups for all friends and the user should be joined
         self.room_group_name = "comm"
         self.authed = False
+        self.subscribed_groups = []
         self.user: JwtUser = None
 
         self.funcs = {
@@ -23,18 +26,15 @@ class WsConsumer(WebsocketConsumer):
 
     def connect(self):
         print('someone connected', flush=True)
-        print(dir(self.channel_layer), flush=True)
-
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name, self.channel_name
-        )
+        print(self.channel_layer, flush=True)
         self.accept()
 
     def disconnect(self, close_code):
         print('someone disconnected', flush=True)
-        async_to_sync(self.channel_layer.group_discard)(
-            self.room_group_name, self.channel_name
-        )
+        for group in self.subscribed_groups:
+            async_to_sync(self.channel_layer.group_discard)(
+                group, self.channel_name
+            )
 
     def do_auth(self, msg_obj):
         print('Doing auth', flush=True)
@@ -59,9 +59,25 @@ class WsConsumer(WebsocketConsumer):
         print('ALL GOOD', flush=True)
         self.authed = True
 
+    def subscribe_to_groups(self):
+        if self.user is None:
+            return
+        print(f'SUBSCRIBE: {self.user.username}', flush=True)
+        if len(self.subscribed_groups) > 0:
+            return
+        async_to_sync(self.channel_layer.group_add)(
+            self.user.username, self.channel_name
+        )
+        self.subscribed_groups.append(self.user.username)
+        friends = self.user.friends.all()
+        for friend in friends:
+            async_to_sync(self.channel_layer.group_add)(
+                friend.username, self.channel_name
+            )
+            self.subscribed_groups.append(friend.username)
+
     def receive(self, text_data):
-        print(text_data, flush=True)
-        print(dir(text_data), flush=True)
+        print('RECEIVE', text_data, flush=True)
         msg_obj = None
         try:
             msg_obj = json.loads(text_data)
@@ -70,7 +86,11 @@ class WsConsumer(WebsocketConsumer):
             return
         if not self.authed:
             self.do_auth(msg_obj)
-            self.send(text_data='unauthed')
+            if not self.authed:
+                self.send(text_data='{"status":"unauthed"}');
+            else:
+                self.send(text_data='{"status":"authed"}');
+                self.subscribe_to_groups()
             return
 
         if msg_obj.get('func') is None:
@@ -92,8 +112,10 @@ class WsConsumer(WebsocketConsumer):
             return
         msg_obj['author'] = self.user.username
         print(f"Relaying message {msg_obj.get('message')} to channel", flush=True)
+        print('Groups I\'m in:', flush=True)
+        print(self.subscribed_groups, flush=True)
         async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name, {"type": "channel_dm", "msg_obj": msg_obj}
+            friend.username, {"type": "channel_dm", "msg_obj": msg_obj}
         )
 
     def channel_dm(self, event):

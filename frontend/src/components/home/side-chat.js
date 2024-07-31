@@ -43,6 +43,11 @@ export default class SideChat extends Component {
 
         this.element = document.getElementById("side-chat");
         this.element.innerHTML = view;
+        document.getElementById("message-input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                window.sendMessage();
+            }
+        });
         this.handleEvent();
     }
 
@@ -57,6 +62,13 @@ export default class SideChat extends Component {
             let friend_name = document.getElementById("side-chat").getAttribute("data-username");
             console.log(`sending message '${msg}' to user ${friend_name}`);
             state.socket.send(JSON.stringify({"func": "direct_message", "friend_username": friend_name, "message": msg}));
+            document.getElementById("message-input").value = '';
+            document.getElementById("messages-container").innerHTML += `<div class="message my-message">
+            <div>
+              <div class="chat-name">You</div>
+              <div class="chat-text ">${msg}</div>
+            </div>
+          </div>`;
         }
     }
 }
