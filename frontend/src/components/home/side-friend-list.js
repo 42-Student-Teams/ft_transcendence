@@ -2,21 +2,27 @@ import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
+import { home } from '../../utils/langPack.js';
+import store from '../../store/index.js';
 
 export default class SideFriendList extends Component {
   constructor() {
     super({ element: document.getElementById("side-friend-list") });
-    this.friends = []; // Initialize friends as an empty array
+    this.friends = [];
+    store.events.subscribe("stateChange", () => this.render());
     this.render();
   }
 
   async render() {
+    const languageId = store.state.languageId;
+    const translations = home[languageId];
+
     const view = /*html*/ `
       <div>
-        <h1>You can add friends with their username.</h1>
+        <h1>${translations.addFriendsPrompt}</h1>
       </div>
       <div class="d-flex flex-grow-0 gap-3 pb-4">
-        <input type="text" id="friend-username" class="form-control" placeholder="Username" />
+        <input type="text" id="friend-username" class="form-control" placeholder="${translations.usernamePlaceholder}" />
         <button id="btn-add-friend" class="btn btn-success flex-fill">
           <i id="icon-send" class="ml-4 fa fa-user-plus"></i>
         </button>
@@ -27,24 +33,24 @@ export default class SideFriendList extends Component {
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="modalVerticallyCenteredLabel">Block</h5>
+              <h5 class="modal-title" id="modalVerticallyCenteredLabel">${translations.block}</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              Are you sure you want to block this <b>user</b> ?<br/>Blocking this user will also remove them from your friends list.
+              ${translations.blockConfirmation}
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-              <button type="button" class="btn btn-danger" id="confirm-block-button">Block</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${translations.cancel}</button>
+              <button type="button" class="btn btn-danger" id="confirm-block-button">${translations.block}</button>
             </div>
           </div>
         </div>
       </div>
     `;
-	this.element = document.getElementById("side-friend-list");
+
+    this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
     this.handleEvent();
-    //this.getFriendList();
   }
 
   async handleEvent() {
@@ -95,9 +101,10 @@ export default class SideFriendList extends Component {
   }
 
   renderFriendList() {
+    const languageId = store.state.languageId;
+    const translations = home[languageId];
     const friendDisplayElement = document.getElementById("friend-list-display");
-    friendDisplayElement.innerHTML = ""; // Clear any existing content
-    console.log("Friends:", this.friends);
+    friendDisplayElement.innerHTML = "";
 
     if (this.friends.length > 0) {
       this.friends.forEach((friend, index) => {
@@ -105,7 +112,7 @@ export default class SideFriendList extends Component {
           ProfilePicture1,
           ProfilePicture2,
           ProfilePicture3,
-        ][index % 3]; // Cycle through profile pictures
+        ][index % 3];
         const friendHtml = /*html*/ `
           <div class="friend container py-3" data-username="${friend.username}">
             <div class="row mr-4">
@@ -116,7 +123,7 @@ export default class SideFriendList extends Component {
                   </div>
                   <div class="col friend-info">
                     <span>${friend.username}</span>
-                    <span class="friend-status">${friend.status}</span>
+                    <span class="friend-status">${translations[friend.status.toLowerCase()]}</span>
                   </div>
                 </div>
               </div>
@@ -130,14 +137,13 @@ export default class SideFriendList extends Component {
         friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
       });
 
-      // Add event listeners to the buttons after rendering
       this.element.querySelectorAll(".btn-block").forEach((button) => {
         button.addEventListener("click", (event) =>
           this.handleBlockFriend(event)
         );
       });
     } else {
-      friendDisplayElement.innerHTML = "<p>No friends found.</p>";
+      friendDisplayElement.innerHTML = `<p>${translations.noFriendsFound}</p>`;
     }
   }
 

@@ -6,10 +6,13 @@ import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
 import { refreshList } from '../utils/refresh.js';
 import { navigateTo } from "../utils/router.js";
+import { home } from '../utils/langPack.js';
+import store from '../store/index.js';
 
 export default class Home extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
+		store.events.subscribe("stateChange", () => this.render());
 		this.render();
 
 		this.components = {
@@ -19,11 +22,11 @@ export default class Home extends Component {
 			sidePendingList: new SidePendingList(),
 			sideBlockedList: new SideBlockedList(),
 		};
-
 	}
 
 	async render() {
-		// const languageId = store.state.languageId;
+		const languageId = store.state.languageId;
+		const translations = home[languageId];
 
 		const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
@@ -35,9 +38,9 @@ export default class Home extends Component {
                 <div id="" class="chat-flex col bg-white h-100 d-flex flex-column collapse collapse">
                   <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto ">
 					<div class="btn-group" role="group" aria-label="Basic button group">
-  						<button type="button" id="btn-toggle-friends" class="btn btn-primary active">Friends</button>
-						<button type="button" id="btn-toggle-pending" class="btn btn-primary">Pending</button>
-						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
+  						<button type="button" id="btn-toggle-friends" class="btn btn-primary active">${translations.friends}</button>
+						<button type="button" id="btn-toggle-pending" class="btn btn-primary">${translations.pending}</button>
+						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">${translations.blocked}</button>
 					</div>
                     <div id="side-chat" class="d-none flex-column h-100 gap-3"></div>
                     <div id="side-friend-list" class="d-flex flex-column h-100 gap-3"></div>
@@ -47,8 +50,8 @@ export default class Home extends Component {
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
 					<div class="d-flex gap-4">
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> ${translations.online}</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> ${translations.tournament}</button>
 					</div>
                 </div>
               </div>
@@ -61,36 +64,36 @@ export default class Home extends Component {
 		    <div class="modal-content">
 			<form class="">
 		    	<div class="modal-header">
-		        	<h5 class="modal-title" id="modalVerticallyCenteredLabel">Settings of the Game</h5>
+		        	<h5 class="modal-title" id="modalVerticallyCenteredLabel">${translations.gameSettings}</h5>
 		        	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      	</div>
 		    	<div class="modal-body">
 					<div class="p-3">
 						<div class="form-check form-switch">
-							<label class="form-check-label" for="formSwitchCheckLocal">Fast Ball Speed</label>
+							<label class="form-check-label" for="formSwitchCheckLocal">${translations.fastBallSpeed}</label>
 							<input class="form-check-input" type="checkbox" id="formSwitchCheckLocal" aria-describedby="speedBallCheckLocal">
 						</div>
-						<div id="speedBallCheckLocal" class="form-text ">By default the speed of the ball is set to normal</div>
+						<div id="speedBallCheckLocal" class="form-text ">${translations.defaultSpeedMessage}</div>
 					</div>
 					<div class="p-3">
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" aria-describedby="inlineRadioLocalColors" id="radio-color-black" value="black" checked>
-						  <label class="form-check-label" for="radio-local-color-black">Black</label>
+						  <label class="form-check-label" for="radio-local-color-black">${translations.black}</label>
 						</div>
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-blue" value="blue">
-						  <label class="form-check-label" for="radio-color-blue">Blue</label>
+						  <label class="form-check-label" for="radio-color-blue">${translations.blue}</label>
 						</div>
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-red" value="red">
-						  <label class="form-check-label" for="radio-color-blue">Red</label>
+						  <label class="form-check-label" for="radio-color-blue">${translations.red}</label>
 						</div>
-						<div id="inlineRadioLocalColors" class="form-text ">By default color of the ball is set to Black</div>
+						<div id="inlineRadioLocalColors" class="form-text ">${translations.defaultColorMessage}</div>
 						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-						<button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">Play</button>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${translations.cancel}</button>
+						<button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">${translations.play}</button>
 					</div>
 				</form>
 		    </div>
@@ -102,61 +105,64 @@ export default class Home extends Component {
 		    <div class="modal-content">
 			<form class="">
 		      <div class="modal-header">
-		        <h5 class="modal-title" id="modalVerticallyCenteredLabel">Settings of the Game</h5>
+		        <h5 class="modal-title" id="modalVerticallyCenteredLabel">${translations.gameSettings}</h5>
 		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 		      </div>
 		      <div class="modal-body">
 					<div class="p-3">
-				    	<label for="input-Tournament" class="form-label">Nickname</label>
+				    	<label for="input-Tournament" class="form-label">${translations.nickname}</label>
 				    	<input type="text" class="form-control" id="input-nickname" aria-describedby="nickName" required>
-				    	<div id="nickName" class="form-text">Please enter a Nickname for the tournament</div>
+				    	<div id="nickName" class="form-text">${translations.enterNicknameMessage}</div>
 					</div>
 					<div class="p-3">
 						<div class="form-check form-switch">
-							<label class="form-check-label" for="formSwitchCheckTournament">Fast Ball Speed</label>
+							<label class="form-check-label" for="formSwitchCheckTournament">${translations.fastBallSpeed}</label>
 							<input class="form-check-input" type="checkbox" id="formSwitchCheckTournament" aria-describedby="speedBallCheckTournament">
 						</div>
-						<div id="speedBallCheckTournament" class="form-text ">By default the speed of the ball is set to normal</div>
+						<div id="speedBallCheckTournament" class="form-text ">${translations.defaultSpeedMessage}</div>
 					</div>
 					<div class="p-3">
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" aria-describedby="inlineRadioColorsTournament" id="radio-tournament-color-black" value="black" checked>
-						  <label class="form-check-label" for="radio-tournament-color-black">Black</label>
+						  <label class="form-check-label" for="radio-tournament-color-black">${translations.black}</label>
 						</div>
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-tournament-color-blue" value="blue">
-						  <label class="form-check-label" for="radio-color-blue">Blue</label>
+						  <label class="form-check-label" for="radio-color-blue">${translations.blue}</label>
 						</div>
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-tournament-color-red" value="red">
-						  <label class="form-check-label" for="radio-color-blue">Red</label>
+						  <label class="form-check-label" for="radio-color-blue">${translations.red}</label>
 						</div>
-						<div id="inlineRadioColorsTournament" class="form-text">By default color of the ball is set to Black</div>
+						<div id="inlineRadioColorsTournament" class="form-text">${translations.defaultColorMessage}</div>
 					</div>
 					<div class="p-3 d-flex flex-column" id="ia-players">
-						<label class="form-label">AI Players</label>
-						<div id="no-ai-players" class="form-text">No AI players added. Add some !</div>
+						<label class="form-label">${translations.aiPlayers}</label>
+						<div id="no-ai-players" class="form-text">${translations.noAiPlayersMessage}</div>
 					</div>
 					<div class="p-3">
-				    	<label for="input-ai" class="form-label">AI Nickname</label>
+				    	<label for="input-ai" class="form-label">${translations.aiNickname}</label>
 						<div class="d-flex gap-2 justify-content-between">
 				    		<input type="text" class="form-control" id="input-ai-nickname" aria-describedby="ai-nickName" required>
 							<button id="btn-add-ai-player" type="button" class="btn btn-add-ai" ><i class="fa-solid fa-plus"></i></button>
 						</div>
-				    	<div id="nickName" class="form-text">Please enter a Nickname for the AI</div>
+				    	<div id="nickName" class="form-text">${translations.enterAiNicknameMessage}</div>
 					</div>
 			  </div>
 		      <div class="modal-footer">
-				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-		    	<button id="btn-play-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">Play</button>
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${translations.cancel}</button>
+		    	<button id="btn-play-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">${translations.play}</button>
 		      </div>
-			<form>
+			</form>
 		    </div>
 		  </div>
 		</div>
         `;
 		this.element.innerHTML = view;
 		this.handleEvent();
+
+		// Render all components
+		Object.values(this.components).forEach(component => component.render());
 	}
 
 	async handleEvent() {
@@ -179,12 +185,12 @@ export default class Home extends Component {
 			const nickname = aiNicknameInput.value.trim();
 
 			if (nickname === "") {
-				alert("AI nickname cannot be empty.");
+				alert(home[store.state.languageId].aiNicknameEmptyError);
 				return;
 			}
 
 			if (aiNicknames.has(nickname)) {
-				console.log("This AI nickname is already used. Please choose another one.");
+				console.log(home[store.state.languageId].aiNicknameUsedError);
 				return ;
 			}
 
@@ -224,7 +230,6 @@ export default class Home extends Component {
 			};
 			console.log(game);
 
-			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
 		});
 
@@ -308,6 +313,5 @@ export default class Home extends Component {
 			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 			refreshList('pending');
 		});
-
 	}
 }

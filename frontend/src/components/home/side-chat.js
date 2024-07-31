@@ -1,14 +1,19 @@
 import Component from "../../library/component.js";
+import { home } from '../../utils/langPack.js';
+import store from '../../store/index.js';
 
 export default class SideChat extends Component {
-    constructor() {
-        super({ element: document.getElementById("side-chat") });
-        this.render();
-    }
+  constructor() {
+      super({ element: document.getElementById("side-chat") });
+      store.events.subscribe("stateChange", () => this.render());
+      this.render();
+  }
 
-    async render() {
+  async render() {
+    const languageId = store.state.languageId;
+    const translations = home[languageId];
 
-        const view = /*html*/ `
+    const view = /*html*/ `
             <div class="gap-3 row chat-messages overflow-auto flex-grow-1">
               <div class="message my-message">
                 <div>
@@ -97,7 +102,7 @@ export default class SideChat extends Component {
               <!-- More messages here -->
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
-              <input type="text" id="message-input" class="form-control" placeholder="Message" />
+            <input type="text" id="message-input" class="form-control" placeholder="${translations.messagePlaceholder}" />
               <button id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
             </div>
         `;

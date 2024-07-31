@@ -2,16 +2,20 @@ import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
-
+import { home } from '../../utils/langPack.js';
+import store from '../../store/index.js';
 
 export default class SidePendingList extends Component {
     constructor() {
         super({ element: document.getElementById("side-pending-list") });
-        this.pendingFriends = []; // Initialize pendingFriends as an empty array
+        this.pendingFriends = [];
+        store.events.subscribe("stateChange", () => this.render());
         this.render();
     }
 
     async render() {
+        const languageId = store.state.languageId;
+        const translations = home[languageId];
 
         const view = /*html*/ `
             <div id="friend-display" class="blocked-list flex-grow-1 overflow-auto">
@@ -20,7 +24,7 @@ export default class SidePendingList extends Component {
 
         this.element = document.getElementById("side-pending-list");
         this.element.innerHTML = view;
-    	this.handleEvent();
+        this.handleEvent();
     }
 
 	async handleEvent() {
@@ -49,9 +53,11 @@ export default class SidePendingList extends Component {
 	  }
 
     renderPendingList() {
+        const languageId = store.state.languageId;
+        const translations = home[languageId];
         const friendDisplayElement = document.getElementById("friend-display");
-        friendDisplayElement.innerHTML = ''; // Clear any existing content
-		console.log('Pending:', this.pendingFriends);
+        friendDisplayElement.innerHTML = '';
+
 
         if (this.pendingFriends.length > 0) {
 
@@ -67,7 +73,7 @@ export default class SidePendingList extends Component {
                                     </div>
                                     <div class="col friend-info">
                                         <span>${friend.username}</span>
-                                        <span class="friend-status">Pending</span>
+                                        <span class="friend-status">${translations.pending}</span>
                                     </div>
                                 </div>
                             </div>
@@ -85,7 +91,7 @@ export default class SidePendingList extends Component {
                 button.addEventListener('click', (event) => this.handleAcceptFriend(event));
             });
         } else {
-            friendDisplayElement.innerHTML = '<p>No pending friend requests.</p>';
+            friendDisplayElement.innerHTML = `<p>${translations.noPendingRequests}</p>`;
         }
     }
 
