@@ -5,59 +5,63 @@ import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 
 
 export default class SidePendingList extends Component {
-    constructor() {
-        super({ element: document.getElementById("side-pending-list") });
-        this.pendingFriends = []; // Initialize pendingFriends as an empty array
-        this.render();
-    }
+	constructor() {
+		super({ element: document.getElementById("side-pending-list") });
+		this.pendingFriends = []; // Initialize pendingFriends as an empty array
+		this.render();
+	}
 
-    async render() {
+	async render() {
 
-        const view = /*html*/ `
+		const view = /*html*/ `
             <div id="friend-display" class="blocked-list flex-grow-1 overflow-auto">
             </div>
         `;
 
-        this.element = document.getElementById("side-pending-list");
-        this.element.innerHTML = view;
-    	this.handleEvent();
-    }
+		this.element = document.getElementById("side-pending-list");
+		this.element.innerHTML = view;
+		this.handleEvent();
+	}
 
 	async handleEvent() {
+		document.getElementById("btn-toggle-pending").addEventListener("click", async (event) => {
+			event.preventDefault();
+			await this.getPendingList(); // Fetch and display the pending list
+		});
+	}
+
+	async getPendingList() {
 		try {
-		  const jwt = localStorage.getItem("jwt");
-		  const apiurl = process.env.API_URL;
-		  const response = await fetch(`${apiurl}/pending_list`, {
-			method: "GET",
-			headers: {
-			  Authorization: `Bearer ${jwt}`,
-			  "Content-Type": "application/json",
-			},
-		  });
-	
-		  if (response.ok) {
-			const data = await response.json();
-			console.log(data);
-			this.pendingFriends = data.friends || [];
-			await this.renderPendingList();
-		  } else {
-			console.error("Failed to fetch pending list");
-		  }
+			const jwt = localStorage.getItem('jwt');
+			const apiurl = process.env.API_URL;
+			const response = await fetch(`${apiurl}/pending_list`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${jwt}`,
+					'Content-Type': 'application/json'
+				}
+			});
+
+			if (response.ok) {
+				this.pending = await response.json();
+				this.renderPendingList();
+			} else {
+				console.error('Failed to fetch pending list');
+			}
 		} catch (error) {
-		  console.error("Error fetching pending list:", error);
+			console.error('Error fetching pending list:', error);
 		}
-	  }
+	}
 
-    renderPendingList() {
-        const friendDisplayElement = document.getElementById("friend-display");
-        friendDisplayElement.innerHTML = ''; // Clear any existing content
-		console.log('Pending:', this.pendingFriends);
+	renderPendingList() {
+		const friendDisplayElement = document.getElementById("friend-display");
+		friendDisplayElement.innerHTML = ''; // Clear any existing content
 
-        if (this.pendingFriends.length > 0) {
+		if (this.pending.friends.length > 0) {
 
-            this.pendingFriends.forEach((friend, index) => {
-                const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
-                const friendHtml = /*html*/ `
+			this.pending.friends.forEach((friend, index) => {
+				const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
+				const friendHtml = /*html*/ `
                     <div class="friend container py-3">
                         <div class="row mr-4">
                             <div class="col-8 container user-info">
@@ -77,43 +81,43 @@ export default class SidePendingList extends Component {
                         </div>
                     </div>
                 `;
-                friendDisplayElement.insertAdjacentHTML('beforeend', friendHtml);
-            });
+				friendDisplayElement.insertAdjacentHTML('beforeend', friendHtml);
+			});
 
-            // Add event listeners to the buttons after rendering
-            this.element.querySelectorAll('.btn-pending-friend').forEach(button => {
-                button.addEventListener('click', (event) => this.handleAcceptFriend(event));
-            });
-        } else {
-            friendDisplayElement.innerHTML = '<p>No pending friend requests.</p>';
-        }
-    }
+			// Add event listeners to the buttons after rendering
+			this.element.querySelectorAll('.btn-pending-friend').forEach(button => {
+				button.addEventListener('click', (event) => this.handleAcceptFriend(event));
+			});
+		} else {
+			friendDisplayElement.innerHTML = '<p>No pending friend requests.</p>';
+		}
+	}
 
-    async handleAcceptFriend(event) {
-        const button = event.currentTarget;
-        const username = button.getAttribute('data-username');
+	async handleAcceptFriend(event) {
+		const button = event.currentTarget;
+		const username = button.getAttribute('data-username');
 		const friendContainer = button.closest('.friend'); // Get the parent container of the friend
 
-        try {
-            const jwt = localStorage.getItem('jwt');
-            const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
-            const response = await fetch(`${apiurl}/accept_friend_request`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ 'friend_username': username })
-            });
+		try {
+			const jwt = localStorage.getItem('jwt');
+			const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
+			const response = await fetch(`${apiurl}/accept_friend_request`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${jwt}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ 'friend_username': username })
+			});
 
-            if (response.ok) {
-                // Remove the friend container from the DOM
-                friendContainer.remove();
-            } else {
-                console.error(`Failed to accept friend request for ${username}`);
-            }
-        } catch (error) {
-            console.error(`Error accepting friend request for ${username}:`, error);
-        }
-    }
+			if (response.ok) {
+				// Remove the friend container from the DOM
+				friendContainer.remove();
+			} else {
+				console.error(`Failed to accept friend request for ${username}`);
+			}
+		} catch (error) {
+			console.error(`Error accepting friend request for ${username}:`, error);
+		}
+	}
 }
