@@ -1,28 +1,29 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
-import state from "../../store/state.js";
-import {env} from "process";
-import {handleMessage} from "../../websocket/wshandler.js";
+import { handleMessage } from "../../websocket/wshandler.js";
+import { login } from "/src/utils/langPack.js";
 
-export default class Login extends Component {
+export default class FormLogin extends Component {
     constructor() {
         super({ element: document.getElementById("formLogin") });
+        this.currentLang = store.state.language;
+        store.events.subscribe("stateChange", () => this.onStateChange());
         this.render();
     }
 
     async render() {
-
+        const langPack = login[this.currentLang];
         const view = /*html*/ `
             <form id="form-login">
                 <div class="input-group mb-3">
-                    <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="Login">
+                    <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="${langPack.username}">
                 </div>
                 <div class="input-group mb-3">
-                    <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password">
+                    <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="${langPack.password}">
                 </div>
                 <div class="input-group mb-3">
-                    <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">Login</button>
+                    <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">${langPack.loginButton}</button>
                 </div>
             </form>
         `;
@@ -33,20 +34,14 @@ export default class Login extends Component {
     }
 
     async handleEvent() {
-
         this.element.querySelector("#login-submit").addEventListener("click", async (event) => {
-            // Prevent Default Submit Behavior
             event.preventDefault();
 
-            // Check Nickname is Empty or too long or non-English
             const username = this.element.querySelector("#login-username").value;
             const password = this.element.querySelector("#login-password").value;
 
             try {
-                // Make the POST request with the login credentials
-                const apiurl = "/backend"; //process.env.API_URL;
-
-
+                const apiurl = "/backend";
                 const data = {
                     username: username,
                     password: password,
@@ -63,32 +58,30 @@ export default class Login extends Component {
 
                 const jsonData = await response.json();
 
-                // if (username.trim() !== "" && password.trim() !== "") {
-                //     store.dispatch("logIn");
-                //     navigateTo("/");
-                // }
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
-                    /* open socket */
-                    let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
+                    let socket = new WebSocket(`wss://${window.location.host}/wss/comm/`);
                     socket.onmessage = handleMessage;
                     socket.addEventListener("open", (ev) => {
-                      socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
+                        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
                     });
                     store.dispatch("setWebSocket", socket);
-
-                    console.log(store.state.socket);
                     navigateTo("/");
-                }
-                else {
+                } else {
                     console.error("Login failed:");
                     throw new Error("Login failed: Invalid username or password.");
                 }
             } catch (error) {
-                // Handle network or other errors here
                 console.error("An error occurred:", error);
             }
         });
+    }
+
+    onStateChange() {
+        if (this.currentLang !== store.state.language) {
+            this.currentLang = store.state.language;
+            this.render();
+        }
     }
 }

@@ -15,8 +15,9 @@ function logOut(context) {
 
 
 function setLanguage(context, payload) {
+    localStorage.setItem('language', payload);
     context.commit("setLanguage", payload);
-	document.documentElement.lang = payload.languageId;
+    document.documentElement.lang = payload;
 }
 
 function setIntraId(context, payload) {
