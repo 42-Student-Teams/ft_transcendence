@@ -94,6 +94,14 @@ class UserUpdateView(APIView):
         if avatar is not None:
             user.avatar = avatar
             user.save()
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        if first_name is not None:
+            user.first_name = first_name
+            user.save()
+        if last_name is not None:
+            user.last_name = last_name
+            user.save()
         return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 
