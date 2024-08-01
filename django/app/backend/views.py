@@ -73,8 +73,10 @@ class UserLoginView(APIView):
         if 'password' in request.data:
             password = request.data['password']
 
-        user: JwtUser = JwtUser.objects.get(username=username)
-        if user is None:
+
+        try:
+            user: JwtUser = JwtUser.objects.get(username=username)
+        except JwtUser.DoesNotExist:
             raise AuthenticationFailed('Incorrect username or password')
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect username or password')
