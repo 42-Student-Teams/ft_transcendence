@@ -4,7 +4,6 @@ import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
-import { refreshList } from '../utils/refresh.js';
 import { navigateTo } from "../utils/router.js";
 
 export default class Home extends Component {
@@ -19,6 +18,7 @@ export default class Home extends Component {
 			sidePendingList: new SidePendingList(),
 			sideBlockedList: new SideBlockedList(),
 		};
+
 	}
 
 	async render() {
@@ -45,8 +45,8 @@ export default class Home extends Component {
                   </div>
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
-					<div class="gap-3">
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Local</button>
+					<div class="d-flex gap-4">
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online</button>
 					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
 					</div>
                 </div>
@@ -84,7 +84,7 @@ export default class Home extends Component {
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-red" value="red">
 						  <label class="form-check-label" for="radio-color-blue">Red</label>
 						</div>
-						<div id="inlineRadioLocalColors" class="mb-3 form-text ">By default color of the ball is set to Black</div>
+						<div id="inlineRadioLocalColors" class="form-text ">By default color of the ball is set to Black</div>
 						</div>
 					</div>
 					<div class="modal-footer">
@@ -130,7 +130,19 @@ export default class Home extends Component {
 						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-tournament-color-red" value="red">
 						  <label class="form-check-label" for="radio-color-blue">Red</label>
 						</div>
-						<div id="inlineRadioColorsTournament" class="mb-3 form-text ">By default color of the ball is set to Black</div>
+						<div id="inlineRadioColorsTournament" class="form-text">By default color of the ball is set to Black</div>
+					</div>
+					<div class="p-3 d-flex flex-column" id="ia-players">
+						<label class="form-label">AI Players</label>
+						<div id="no-ai-players" class="form-text">No AI players added. Add some !</div>
+					</div>
+					<div class="p-3">
+				    	<label for="input-ai" class="form-label">AI Nickname</label>
+						<div class="d-flex gap-2 justify-content-between">
+				    		<input type="text" class="form-control" id="input-ai-nickname" aria-describedby="ai-nickName" required>
+							<button id="btn-add-ai-player" type="button" class="btn btn-add-ai" ><i class="fa-solid fa-plus"></i></button>
+						</div>
+				    	<div id="nickName" class="form-text">Please enter a Nickname for the AI</div>
 					</div>
 			  </div>
 		      <div class="modal-footer">
@@ -147,6 +159,59 @@ export default class Home extends Component {
 	}
 
 	async handleEvent() {
+		const iaPlayersContainer = this.element.querySelector("#ia-players");
+		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");
+		const noAiPlayersMessage = this.element.querySelector("#no-ai-players");
+		const aiNicknames = new Set();
+
+		const updateNoAiPlayersMessage = () => {
+			if (iaPlayersContainer.children.length === 2) { // Only the "No AI players" message
+				noAiPlayersMessage.style.display = 'block';
+			} else {
+				noAiPlayersMessage.style.display = 'none';
+			}
+		};
+
+		btnAddAiPlayer.addEventListener("click", (event) => {
+			event.preventDefault();
+			const aiNicknameInput = this.element.querySelector("#input-ai-nickname");
+			const nickname = aiNicknameInput.value.trim();
+
+			if (nickname === "") {
+				alert("AI nickname cannot be empty.");
+				return;
+			}
+
+			if (aiNicknames.has(nickname)) {
+				console.log("This AI nickname is already used. Please choose another one.");
+				return ;
+			}
+
+			const aiPlayerDiv = document.createElement("div");
+			aiPlayerDiv.className = "d-flex align-items-center ia-player-display";
+			aiPlayerDiv.innerHTML = `
+            	<h1 class="fs-5 flex-fill">${nickname}</h1>
+            	<button class="btn rounded btn-unblock btn-remove-ai-player"><i class="fa-solid fa-user-minus"></i></button>
+			`;
+
+			iaPlayersContainer.appendChild(aiPlayerDiv);
+			aiNicknames.add(nickname);
+
+			// Add event listener to the remove button
+			const removeButton = aiPlayerDiv.querySelector(".btn-remove-ai-player");
+			removeButton.addEventListener("click", () => {
+				iaPlayersContainer.removeChild(aiPlayerDiv);
+				aiNicknames.delete(nickname);
+				updateNoAiPlayersMessage();
+			});
+
+			// Clear the input field
+			aiNicknameInput.value = "";
+
+			updateNoAiPlayersMessage();
+		});
+
+		updateNoAiPlayersMessage();
 
 		this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -156,7 +221,7 @@ export default class Home extends Component {
 				color: colorRadio.value,
 				speed: speed
 			};
-			console.log(game);
+			//console.log(game);
 
 			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
@@ -167,13 +232,16 @@ export default class Home extends Component {
 			const nickname = document.getElementById('input-nickname').value;
 			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
 			const speed = document.getElementById('formSwitchCheckTournament').checked;
+			const aiPlayers = Array.from(aiNicknames);
+
 			const game = {
-				nickname: nickname,
-				color: colorRadio.value,
-				speed: speed
+				Nickname: nickname,
+				Color: colorRadio.value,
+				Speed: speed,
+				AiPlayers: aiPlayers
 			};
 			
-			console.log(game);
+			//console.log(game);
 			navigateTo("/tournament-game");
 		});
 
@@ -198,7 +266,6 @@ export default class Home extends Component {
 			});
 		}
 
-
 		this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
 			event.preventDefault();
 
@@ -210,7 +277,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(blockedList, btnBlocked, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('blocked');
 		});
 
 		this.element.querySelector("#btn-toggle-friends").addEventListener("click", async (event) => {
@@ -224,7 +290,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(friendlist, btnFriends, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('friend');
 		});
 
 		this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
@@ -238,7 +303,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('pending');
 		});
 
 	}

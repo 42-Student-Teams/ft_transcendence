@@ -46,10 +46,15 @@ export default class SideFriendList extends Component {
 	this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
     this.handleEvent();
-    //this.getFriendList();
   }
 
   async handleEvent() {
+
+	document.getElementById("btn-toggle-friends").addEventListener("click", async (event) => {
+		event.preventDefault();
+		await this.getFriendList(); // Fetch and display the friend list
+	  });
+
     this.element.querySelector("#btn-add-friend").addEventListener("click", async (event) => {
       event.preventDefault();
       const usernameInput = this.element.querySelector("#friend-username");
@@ -69,8 +74,6 @@ export default class SideFriendList extends Component {
         this.handleBlockFriend(event);
       }
     });
-
-	this.getFriendList();
   }
 
   async getFriendList() {
@@ -100,7 +103,7 @@ export default class SideFriendList extends Component {
   renderFriendList() {
     const friendDisplayElement = document.getElementById("friend-list-display");
     friendDisplayElement.innerHTML = ""; // Clear any existing content
-    console.log("Friends:", this.friends);
+    //console.log("Friends:", this.friends);
 
     if (this.friends.length > 0) {
       this.friends.forEach((friend, index) => {

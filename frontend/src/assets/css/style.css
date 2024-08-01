@@ -1,36 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&display=swap');
+
 body {
-  display: block;
-  font-family: 'Poppins', sans-serif;
-  background: #ffffff;
-  line-height: 1.5;
-  margin: 0;
+	display: block;
+	font-family: 'Poppins', sans-serif;
+	background: #ffffff;
+	line-height: 1.5;
+	margin: 0;
 }
 
-h1{
+h1 {
 	font-size: 13px;
-	font-weight:300;
+	font-weight: 300;
 }
 
 .divider:after,
 .divider:before {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #eee;
-  color: #eee;
+	content: '';
+	flex: 1;
+	height: 1px;
+	background: #eee;
+	color: #eee;
 }
 
 .divider-or {
-  color: #ececec;
+	color: #ececec;
 }
 
 .box-area {
-  width: 930px;
+	width: 930px;
 }
 
 .right-box {
-  padding: 40px 30px 40px 40px;
+	padding: 40px 30px 40px 40px;
 }
 
 .btn-fortytwo {
@@ -39,139 +40,142 @@ h1{
 }
 
 .btn-fortytwo:hover {
-  background: #00a5a5;
-  color: #fff;
+	background: #00a5a5;
+	color: #fff;
 }
 
 ::placeholder {
-  font-size: 16px;
+	font-size: 16px;
 }
+
 .rounded-4 {
-  border-radius: 20px;
+	border-radius: 20px;
 }
+
 .rounded-5 {
-  border-radius: 30px;
+	border-radius: 30px;
 }
 
 @media only screen and (max-width: 768px) {
-  .box-area {
-    margin: 0 10px;
-  }
-  .left-box {
-    height: 100px;
-    overflow: hidden;
-  }
-  .right-box {
-    padding: 20px;
-  }
+	.box-area {
+		margin: 0 10px;
+	}
+
+	.left-box {
+		height: 100px;
+		overflow: hidden;
+	}
+
+	.right-box {
+		padding: 20px;
+	}
 }
 
 #BtnRegisterInLogin,
 #BtnRegisterInLogin:visited,
 #btn-login-from-signup,
 #btn-login-from-signup:visited {
-  text-decoration: underline;
-  color: #0a58ca;
-  cursor: pointer;
+	text-decoration: underline;
+	color: #0a58ca;
+	cursor: pointer;
 }
 
 /* -- sidebar + nav -- */
 
-#app{
-  height:100vh;
-  display:flex;
-  flex-direction: column;
+#app {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
-.btn{
-	color:#4E5057;
+.btn {
+	color: #4E5057;
 }
 
 
 .btn-primary{
 	background-color: #F2F3F5;
-	border:none;
+	border: none;
 }
 
-.btn-primary:hover{
+.btn-primary:hover {
 	background-color: #E0E1E5;
-	color:#4E5057;
+	color: #4E5057;
 }
 
 button.btn.btn-primary:active {
 	background-color: #E0E1E5;
-	color:#4E5057;
+	color: #4E5057;
 }
 
 
 .btn.active {
-	background-color:  #E0E1E5;
-	color:#4E5057;
+	background-color: #E0E1E5;
+	color: #4E5057;
 }
 
 
 
-#send-message{
+#send-message {
 	background-color: #4E5057;
-	border:none;
+	border: none;
 }
 
 
 /*Chat messages */
 
-#message-input{
-	background-color:#F2F3F5;
-	color:#67686B;
+#message-input {
+	background-color: #F2F3F5;
+	color: #67686B;
 }
 
-#icon-send{
-  color:white;
+#icon-send {
+	color: white;
 }
-#chat-big-div{
-  background-color:#36393e;
+
+#chat-big-div {
+	background-color: #36393e;
 }
 
 
 .chat-name {
-  color: #2C2C2D;
-  font-weight: 500;
-  font-size:16px;
+	color: #2C2C2D;
+	font-weight: 500;
+	font-size: 16px;
 }
 
-.chat-messages{
-  height:600px;
-  margin-right:0px;
+.chat-messages {
+	height: 600px;
+	margin-right: 0px;
 }
 
 .chat-rm-margin {
-  margin:0px;
+	margin: 0px;
 }
 
-.chat-flex{
-  max-width:450px;
+.chat-flex {
+	max-width: 450px;
 }
 
-.chat-text{
+.chat-text {
 	font-size: 16px;
-	color:#7A7B7E;
+	color: #7A7B7E;
 }
 
 
-#main-home{
+#main-home {
 	background-color: #EBECEE;
 }
 
 
 /* friends list */
 
-.friends-list{
-	padding-left: 0px ;
+.friends-list {
+	padding-left: 0px;
 	padding-right: 0px;
-	margin-right:0px;
-	height:600px;
+	margin-right: 0px;
+	height: 600px;
 }
-
-
 
 .friend{
 	height:80px;
@@ -180,14 +184,21 @@ button.btn.btn-primary:active {
 	
 }
 
-.friend-img{
-	width:50px;
-	border-radius:50%;
+.friend-img {
+	width: 50px;
+	border-radius: 50%;
 }
 
-.friend:hover{
+.friend:hover, .ia-player-display:hover{
 	border-radius: 4px;
-	background-color:#EBEBED !important;
+	background-color: #EBEBED !important;
+}
+
+.ia-player-display{
+	padding-left: 10px ;
+	border-top:1px solid #EBEBED;
+	height:45px;
+	border-bottom:1px solid transparent;
 }
 
 .friend-status-online, .friend-status-offline, .friend-status-absent{
@@ -195,27 +206,27 @@ button.btn.btn-primary:active {
 	font-weight:600;
 }
 
-.friend-status{
-	font-size:13px;
+.friend-status {
+	font-size: 13px;
 }
 
-.friend-status-online{
-	color:#228B21;
+.friend-status-online {
+	color: #228B21;
 }
 
-.friend-status-offline{
-	color:gray;
+.friend-status-offline {
+	color: gray;
 }
 
-.friend-status-absent{
-	color:#CB5600;
+.friend-status-absent {
+	color: #CB5600;
 }
 
 
 /* Btn  */
 
-.btn-success{
-  color:white;
+.btn-success {
+	color: white;
 }
 
 #login-submit, #form-register-submit{
@@ -244,14 +255,13 @@ button.btn.btn-primary:active {
 	border:none;
 }
 
-
 .btn-unblock:hover{
 	border:none;
 	color:#ED5554;
 }
 
-.btn-unblock{
-	border:none;
+.btn-unblock {
+	border: none;
 }
 
 .btn-pending-friend:hover{
@@ -263,25 +273,79 @@ button.btn.btn-primary:active {
 	border:none;
 }
 
-
 /* Modal */
 
-.btn-danger{
-	color:white;
-	border:none;
+.btn-danger {
+	color: white;
+	border: none;
 }
 
 /* Game */
 
-.game-container{
-  height:600px;
+.game-container {
+	height: 500px;
 }
 
+
+canvas {
+	height: 500px;
+	width: 900px;
+	background-color: #9c9c9e;
+	/* background-color: #EBEBED; */
+}
+
+.score-display {
+    width: 100px; /* Set a fixed width */
+    text-align: center; /* Center-align the text */
+    box-sizing: border-box; /* Ensure padding and borders are included in the element's total width and height */
+    padding: 0rem; /* Add some padding */
+	margin: 3px;
+}
+
+.canvanbutton {
+    position: relative;
+    display: inline-block;
+}
+
+#start-game {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+#Winner-text {
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
+
+#Timer {
+	top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+}
 .game-canva{
   height:500px;
   width:900px;;
   background-color:#EBEBED;
 }
+
+.btn-add-ai{
+	background-color:#0a57ca;
+  	color:white;
+}
+
+.btn-add-ai:hover, .btn-add-ai:active{
+	background-color:blue !important;
+  	color:white !important;
+}
+
+
+
 .btn-blue{
 	background-color:#0a58ca;
 }

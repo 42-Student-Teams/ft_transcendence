@@ -22,36 +22,41 @@ export default class SideBlockedList extends Component {
     }
 
 	async handleEvent() {
-		try {
-            const jwt = localStorage.getItem('jwt');
-            const apiurl = process.env.API_URL;
-            const response = await fetch(`${apiurl}/block_list`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-
-            if (response.ok) {
-                const data = await response.json();
-                this.blocked = data.blocked_users || [];  // Ensure it's an array
-                await this.renderBlockedList();
-            } else {
-                console.error('Failed to fetch blocked users');
-            }
-        } catch (error) {
-            console.error('Error fetching blocked users:', error);
-        }
+		document.getElementById("btn-toggle-blocked").addEventListener("click", async (event) => {
+			event.preventDefault();
+			await this.getBlockedList(); // Fetch and display the blocked list
+		  });
     }
+
+	async getBlockedList() {
+		try {
+		  const jwt = localStorage.getItem('jwt');
+		  const apiurl = process.env.API_URL;
+		  const response = await fetch(`${apiurl}/block_list`, {
+			method: 'GET',
+			headers: {
+			  'Authorization': `Bearer ${jwt}`,
+			  'Content-Type': 'application/json'
+			}
+		  });
+	
+		  if (response.ok) {
+			this.blocked = await response.json();
+
+			this.renderBlockedList();
+		  } else {
+			console.error('Failed to fetch blocked list');
+		  }
+		} catch (error) {
+		  console.error('Error fetching blocked list:', error);
+		}
+	  }
 
     renderBlockedList() {
         const blockDisplayElement = document.getElementById("block-display");
         blockDisplayElement.innerHTML = ''; // Clear any existing content
-
-        if (this.blocked.length > 0) {
-            this.blocked.forEach((user, index) => {
+        if (this.blocked.blocked_users.length > 0) {
+            this.blocked.blocked_users.forEach((user, index) => {
                 const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
                 const userHtml = /*html*/ `
                     <div class="friend container py-3" data-username="${user.username}">
