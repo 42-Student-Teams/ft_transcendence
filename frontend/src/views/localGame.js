@@ -145,7 +145,7 @@ export default class LocalGame extends Component {
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 19,
+			ballXSpeed: obj.speed * 6 || 3,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
@@ -165,12 +165,15 @@ export default class LocalGame extends Component {
 			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
 		}
 
-		const controller = {
+		const controller = obj.ai ?{
 			87: { pressed: false, func: paddle1.moveUp },
 			83: { pressed: false, func: paddle1.moveDown },
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
-		}
+		} : {
+			38: { pressed: false, func: paddle2.moveUp },
+			40: { pressed: false, func: paddle2.moveDown },
+		};
 
 		const ball = {
 			r: 8,
@@ -192,13 +195,13 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = startTime - Date.now();
 				stopperTime = true;
-				if (myModal) {
-					myModal.style.display = "block";
-					// $('#myModal').modal('show')
-					console.log('myModal exists');
-				} else {
-					console.log('myModal not found');
-				}
+				// if (myModal) {
+				// 	myModal.style.display = "block";
+				// 	// $('#myModal').modal('show')
+				// 	console.log('myModal exists');
+				// } else {
+				// 	console.log('myModal not found');
+				// }
 
 			}
 			else{
@@ -308,6 +311,15 @@ export default class LocalGame extends Component {
 
         });
 		
+		const MovePaddleAI = () => {
+			if (ball.y < paddle2.y && ball.dx > 0) {
+				paddle2.moveUp();
+			}
+			
+				if (ball.y > paddle2.y && ball.dx > 0) {
+				paddle2.moveDown();
+			}
+		}
 		
 		
 		const animate = () => {
@@ -316,6 +328,8 @@ export default class LocalGame extends Component {
 			checkWallCollisions()
 			checkPaddleCollisions()
 			moveBall()
+			if (obj.ai)
+				MovePaddleAI()
 			checkWin()
 			updateTimer()
 			window.requestAnimationFrame(animate)
