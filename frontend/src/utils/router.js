@@ -5,6 +5,7 @@ import Login from "../views/login.js";
 import Register from "../views/register.js";
 import Tournament from "../views/tournament.js";
 import Profile from "../views/profile.js";
+import Settings from "../views/settings.js";
 import OauthCallback from "../views/oauthcallback.js";
 
 const routes = [
@@ -15,6 +16,7 @@ const routes = [
 	{ path: "/local-game", view: Local },
 	{ path: "/profile", view: Profile },
 	{ path: "/oauthcallback", view: OauthCallback },
+	{ path: "/settings", view: Settings },
 	// { path: "/record", view: TournamentRecord },
 ];
 

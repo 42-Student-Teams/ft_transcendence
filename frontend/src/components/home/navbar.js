@@ -21,6 +21,9 @@ export default class Navbar extends Component {
                         <li>
 							<a href="" id="profile-link" role="button" class="dropdown-item">Profile</a>
 						</li>
+						<li>
+							<a href="" id="settings-link" role="button" class="dropdown-item">Settings</a>
+						</li>
                         <li>
 							<hr class="dropdown-divider" />
 						</li>
@@ -39,6 +42,11 @@ export default class Navbar extends Component {
     }
 
     async handleEvent() {
+		this.element.querySelector("#settings-link").addEventListener("click", () => {
+			event.preventDefault();
+			navigateTo("/settings");
+		});
+
         this.element.querySelector("#profile-link").addEventListener("click", () => {
 			event.preventDefault();
 			navigateTo("/profile");
