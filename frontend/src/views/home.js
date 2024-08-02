@@ -231,7 +231,7 @@ export default class Home extends Component {
 				ai : ai
 			};
 			//console.log(game);
-
+			localStorage.setItem('local-game', JSON.stringify(game));
 			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
 		});
