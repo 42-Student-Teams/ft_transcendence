@@ -82,6 +82,8 @@ export default class FormRegister extends Component {
 
                     if (response.ok) {
                         store.dispatch("logIn");
+                        const jsonData = await response.json();
+                        localStorage.setItem('jwt', jsonData.jwt);
                         navigateTo("/");
                     } else {
                         showError('form-register', 'registration');
