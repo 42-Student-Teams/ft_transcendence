@@ -166,11 +166,11 @@ export default class LocalGame extends Component {
 		}
 
 		const controller = obj.ai ?{
-			87: { pressed: false, func: paddle1.moveUp },
-			83: { pressed: false, func: paddle1.moveDown },
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
 		} : {
+			87: { pressed: false, func: paddle1.moveUp },
+			83: { pressed: false, func: paddle1.moveDown },
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
 		};
@@ -312,12 +312,13 @@ export default class LocalGame extends Component {
         });
 		
 		const MovePaddleAI = () => {
-			if (ball.y < paddle2.y && ball.dx > 0) {
-				paddle2.moveUp();
+			console.log('AI');
+			if (ball.y < paddle1.y && ball.dx < 0) {
+				paddle1.moveUp();
 			}
 			
-				if (ball.y > paddle2.y && ball.dx > 0) {
-				paddle2.moveDown();
+				if (ball.y > paddle1.y && ball.dx < 0) {
+				paddle1.moveDown();
 			}
 		}
 		
