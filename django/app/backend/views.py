@@ -31,6 +31,7 @@ class UserCreateView(APIView):
         serializer = JwtUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        print(f"got username: {user.username}", flush=True)
         return jwt_response(user.username)
 
 class UserOauthLoginView(APIView):
