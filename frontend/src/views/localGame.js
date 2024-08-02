@@ -16,6 +16,8 @@ export default class LocalGame extends Component {
 	async render() {
 
 		const view = /*html*/ `
+
+
     	<div class="h-100 d-flex flex-column">
       		<div class="row chat-rm-margin">
         		<nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
@@ -47,6 +49,26 @@ export default class LocalGame extends Component {
 					</div>
 				</div> 
 			</div>
+		
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p>Modal body text goes here.</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-primary">Save changes</button>
+					</div>
+					</div>
+				</div>
+			</div>
 		</div>
 			`;
 
@@ -59,7 +81,7 @@ export default class LocalGame extends Component {
 		const gameOptions = localStorage.getItem("local-game");
 
 		const obj = JSON.parse(gameOptions);
-		// document.getElementById("demo").innerHTML = obj.name;
+		let myModal = document.getElementById('exampleModal');
 
 		console.log('gameOptions',gameOptions);
 		console.log('obj',obj);
@@ -118,17 +140,12 @@ export default class LocalGame extends Component {
 		const timerElement = document.getElementById("Timer");
 
 		const config = {
-			// if (obj.speed)
-			// {
-				
-			// 	canvasWidth: 900,
-			// };
 			canvasWidth: 900,
 			canvasHeight: 500,
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 3,
+			ballXSpeed: obj.speed * 6 || 19,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
@@ -175,11 +192,18 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = startTime - Date.now();
 				stopperTime = true;
+				if (myModal) {
+					myModal.style.display = "block";
+					// $('#myModal').modal('show')
+					console.log('myModal exists');
+				} else {
+					console.log('myModal not found');
+				}
 
 			}
 			else{
 				canvas.style.backgroundColor = '#EBEBED';
-				setTimeout(() => {
+				setTimeout(() => 	{
 					startBall();
 				}, 1000);
 			}

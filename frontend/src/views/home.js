@@ -217,7 +217,7 @@ export default class Home extends Component {
 		this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
 			event.preventDefault();
 			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
-			const speed = document.getElementById('formSwitchCheckTournament').checked;
+			const speed = document.getElementById('formSwitchCheckLocal').checked;
 			const game = {
 				color: colorRadio.value,
 				speed: speed
