@@ -82,7 +82,7 @@ export default class Login extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="btn-modal-disable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Activate</button>
+                            <button id="btn-modal-disable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Submit</button>
                         </div>
                     </form>
                 </div>
