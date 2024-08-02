@@ -36,7 +36,6 @@ class UserCreateView(APIView):
 
 class UserOauthLoginView(APIView):
     def post(self, request):
-        print('LOOOOOL')
         oauth_token = None
         username = None
         if 'oauth_token' in request.data:
