@@ -1,7 +1,8 @@
-import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
+import Component from "../../library/component.js";
+import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -41,13 +42,19 @@ export default class SideFriendList extends Component {
         </div>
       </div>
     `;
-	this.element = document.getElementById("side-friend-list");
+	  this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
+    await this.getFriendList();
     this.handleEvent();
-    //this.getFriendList();
   }
 
   async handleEvent() {
+
+	document.getElementById("btn-toggle-friends").addEventListener("click", async (event) => {
+		event.preventDefault();
+		await this.getFriendList(); // Fetch and display the friend list
+	  });
+
     this.element.querySelector("#btn-add-friend").addEventListener("click", async (event) => {
       event.preventDefault();
       const usernameInput = this.element.querySelector("#friend-username");
@@ -60,14 +67,13 @@ export default class SideFriendList extends Component {
 
     /* Here the user clicked on the chat icon next to a friend */
     this.element.addEventListener("click", (event) => {
-      if (event.target.closest(".btn-direct-message")) {
-        this.handleDirectMessage(event);
+      let button = event.target.closest(".btn-direct-message");
+      if (button) {
+        this.handleDirectMessage(event, button.getAttribute('data-username'));
       } else if (event.target.closest(".btn-unblock")) {
         this.handleBlockFriend(event);
       }
     });
-
-	this.getFriendList();
   }
 
   async getFriendList() {
@@ -97,7 +103,7 @@ export default class SideFriendList extends Component {
   renderFriendList() {
     const friendDisplayElement = document.getElementById("friend-list-display");
     friendDisplayElement.innerHTML = ""; // Clear any existing content
-    console.log("Friends:", this.friends);
+    //console.log("Friends:", this.friends);
 
     if (this.friends.length > 0) {
       this.friends.forEach((friend, index) => {
@@ -121,7 +127,7 @@ export default class SideFriendList extends Component {
                 </div>
               </div>
               <div class="col-4 d-flex gap-2 friend-action">
-                <button class="btn-direct-message btn rounded"><i class="fa-solid fa-comment"></i></button>
+                <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
                 <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
               </div>
             </div>
@@ -141,8 +147,9 @@ export default class SideFriendList extends Component {
     }
   }
 
-  handleDirectMessage(event) {
+  async handleDirectMessage(event, friend_username) {
     const sideChat = document.getElementById("side-chat");
+    sideChat.setAttribute('data-username', friend_username);
     const friendlist = document.getElementById("side-friend-list");
     const btnBlocked = document.getElementById("btn-toggle-blocked");
     const btnFriends = document.getElementById("btn-toggle-friends");
@@ -155,6 +162,9 @@ export default class SideFriendList extends Component {
       btnBlocked.classList.remove("active");
       btnFriends.classList.remove("active");
     }
+
+    chatClear();
+    await fetchChatHistory(friend_username);
   }
 
   async handleBlockFriend(event) {

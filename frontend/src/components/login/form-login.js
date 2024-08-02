@@ -1,6 +1,9 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
+import state from "../../store/state.js";
+import {env} from "process";
+import {handleMessage} from "../../websocket/wshandler.js";
 
 export default class Login extends Component {
     constructor() {
@@ -67,23 +70,21 @@ export default class Login extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
+                    /* open socket */
+                    let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
+                    socket.onmessage = handleMessage;
+                    socket.addEventListener("open", (ev) => {
+                      socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
+                    });
+                    store.dispatch("setWebSocket", socket);
+
+                    console.log(store.state.socket);
                     navigateTo("/");
                 }
                 else {
                     console.error("Login failed:");
                     throw new Error("Login failed: Invalid username or password.");
                 }
-
-                // Check if the request was successful
-                // if (response.ok) {
-                // 	const data = await response.json();
-                // 	// Handle successful login here
-                // 	store.dispatch("logIn");
-                // } else {
-                // 	// Handle login failure here
-                // 	const error = await response.json();
-                // 	console.error("Login failed:", error.message);
-                // }
             } catch (error) {
                 // Handle network or other errors here
                 console.error("An error occurred:", error);

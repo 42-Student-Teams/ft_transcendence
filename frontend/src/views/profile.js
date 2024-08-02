@@ -91,7 +91,7 @@ export default class Profile extends Component {
 				email,
 				password
 			};
-			console.log(profileData);
+			//console.log(profileData);
 		});
 	}
 }

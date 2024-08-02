@@ -4,7 +4,6 @@ import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
-import { refreshList } from '../utils/refresh.js';
 import { navigateTo } from "../utils/router.js";
 
 export default class Home extends Component {
@@ -231,9 +230,7 @@ export default class Home extends Component {
 				speed: speed,
 				ai : ai
 			};
-			console.log(game);
-
-			localStorage.setItem("local-game", JSON.stringify(game));
+			//console.log(game);
 
 			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
@@ -252,8 +249,8 @@ export default class Home extends Component {
 				Speed: speed,
 				AiPlayers: aiPlayers
 			};
-
-			console.log(game);
+			
+			//console.log(game);
 			navigateTo("/tournament-game");
 		});
 
@@ -289,7 +286,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(blockedList, btnBlocked, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('blocked');
 		});
 
 		this.element.querySelector("#btn-toggle-friends").addEventListener("click", async (event) => {
@@ -303,7 +299,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(friendlist, btnFriends, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('friend');
 		});
 
 		this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
@@ -317,7 +312,6 @@ export default class Home extends Component {
 			var btnFriends = document.getElementById('btn-toggle-friends');
 			var btnPending = document.getElementById('btn-toggle-pending');
 			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-			refreshList('pending');
 		});
 
 	}
