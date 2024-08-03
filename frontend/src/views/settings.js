@@ -1,6 +1,6 @@
 
-import Component from "../library/component.js";
 import NavBar from '../components/home/navbar.js';
+import Component from "../library/component.js";
 
 export default class Login extends Component {
     constructor() {
@@ -33,7 +33,7 @@ export default class Login extends Component {
 						<label class="text-center h4 text-danger align-self-center pb-4">2fa is disabled</label>
 						<div class="d-flex align-items-center justify-content-center gap-3">
 							<button id="btn-enable-2fa" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#enable-2fa-modal">Enable</button>
-							<button id="btn-disable-2fa" class="btn btn-danger disabled" data-bs-toggle="modal" data-bs-target="#disable-2fa-modal">Disable</button>
+							<button id="btn-disable-2fa" class="btn btn-danger disabled" data-bs-toggle="modal" data-bs-target="#disable-2fa-modal">Submit</button>
 						</div>
 					</div>
 				</div>
@@ -58,7 +58,7 @@ export default class Login extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="btn-modal-enable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Activate</button>
+                            <button id="btn-modal-enable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Submit</button>
                         </div>
                     </form>
                 </div>
@@ -82,7 +82,7 @@ export default class Login extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <button id="btn-modal-disable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Activate</button>
+                            <button id="btn-modal-disable-2fa" type="submit" data-bs-dismiss="modal" class="btn btn-success">Submit</button>
                         </div>
                     </form>
                 </div>

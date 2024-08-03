@@ -11,13 +11,12 @@ from backend.util import timestamp_now
 from backend.consumers.consumer_util import WsConsumerCommon
 
 
-class WsConsumer(WsConsumerCommon):
+class GameConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.funcs = {
             'ping': self.ping,
-            'direct_message': self.direct_message,
         }
 
 
