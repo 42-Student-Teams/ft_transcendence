@@ -63,12 +63,6 @@ export default class FormLogin extends Component {
                     localStorage.setItem('jwt', jsonData.jwt);
                     openCommWebsocket();
                     console.log(store.state.socket);
-                    let socket = new WebSocket(`wss://${window.location.host}/wss/comm/`);
-                    socket.onmessage = handleMessage;
-                    socket.addEventListener("open", (ev) => {
-                        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
-                    });
-                    store.dispatch("setWebSocket", socket);
                     navigateTo("/");
                 } else {
                     console.error("Login failed:");
