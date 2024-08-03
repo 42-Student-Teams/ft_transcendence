@@ -1,7 +1,7 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
-import { handleMessage } from "../../websocket/wshandler.js";
+import { openCommWebsocket } from "../../utils/wsUtils.js";
 import { login } from "/src/utils/langPack.js";
 
 export default class FormLogin extends Component {
@@ -61,6 +61,8 @@ export default class FormLogin extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
+                    openCommWebsocket();
+                    console.log(store.state.socket);
                     let socket = new WebSocket(`wss://${window.location.host}/wss/comm/`);
                     socket.onmessage = handleMessage;
                     socket.addEventListener("open", (ev) => {

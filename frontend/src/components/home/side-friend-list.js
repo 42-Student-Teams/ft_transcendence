@@ -1,9 +1,8 @@
-import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
-import {get_messages} from "../../utils/apiutils.js";
-import {chatClear, chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
+import Component from "../../library/component.js";
+import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -43,8 +42,9 @@ export default class SideFriendList extends Component {
         </div>
       </div>
     `;
-	this.element = document.getElementById("side-friend-list");
+	  this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
+    await this.getFriendList();
     this.handleEvent();
   }
 

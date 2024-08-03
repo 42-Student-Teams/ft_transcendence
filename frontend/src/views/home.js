@@ -72,6 +72,13 @@ export default class Home extends Component {
 						<div id="speedBallCheckLocal" class="form-text ">By default the speed of the ball is set to normal</div>
 					</div>
 					<div class="p-3">
+						<div class="form-check form-switch">
+							<label class="form-check-label" for="formAiCheckLocal">AI</label>
+							<input class="form-check-input" type="checkbox" id="formAiCheckLocal" aria-describedby="AiCheckLocal">
+						</div>
+						<div id="AiCheckLocal" class="form-text ">By default is not AI</div>
+					</div>
+					<div class="p-3">
 						<div class="form-check form-check-inline">
 						  <input class="form-check-input" type="radio" name="radioColorOptions" aria-describedby="inlineRadioLocalColors" id="radio-color-black" value="black" checked>
 						  <label class="form-check-label" for="radio-local-color-black">Black</label>
@@ -216,13 +223,15 @@ export default class Home extends Component {
 		this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
 			event.preventDefault();
 			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
-			const speed = document.getElementById('formSwitchCheckTournament').checked;
+			const speed = document.getElementById('formSwitchCheckLocal').checked;
+			const ai = document.getElementById('formAiCheckLocal').checked;
 			const game = {
 				color: colorRadio.value,
-				speed: speed
+				speed: speed,
+				ai : ai
 			};
 			//console.log(game);
-
+			localStorage.setItem('local-game', JSON.stringify(game));
 			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
 		});

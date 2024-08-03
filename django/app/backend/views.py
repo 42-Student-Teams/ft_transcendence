@@ -31,11 +31,11 @@ class UserCreateView(APIView):
         serializer = JwtUserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        print(f"got username: {user.username}", flush=True)
         return jwt_response(user.username)
 
 class UserOauthLoginView(APIView):
     def post(self, request):
-        print('LOOOOOL')
         oauth_token = None
         username = None
         if 'oauth_token' in request.data:
@@ -73,8 +73,10 @@ class UserLoginView(APIView):
         if 'password' in request.data:
             password = request.data['password']
 
-        user: JwtUser = JwtUser.objects.get(username=username)
-        if user is None:
+
+        try:
+            user: JwtUser = JwtUser.objects.get(username=username)
+        except JwtUser.DoesNotExist:
             raise AuthenticationFailed('Incorrect username or password')
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect username or password')
@@ -93,6 +95,14 @@ class UserUpdateView(APIView):
         avatar = request.FILES.get('avatar')
         if avatar is not None:
             user.avatar = avatar
+            user.save()
+        first_name = request.data.get('first_name')
+        last_name = request.data.get('last_name')
+        if first_name is not None:
+            user.first_name = first_name
+            user.save()
+        if last_name is not None:
+            user.last_name = last_name
             user.save()
         return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 

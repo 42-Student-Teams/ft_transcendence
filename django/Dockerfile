@@ -8,7 +8,8 @@ COPY ./requirements.txt /
 
 RUN apk add --no-cache postgresql-libs python3 py3-pip
 
-#RUN apk add libffi-dev, python-dev for arm64 (m1,  m2, etc...)
+# for arm64 For (m1,  m2, etc...)
+#RUN apk add libffi-dev python-dev  
 
 # Thanks to --virtual .build-deps we can yank all deps at the end
 RUN \

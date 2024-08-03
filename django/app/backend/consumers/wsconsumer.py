@@ -114,6 +114,10 @@ class WsConsumer(WebsocketConsumer):
         friend = JwtUser.objects.get(username=friend_username)
         if friend is None:
             return
+        blocked = self.user.blocked_users.filter(username=friend_username)
+        if len(blocked) > 0:
+            print(f'BLOCKED: {friend_username}, not sending message', flush=True)
+            return
         Message.objects.create(author=self.user, recipient=friend, content=msg_obj.get('message'), timestamp=timestamp_now())
         msg_obj['author'] = self.user.username
         print(f"Relaying message {msg_obj.get('message')} to channel", flush=True)

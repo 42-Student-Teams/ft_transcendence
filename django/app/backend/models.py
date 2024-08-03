@@ -54,7 +54,8 @@ class User(models.Model):
         return self.username
 
 class JwtUser(AbstractUser):
-    #name = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
     #email = models.CharField(max_length=255, unique=True)
     username = models.CharField(unique=True, max_length=255)
     email = None
