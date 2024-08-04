@@ -7,14 +7,29 @@ from backend.models import JwtUser
 from django.conf import settings
 import jwt
 
+
+def register_ws_func(func):
+    # mark the method as something that requires view's class
+    func.is_registered = True
+    return func
+
+
 class WsConsumerCommon(WebsocketConsumer):
+    funcs = {}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.authed = False
         self.subscribed_groups = []
         self.user: JwtUser = None
 
-        self.funcs = {}
+        # For every method in a child class marked with the register_ws_func decorator
+        # we append it to the funcs dict
+        # Idea source: https://stackoverflow.com/a/2367605
+        for name in self.__class__.__dict__.keys():
+            if hasattr(self.__class__.__dict__[name], "is_registered"):
+                self.__class__.funcs[name] = self.__class__.__dict__[name]
+
 
     def connect(self):
         print('someone connected', flush=True)
@@ -27,6 +42,12 @@ class WsConsumerCommon(WebsocketConsumer):
             async_to_sync(self.channel_layer.group_discard)(
                 group, self.channel_name
             )
+
+    def subscribe_to_group(self, group):
+        async_to_sync(self.channel_layer.group_add)(
+            group, self.channel_name
+        )
+        self.subscribed_groups.append(group)
 
     def do_auth(self, msg_obj):
         print('Doing auth', flush=True)
@@ -65,14 +86,22 @@ class WsConsumerCommon(WebsocketConsumer):
                 self.send(text_data='{"status":"unauthed"}')
             else:
                 self.send(text_data='{"status":"authed"}')
-                self.subscribe_to_groups()
+                self.on_auth()
             return
 
         if msg_obj.get('func') is None:
             return
         if msg_obj.get('func') not in self.funcs.keys():
             return
-        self.funcs[msg_obj.get('func')](msg_obj)
+        self.funcs[msg_obj.get('func')](self, msg_obj)
 
-    def subscribe_to_groups(self):
+    def on_auth(self):
         pass
+
+    def send_json(self, content):
+        self.send(text_data=json.dumps(content))
+
+    def send_channel(self, channel, msgtype, content):
+        async_to_sync(self.channel_layer.group_send)(
+            channel, {"type": msgtype, "msg_obj": content}
+        )

@@ -11,6 +11,8 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
 from .managers import CustomUserManager
+from .util import timestamp_now
+
 
 class User(models.Model):
     objects = CustomUserManager()
@@ -125,3 +127,26 @@ class GameHistory(models.Model):
 
     def __str__(self):
         return f"Partie entre {self.joueur1.username} et {self.joueur2.username} le {self.date_partie}"
+
+
+class MatchRequest(models.Model):
+    request_author = models.ForeignKey(User, related_name='author', on_delete=models.CASCADE)
+    target_user = models.ForeignKey(User, related_name='target', on_delete=models.SET_NULL, null=True,
+                                    blank=True)
+    ball_color = models.CharField(max_length=50)
+    created_at = models.FloatField()
+
+    def __str__(self):
+        return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
+
+    @staticmethod
+    def request_match(request_author, target_user, ball_color):
+        MatchRequest.objects.filter(request_author=request_author).delete()
+        match_request = MatchRequest(
+            request_author=request_author,
+            target_user=target_user,
+            ball_color=ball_color,
+            created_at=timestamp_now()
+        )
+        match_request.save()
+        return match_request
