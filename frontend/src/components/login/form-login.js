@@ -44,7 +44,7 @@ export default class Login extends Component {
 
             try {
                 // Make the POST request with the login credentials
-                const apiurl = "/backend"; //process.env.API_URL;
+                const apiurl = process.env.API_URL;
 
 
                 const data = {

@@ -24,10 +24,10 @@ export default class LocalGame extends Component {
       		</div>
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
-       			<h1  id=left_player class="display-5">Inaranjo</h1>
+       			<h1  id=left_player class="display-5">Player 1</h1>
         		<br/>
         		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">Jackito</h1>
+        		<h1  id=right_player class="display-5">Player 2</h1>
      		 </div>
       		<div class="d-flex justify-content-center align-items-center">
         		<div class="game-container d-flex justify-content-center align-items-center gap-5">
@@ -91,7 +91,7 @@ export default class LocalGame extends Component {
 				this.direction = direction
 				this.y = config.canvasHeight / 2 - config.paddleHeight / 2
 				direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
-				direction === 1 ? this.name = "Jackito" : this.name = "Inaranjo"
+				direction === 1 ? this.name = "Jackito" :  obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
 			}
 
@@ -138,7 +138,7 @@ export default class LocalGame extends Component {
 		const canvas = document.getElementById("myCanvas")
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
-
+		
 		const config = {
 			canvasWidth: 900,
 			canvasHeight: 500,
@@ -149,15 +149,17 @@ export default class LocalGame extends Component {
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
-
+		
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
 		
-		let startTime = Date.now() + 3 * 60 * 1000;
+		let startTime = Date.now();
 		let stopperTime = true;
 		const paddle1 = new Paddle(1)
 		const paddle2 = new Paddle(-1)
-		let endTime = startTime - Date.now()
+		let endTime = 0
+		document.getElementById('left-player') = paddle1.name;
+		document.getElementById('right-player') = paddle2.name;
 
 
 		const startBall = () => {
@@ -193,7 +195,7 @@ export default class LocalGame extends Component {
 				paddle2.score = 0;
 				document.getElementById("start-game").style.display = "block";
 				canvas.style.backgroundColor = '#9c9c9e';
-				endTime = startTime - Date.now();
+				endTime = Date.now() - startTime;
 				stopperTime = true;
 				// if (myModal) {
 				// 	myModal.style.display = "block";
@@ -214,7 +216,7 @@ export default class LocalGame extends Component {
 
 		const updateTimer = () => {
 			if (stopperTime == false) {
-				const sparetime = startTime - Date.now();
+				const sparetime = Date.now() - startTime;
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -307,17 +309,17 @@ export default class LocalGame extends Component {
 			document.getElementById('Winner-text').innerText = "";
 			resetBall();
 			stopperTime = false;
-			startTime = Date.now() + 3 * 60 * 1000 + 1000;
+			startTime = Date.now();
 
         });
 		
 		const MovePaddleAI = () => {
-			console.log('AI');
-			if (ball.y < paddle1.y && ball.dx < 0) {
+			let ran = Math.random();
+			if (ball.y < paddle1.y  && ball.dx < 0 && ran < 0.8) {
 				paddle1.moveUp();
 			}
 			
-				if (ball.y > paddle1.y && ball.dx < 0) {
+				if (ball.y > paddle1.y  && ball.dx < 0 && ran < 0.8) {
 				paddle1.moveDown();
 			}
 		}
