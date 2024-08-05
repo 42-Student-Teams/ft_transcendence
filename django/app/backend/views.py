@@ -5,14 +5,17 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.db.models import Q
+#Q est spécifique à Django et fait partie de son ORM (Object-Relational Mapping).
+#combine plusieurs conditions avec des opérateurs logiques OR (|) ou AND (&).
 
 import jwt
 from .jwt_util import jwt_response, check_jwt
-from .models import JwtUser
+from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
 
 from .util import get_user_info
 
@@ -346,3 +349,63 @@ class ChatGetMessagesView(APIView):
             'messages': serialized_messages,
             'got_all': len(messages) < message_amount
         }, status=status.HTTP_200_OK)
+
+###-----------------------------GET PROFILE--------------------------------------------------------###
+
+class getUserProfileView(APIView):
+    def get(self, request):
+        user = JwtUser.objects.get(username=check_jwt(request))
+        
+        # Vérification de l'existence de l'utilisateur
+        if not user:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Préparation des données du profil
+        profile_data = {
+            'nom': user.last_name,
+            'prénom': user.first_name,
+            'username': user.username,
+            'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else None
+        }
+        
+        return Response(profile_data, status=status.HTTP_200_OK)
+
+
+###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
+
+class GameHistoryCreateView(APIView):
+    def post(self, request):
+        username = check_jwt(request)
+        if not username:
+            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        serializer = GameHistoryCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            game_history = serializer.save()
+            return Response({
+                'status': 'success',
+                'message': 'Partie enregistrée avec succès',
+                'game': GameHistorySerializer(game_history).data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            'status': 'error',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GameHistoryListView(APIView):
+    def get(self, request):
+        username = check_jwt(request)
+        if not username:
+            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = JwtUser.objects.get(username=username)
+        parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
+        serializer = GameHistorySerializer(parties, many=True)
+
+        return Response({
+            'status': 'success',
+            'historique': serializer.data
+        }, status=status.HTTP_200_OK)
+    
+

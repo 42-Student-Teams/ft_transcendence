@@ -3,6 +3,7 @@ import { addInputEventListeners, handleEvent, resetErrors, showError } from "../
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 import { registerUser } from "../../utils/apiutils.js";
+import {openCommWebsocket} from "../../utils/wsUtils.js";
 
 export default class FormRegister extends Component {
     constructor() {
@@ -82,6 +83,9 @@ export default class FormRegister extends Component {
 
                     if (response.ok) {
                         store.dispatch("logIn");
+                        const jsonData = await response.json();
+                        localStorage.setItem('jwt', jsonData.jwt);
+                        openCommWebsocket();
                         navigateTo("/");
                     } else {
                         showError('form-register', 'registration');

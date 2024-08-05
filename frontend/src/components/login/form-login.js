@@ -3,7 +3,7 @@ import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 import state from "../../store/state.js";
 import {env} from "process";
-import {handleMessage} from "../../websocket/wshandler.js";
+import {openCommWebsocket} from "../../utils/wsUtils.js";
 
 export default class Login extends Component {
     constructor() {
@@ -70,14 +70,7 @@ export default class Login extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
-                    /* open socket */
-                    let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
-                    socket.onmessage = handleMessage;
-                    socket.addEventListener("open", (ev) => {
-                      socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
-                    });
-                    store.dispatch("setWebSocket", socket);
-
+                    openCommWebsocket();
                     console.log(store.state.socket);
                     navigateTo("/");
                 }

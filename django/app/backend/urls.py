@@ -19,4 +19,7 @@ urlpatterns=[
     path('block_list', views.BlockedListView.as_view(), name='block_list'),
     path('update_avatar', views.UpdateProfilePictureView.as_view(), name='update_avatar'),
     path('chat_get_messages', views.ChatGetMessagesView.as_view(), name='chat_get_messages'),
+    path('get_userProfile', views.getUserProfileView.as_view(), name='get_user_profile'),
+    path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGames'),
+    path('history_postGames', views.GameHistoryCreateView.as_view(), name='history_postGames'),
 ]

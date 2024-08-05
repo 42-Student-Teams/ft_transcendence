@@ -14,11 +14,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name='jwtuser',
-            name='avatar',
-            field=models.ImageField(default='default_avatar.png', max_length=200, upload_to='avatars'),
-        ),
-        migrations.AddField(
-            model_name='jwtuser',
             name='blocked_users',
             field=models.ManyToManyField(blank=True, related_name='blocked_by', to=settings.AUTH_USER_MODEL),
         ),

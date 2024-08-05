@@ -1,9 +1,8 @@
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
-from .models import User, JwtUser, Message
+from .models import User, JwtUser, Message, GameHistory
 from .util import get_user_info
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -44,3 +43,27 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ('id', 'author_username', 'recipient_username', 'content', 'timestamp')
+
+
+class GameHistorySerializer(serializers.ModelSerializer):
+    joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
+    joueur2_username = serializers.CharField(source='joueur2.username', read_only=True)
+    gagnant_username = serializers.CharField(source='gagnant.username', read_only=True)
+
+    class Meta:
+        model = GameHistory
+        fields = ('id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2', 'gagnant_username')
+
+
+class GameHistoryCreateSerializer(serializers.ModelSerializer):
+    joueur1_username = serializers.CharField(write_only=True)
+    joueur2_username = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = GameHistory
+        fields = ('joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2')
+
+    def create(self, validated_data):
+        joueur1 = JwtUser.objects.get(username=validated_data.pop('joueur1_username'))
+        joueur2 = JwtUser.objects.get(username=validated_data.pop('joueur2_username'))
+        return GameHistory.objects.create(joueur1=joueur1, joueur2=joueur2, **validated_data)

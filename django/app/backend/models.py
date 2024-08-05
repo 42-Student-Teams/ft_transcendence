@@ -1,4 +1,3 @@
-#from _datetime import datetime, timedelta
 from django.utils import timezone
 import secrets
 
@@ -38,12 +37,7 @@ class User(models.Model):
         dt = timezone.localtime()
         print("timenow:")
         print(dt.strftime("%H:%M:%S / %d-%m-%Y"))
-        # x = timezone.localtime()
-        # print(x.strftime("%H:%M:%S / %d-%m-%Y"))
-        print("timezone local")
-
         td = timezone.timedelta(minutes=settings.TOKEN_EXPIRATION_MINUTES)
-        # your calculated date
         expiration_date = dt + td
         self.session_token_expires = expiration_date
         print("new expiration:")
@@ -56,7 +50,6 @@ class User(models.Model):
 class JwtUser(AbstractUser):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    #email = models.CharField(max_length=255, unique=True)
     username = models.CharField(unique=True, max_length=255)
     email = None
     password = models.CharField(max_length=255)
@@ -64,27 +57,23 @@ class JwtUser(AbstractUser):
     friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by')
-    avatar = models.ImageField(max_length=200, default="default_avatar.png", upload_to='avatars') # setup to load the image, need the field and the img
+    avatar = models.ImageField(max_length=200, default="default_avatar.png", upload_to='avatars')
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
 
     def get_last_x_messages_with_friend(self, friend, count, start_from_id=None):
-        # Base query for messages between the user (self) and the friend
         query = Message.objects.filter(
             Q(author_id=self.id, recipient_id=friend.id) |
             Q(author_id=friend.id, recipient_id=self.id)
         )
 
-        # Apply the start_from_id filter if provided
         if start_from_id is not None:
             query = query.filter(id__lte=start_from_id)
 
-        # Fetch the last 'count' messages and order them by ID in descending order
         messages = query.order_by('-id')[:count]
 
-        # Return the messages in ascending order by ID (oldest first)
-        return messages #list(reversed(messages))
+        return messages
 
 class Message(models.Model):
     author = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='sent_messages')
@@ -103,3 +92,36 @@ class Message(models.Model):
         ).order_by('id')[:count]
 
         return messages
+
+# Ajout du modèle GameHistory
+class GameHistory(models.Model):
+    date_partie = models.DateTimeField(default=timezone.now)
+    joueur1 = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_joueur1')
+    joueur2 = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_joueur2')
+    duree_partie = models.IntegerField()
+    score_joueur1 = models.IntegerField()
+    score_joueur2 = models.IntegerField()
+    gagnant = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_gagnees', null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Détermination du gagnant avant la sauvegarde
+        if self.score_joueur1 > self.score_joueur2:
+            self.gagnant = self.joueur1
+        elif self.score_joueur2 > self.score_joueur1:
+            self.gagnant = self.joueur2
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def enregistrer_partie(cls, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2):
+        partie = cls(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            duree_partie=duree_partie,
+            score_joueur1=score_joueur1,
+            score_joueur2=score_joueur2
+        )
+        partie.save()
+        return partie
+
+    def __str__(self):
+        return f"Partie entre {self.joueur1.username} et {self.joueur2.username} le {self.date_partie}"
