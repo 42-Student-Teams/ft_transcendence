@@ -2,7 +2,6 @@ import Component from "../../library/component.js";
 import { addInputEventListeners, handleEvent, resetErrors, showError } from "../../utils/formValidation.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
-import { registerUser } from "../../utils/apiutils.js";
 
 export default class FormRegister extends Component {
     constructor() {
@@ -33,23 +32,23 @@ export default class FormRegister extends Component {
             <form id="form-register" novalidate>
                 <div class="input-group mb-3">
                     <input id="form-register-firstname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
-                    <div id="error-firstname" class="invalid-feedback">Invalid input, try again</div>
+                    <div id="error-firstname" class="invalid-feedback">Please enter your first name.</div>
                 </div>
                 <div class="input-group mb-3">
                     <input id="form-register-lastname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Last Name" required>
-                    <div id="error-lastname" class="invalid-feedback">Invalid input, try again</div>
+                    <div id="error-lastname" class="invalid-feedback">Please enter your last name.</div>
                 </div>
                 <div class="input-group mb-3">
                     <input id="form-register-username" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Username" required>
-                    <div id="error-username" class="invalid-feedback">Invalid input, try again</div>
+                    <div id="error-username" class="invalid-feedback">Username must be at least 3 characters long.</div>
                 </div>
                 <div class="input-group mb-3">
                     <input id="form-register-email" type="email" class="form-control form-control-lg bg-light fs-6" placeholder="Email" required>
-                    <div id="error-email" class="invalid-feedback">Invalid input, try again</div>
+                    <div id="error-email" class="invalid-feedback">Please enter a valid email address.</div>
                 </div>
                 <div class="input-group mb-3">
                     <input id="form-register-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password" required>
-                    <div id="error-password" class="invalid-feedback">Invalid input, try again</div>
+                    <div id="error-password" class="invalid-feedback">Password must be at least 6 characters long.</div>
                 </div>
                 <div class="input-group mb-3">
                     <button id="form-register-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">Register</button>
@@ -65,9 +64,19 @@ export default class FormRegister extends Component {
             'form-register',
             fields,
             (field, value) => {
-                if (!value) return false;
-                if (field === 'email' && !value.includes('@')) return false;
-                return true;
+                switch (field) {
+                    case 'firstname':
+                    case 'lastname':
+                        return value.trim() !== '';
+                    case 'username':
+                        return value.length >= 3;
+                    case 'email':
+                        return value.includes('@');
+                    case 'password':
+                        return value.length >= 6;
+                    default:
+                        return false;
+                }
             },
             async (data) => {
                 try {

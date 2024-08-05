@@ -36,7 +36,7 @@ export default class Profile extends Component {
         <div class="modal" id="edit-profile-modal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
-                    <form id="edit-profile-form">
+                    <form id="edit-profile-form" novalidate>
                         <div class="modal-header">
                             <h5 class="modal-title">Edit Profile</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -48,11 +48,11 @@ export default class Profile extends Component {
                             </div>
                             <div class="p-3">
                                 <label for="edit-first-name" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="edit-first-name" required>
+                                <input type="text" class="form-control" id="edit-first-name">
                             </div>
                             <div class="p-3">
                                 <label for="edit-last-name" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="edit-last-name" required>
+                                <input type="text" class="form-control" id="edit-last-name">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -60,6 +60,18 @@ export default class Profile extends Component {
                             <button type="submit" class="btn btn-success">Save changes</button>
                         </div>
                     </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container (positioned absolutely) -->
+        <div aria-live="polite" aria-atomic="true" class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 9999;">
+            <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        Please fill in all fields correctly
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
             </div>
         </div>
@@ -73,8 +85,20 @@ export default class Profile extends Component {
             event.preventDefault();
 
             const profilePicture = document.getElementById("edit-profile-picture").files[0];
-            const firstName = document.getElementById("edit-first-name").value;
-            const lastName = document.getElementById("edit-last-name").value;
+            const firstName = document.getElementById("edit-first-name").value.trim();
+            const lastName = document.getElementById("edit-last-name").value.trim();
+
+            // Close the modal first
+            const modalElement = document.getElementById('edit-profile-modal');
+            const modalInstance = bootstrap.Modal.getInstance(modalElement);
+            modalInstance.hide();
+
+            // After closing the modal, show toast if fields are empty
+            if (!firstName || !lastName) {
+                // Use a timeout to ensure the modal is closed before showing the toast
+                setTimeout(() => this.showToast(), 100);
+                return;
+            }
 
             // Store values here
             const profileData = {
@@ -86,5 +110,11 @@ export default class Profile extends Component {
             // Here you can handle the form submission, like sending the data to the server
             console.log(profileData);
         });
+    }
+
+    showToast() {
+        const toastElement = document.getElementById('errorToast');
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
     }
 }
