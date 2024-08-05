@@ -4,4 +4,5 @@ export default {
 	languageId: "en",
 	intraId: "intraId(lsaba-qu)",
 	socketConnection: null,
+	friends: [],
 };

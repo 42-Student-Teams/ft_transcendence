@@ -2,13 +2,23 @@ from backend.models import JwtUser, Message, MatchRequest
 from backend.util import timestamp_now
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
-
 class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def connect(self):
+        super().connect()
+        if self.authed:
+            self.update_user_status('Connected')
+
+    def disconnect(self, close_code):
+        if self.authed:
+            self.update_user_status('Offline')
+        super().disconnect(close_code)
+
     def on_auth(self):
         self.subscribe_to_groups()
+        self.update_user_status('Connected')
 
     def subscribe_to_groups(self):
         if self.user is None:
@@ -20,6 +30,19 @@ class WsConsumer(WsConsumerCommon):
         friends = self.user.friends.all()
         for friend in friends:
             self.subscribe_to_group(friend.username)
+
+    def update_user_status(self, status):
+        if self.user:
+            self.user.status = status
+            self.user.save()
+            self.broadcast_status_change()
+
+    def broadcast_status_change(self):
+        for friend in self.user.friends.all():
+            self.send_channel(friend.username, 'friend_status_change', {
+                'user': self.user.username,
+                'status': self.user.status
+            })
 
     # WEBSOCKET RECEIVERS
     @register_ws_func
@@ -86,10 +109,17 @@ class WsConsumer(WsConsumerCommon):
         print("Got dm on channel", flush=True)
         msg_obj = event["msg_obj"]
         if msg_obj.get('friend_username') == self.user.username:
-            # it could contain more fields, which is not desirable
             sanitized_msg_obj = {
                 'type': 'dm',
                 'author': msg_obj.get('author'),
                 'message': msg_obj.get('message'),
             }
             self.send_json(sanitized_msg_obj)
+
+    def friend_status_change(self, event):
+        msg_obj = event["msg_obj"]
+        self.send_json({
+            'type': 'friend_status_update',
+            'username': msg_obj['user'],
+            'status': msg_obj['status']
+        })

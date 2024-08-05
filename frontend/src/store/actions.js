@@ -27,6 +27,10 @@ function setWebSocket(context, payload) {
 	context.commit("setWebSocket", payload);
 }
 
+function updateFriendStatus(context, payload) {
+    context.commit("updateFriendStatus", payload);
+}
+
 export default {
 	updateLocation,
 	logIn,
@@ -34,4 +38,5 @@ export default {
 	setLanguage,
 	setIntraId,
 	setWebSocket,
+	updateFriendStatus,
 };

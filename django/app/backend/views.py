@@ -249,16 +249,31 @@ class BlockUserView(APIView):
 # 5.Retour de la réponse : Retourne une réponse de succès avec la liste des amis de l'utilisateur.
 class FriendListView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
-        print(f'Serving friends list to user `{user.username}`', flush=True)
-
-        friends = user.friends.all()
-        friend_list = [{'username': friend.username} for friend in friends]
-
-        return Response({
-            'status': 'success',
-            'friends': friend_list
-        }, status=status.HTTP_200_OK)
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+            friends = user.friends.all()
+            friend_list = [{
+                'username': friend.username,
+                'status': friend.status,
+                'profile_picture': friend.avatar.url if friend.avatar else None
+            } for friend in friends]
+            
+            return Response({
+                'status': 'success',
+                'friends': friend_list
+            }, status=status.HTTP_200_OK)
+        
+        except JwtUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Utilisateur non trouvé'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PendingListView(APIView):
@@ -408,4 +423,3 @@ class GameHistoryListView(APIView):
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
     
-
