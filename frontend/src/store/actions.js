@@ -9,8 +9,11 @@ function logIn(context) {
 }
 
 function logOut(context) {
-	localStorage.clear();
-	context.commit("logOut");
+    if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+        state.socket.send(JSON.stringify({func: 'logout'}));
+    }
+    localStorage.clear();
+    context.commit("logOut");
 }
 
 

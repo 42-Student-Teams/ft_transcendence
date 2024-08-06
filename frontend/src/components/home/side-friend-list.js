@@ -3,12 +3,25 @@ import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import Component from "../../library/component.js";
 import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
+import store from "../../store/index.js";
 
 export default class SideFriendList extends Component {
   constructor() {
     super({ element: document.getElementById("side-friend-list") });
     this.friends = []; // Initialize friends as an empty array
     this.render();
+    
+    // S'abonner aux changements d'état
+    store.events.subscribe('stateChange', () => {
+      this.updateFriendStatuses(store.state.friends);
+
+    // Écouter les événements de mise à jour de statut d'ami
+    document.addEventListener('friendStatusUpdate', (event) => {
+      console.log('Received friendStatusUpdate event', event.detail);
+      this.updateFriendStatus(event.detail.username, event.detail.status);
+    });
+  });
+
   }
 
   async render() {
@@ -152,7 +165,14 @@ export default class SideFriendList extends Component {
   }
 }
 
+  updateFriendStatuses(friends) {
+   friends.forEach(friend => {
+        this.updateFriendStatus(friend.username, friend.status);
+    });
+  }
+
   updateFriendStatus(username, status) {
+    console.log(`Updating status for ${username} to ${status}`);
     const friendElement = this.element.querySelector(`.friend[data-username="${username}"]`);
     if (friendElement) {
       const statusIndicator = friendElement.querySelector('.friend-status-indicator');
@@ -162,6 +182,8 @@ export default class SideFriendList extends Component {
       statusIndicator.classList.add(status === 'Connected' ? 'status-connected' : 'status-offline');
       
       statusText.textContent = status;
+    } else {
+      console.log(`Friend element for ${username} not found`);
     }
   }
 

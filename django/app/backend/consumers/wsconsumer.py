@@ -6,15 +6,41 @@ class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def update_user_status(self, status):
+        if self.user:
+            print(f"Updating status for user {self.user.username} to {status}")
+            self.user.status = status
+            self.user.save()
+            self.broadcast_status_change()
+
+    def broadcast_status_change(self):
+        for friend in self.user.friends.all():
+            self.send_channel(friend.username, 'friend_status_change', {
+                'user': self.user.username,
+                'status': self.user.status
+            })
+
     def connect(self):
         super().connect()
         if self.authed:
             self.update_user_status('Connected')
 
     def disconnect(self, close_code):
+        print(f"Disconnecting user: {self.user.username if self.user else 'Unknown'}")
         if self.authed:
             self.update_user_status('Offline')
+            self.broadcast_status_change()
+            self.user = None
+            self.authed = False
         super().disconnect(close_code)
+    
+    @register_ws_func
+    def logout(self, msg_obj):
+        print(f"Logging out user: {self.user.username if self.user else 'Unknown'}")
+        if self.user:
+            self.update_user_status('Offline')
+            self.user = None
+            self.authed = False
 
     def on_auth(self):
         self.subscribe_to_groups()
@@ -30,19 +56,6 @@ class WsConsumer(WsConsumerCommon):
         friends = self.user.friends.all()
         for friend in friends:
             self.subscribe_to_group(friend.username)
-
-    def update_user_status(self, status):
-        if self.user:
-            self.user.status = status
-            self.user.save()
-            self.broadcast_status_change()
-
-    def broadcast_status_change(self):
-        for friend in self.user.friends.all():
-            self.send_channel(friend.username, 'friend_status_change', {
-                'user': self.user.username,
-                'status': self.user.status
-            })
 
     # WEBSOCKET RECEIVERS
     @register_ws_func
@@ -118,6 +131,7 @@ class WsConsumer(WsConsumerCommon):
 
     def friend_status_change(self, event):
         msg_obj = event["msg_obj"]
+        print(f"Received friend status change: {msg_obj}")
         self.send_json({
             'type': 'friend_status_update',
             'username': msg_obj['user'],

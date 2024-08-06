@@ -242,11 +242,7 @@ class BlockUserView(APIView):
 
 
 ##--------------------------------------GET-FRIEND-LIST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Récupération des amis : Récupère la liste des amis de l'utilisateur depuis la base de données.
-# 4.Construction de la liste d'amis : Crée une liste d'amis avec les noms d'utilisateur des amis.
-# 5.Retour de la réponse : Retourne une réponse de succès avec la liste des amis de l'utilisateur.
+
 class FriendListView(APIView):
     def get(self, request):
         try:
