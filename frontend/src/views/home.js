@@ -351,6 +351,28 @@ export default class Home extends Component {
         return { status: 200 }; // Assume success
     }
 
+	// // posting data tournament pour de vrai, esssaie
+    // async postTournamentData(gameData) {
+    //     const apiurl = 'https://localhost/backend'; // base URL for API
+    //     const jwt = localStorage.getItem('jwt');
+
+    //     try {
+    //         const response = await fetch(`${apiurl}/tournament`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Authorization': `Bearer ${jwt}`,
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             body: JSON.stringify(gameData)
+    //         });
+
+    //         return response;
+    //     } catch (error) {
+    //         console.error("Error posting tournament data:", error);
+    //         throw error;
+    //     }
+    // }
+
     showToast(message, type) {
 		// Bootstrap toast centered in the page
 		const toastHTML = `
