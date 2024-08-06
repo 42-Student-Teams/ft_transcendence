@@ -267,6 +267,23 @@ export default class Home extends Component {
             }
         });
 
+		// backend interaction, essaie
+		// 	try {
+		// 		// Make a real API call to post tournament data
+		// 		const response = await this.postTournamentData(game);
+		// 		if (response.ok) {
+		// 			this.showToast("Tournament created successfully!", "success");
+		// 			navigateTo("/tournament-game");
+		// 		} else {
+		// 			const errorData = await response.json();
+		// 			this.showToast(errorData.message || "Error creating tournament.", "danger");
+		// 		}
+		// 	} catch (error) {
+		// 		console.error("Error:", error);
+		// 		this.showToast("Server error. Please try again.", "danger");
+		// 	}
+		// });
+
 		// Helper function to toggle visibility
 		function toggleVisibility(activeList, buttonToActivate, lists, buttons) {
 			lists.forEach(list => {
