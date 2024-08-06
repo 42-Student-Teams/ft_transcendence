@@ -1,4 +1,5 @@
 import {handleMessage} from "../websocket/wshandler.js";
+import {handleGameMessage} from "../websocket/wshandler.js";
 import store from "../store/index.js";
 import state from "../store/state.js";
 
@@ -7,9 +8,20 @@ function openCommWebsocket() {
     let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
     socket.onmessage = handleMessage;
     socket.addEventListener("open", (ev) => {
-      socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
+        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
     });
     store.dispatch("setWebSocket", socket);
+}
+
+export function openGameWebsocket(acknowledge_id) {
+    let socket = new WebSocket(`wss://${window.location.host }/wss/game/`);
+    socket.onmessage = handleGameMessage;
+    socket.addEventListener("open", (ev) => {
+        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "acknowledge_id": acknowledge_id}));
+    });
+    store.dispatch("setGameSocket", socket);
+
+    // TODO: we also want an onclose, which redirects the user to /home
 }
 
 function wsSend(func, content, socket=null) {

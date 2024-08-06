@@ -1,14 +1,7 @@
 from rest_framework import serializers
-from rest_framework.exceptions import PermissionDenied
 
-from .models import User, JwtUser, Message, GameHistory
-from .util import get_user_info
+from .models import JwtUser, Message, GameHistory
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'is_admin')
-        # fields = ('content', 'created_at') # to expose arbitrary fields
 
 class JwtUserSerializer(serializers.ModelSerializer):
     class Meta:

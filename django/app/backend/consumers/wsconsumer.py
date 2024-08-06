@@ -1,4 +1,4 @@
-from backend.models import JwtUser, Message, MatchRequest
+from backend.models import JwtUser, Message, MatchRequest, AcknowledgedMatchRequest
 from backend.util import timestamp_now
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
@@ -7,7 +7,7 @@ class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def on_auth(self):
+    def on_auth(self, msg_obj):
         self.subscribe_to_groups()
 
     def subscribe_to_groups(self):
@@ -47,6 +47,8 @@ class WsConsumer(WsConsumerCommon):
         print(self.subscribed_groups, flush=True)
         self.send_channel(friend.username, 'channel_dm', msg_obj)
 
+    # 2) server gets game request and replies to it with either a match_request_id
+    #    or a
     @register_ws_func
     def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
@@ -73,10 +75,15 @@ class WsConsumer(WsConsumerCommon):
             if len(blocked) > 0:
                 self.send_json(errormsg)
                 return
-            MatchRequest.request_match(request_author=self.user, target_user=friend)
+            match_request = MatchRequest.request_match(request_author=self.user, target_user=friend,
+                                       ball_color=msg_obj.get('ball_color'),
+                                       fast=msg_obj.get('fast'))
+            self.send_json({'type': 'match_request_id', 'id': match_request.id});
         elif msg_obj.get('ai'):
-            self.send_json({'type': 'request_game_resp', 'status': 'success', 'game_type': 'ai',
-                            'ball_color': msg_obj.get('ball_color'), 'fast': msg_obj.get('fast')})
+            acknowledgement = AcknowledgedMatchRequest.acknowledge_bot_request(
+                self.user, None, msg_obj.get('ball_color'),
+            msg_obj.get('fast'))
+            self.send_json({'type': 'game_acknowledgement', 'acknowledge_id': acknowledgement.id})
             return
         else:
             self.send_json(errormsg)

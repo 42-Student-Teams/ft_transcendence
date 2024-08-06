@@ -26,10 +26,10 @@ export default class LocalGame extends Component {
       		</div>
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
-       			<h1  id=left_player class="display-5">Inaranjo</h1>
+       			<h1  id=left_player class="display-5">...</h1>
         		<br/>
         		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">Jackito</h1>
+        		<h1  id=right_player class="display-5">You</h1>
      		 </div>
       		<div class="d-flex justify-content-center align-items-center">
         		<div class="game-container d-flex justify-content-center align-items-center gap-5">
@@ -76,25 +76,40 @@ export default class LocalGame extends Component {
 
 		//this.element.innerHTML = view;
 		/* of course it gives errors because we don't remder the navbar */
-		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
-		this.handleEvent(view);
+		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">Please wait...</button>`;
+		this.handleEvent(view, this.element);
 	}
 
-	async handleEvent(view) {
-
-		const gameOptions = localStorage.getItem("local-game");
-
-		const obj = JSON.parse(gameOptions);
-
-		document.getElementById("start-game").addEventListener("click", async (event) => {
+	async handleEvent(view, element) {
+		window.startGame = this.startGame;
+		window.gameHtml = view;
+		window.thisElement = element;
+		/*document.getElementById("start-game").addEventListener("click", async (event) => {
 			this.element.innerHTML = view;
 			this.startGame(obj);
-		});
+		});*/
 
-		wsSend('request_game', {'target_user': null, 'ball_color': obj.color, 'bot': obj.ai});
+		/* 1) client initiates game request */
+		wsSend('request_game', {
+											'target_user': state.currentGameData['opponent_username'],
+											'ball_color': state.currentGameData['color'],
+											'ai': state.currentGameData['ai'],
+											'fast': state.currentGameData['speed']
+											});
 	}
 
-	startGame(obj) {
+	startGame(obj_) {
+		window.thisElement.innerHTML = window.gameHtml;
+
+		let obj = {
+			color: obj_.ball_color,
+			speed: obj_.fast,
+			ai : obj_.is_bot,
+			opponent_username: obj_.opponent_username
+		};
+
+		document.getElementById('left_player').innerText = obj.opponent_username;
+
 		let myModal = document.getElementById('exampleModal');
 
 		//console.log('gameOptions',gameOptions);
@@ -105,7 +120,7 @@ export default class LocalGame extends Component {
 				this.direction = direction
 				this.y = config.canvasHeight / 2 - config.paddleHeight / 2
 				direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
-				direction === 1 ? this.name = "Jackito" : this.name = "Inaranjo"
+				direction === 1 ? this.name = "You" : this.name = obj.opponent_username;
 				this.score = 0
 			}
 

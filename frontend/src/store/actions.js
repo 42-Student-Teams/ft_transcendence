@@ -27,6 +27,18 @@ function setWebSocket(context, payload) {
 	context.commit("setWebSocket", payload);
 }
 
+function setGameSocket(context, payload) {
+	context.commit("setGameSocket", payload);
+}
+
+function setCurrentGameData(context, payload) {
+	context.commit("setCurrentGameData", payload);
+}
+
+function setGameRequestId(context, payload) {
+	context.commit("setGameRequestId", payload);
+}
+
 export default {
 	updateLocation,
 	logIn,
@@ -34,4 +46,7 @@ export default {
 	setLanguage,
 	setIntraId,
 	setWebSocket,
+	setGameSocket,
+	setCurrentGameData,
+	setGameRequestId,
 };

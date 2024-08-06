@@ -31,6 +31,21 @@ function setWebSocket(state, payload) {
 	return state;
 }
 
+function setGameSocket(state, payload) {
+	state.gameSocket = payload;
+	return state;
+}
+
+function setCurrentGameData(state, payload) {
+	state.currentGameData = payload;
+	return state;
+}
+
+function setGameRequestId(state, payload) {
+	state.gameRequestId = payload;
+	return state;
+}
+
 
 export default {
 	updateLocation,
@@ -38,5 +53,8 @@ export default {
 	logOut,
 	setLanguage,
 	setWebSocket,
+	setGameSocket,
+	setCurrentGameData,
+	setGameRequestId,
 	// setIntraId,
 };

@@ -1,53 +1,10 @@
 from django.utils import timezone
-import secrets
-
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Q
-from django.utils.translation import gettext_lazy as _
 
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from .util import timestamp_now, random_alphanum
 
-from .managers import CustomUserManager
-from .util import timestamp_now
-
-
-class User(models.Model):
-    objects = CustomUserManager()
-
-    username = models.TextField(unique=True)
-    pwd_hash = models.TextField(blank=True, null=True)
-    pwd_salt = models.TextField(blank=True, null=True)
-    session_token = models.TextField(blank=True, null=True)
-    session_token_expires = models.DateTimeField(blank=True, null=True)
-    oauth_token = models.DateTimeField(blank=True, null=True)
-    is_admin = models.BooleanField(default=False)
-    friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
-
-    def validate_password(self, password):
-        ph = PasswordHasher()
-        try:
-            ph.verify(self.pwd_hash, password)
-        except VerifyMismatchError as e:
-            return False
-        return True
-
-    def refresh_session_token(self):
-        self.session_token = secrets.token_urlsafe()
-        dt = timezone.localtime()
-        print("timenow:")
-        print(dt.strftime("%H:%M:%S / %d-%m-%Y"))
-        td = timezone.timedelta(minutes=settings.TOKEN_EXPIRATION_MINUTES)
-        expiration_date = dt + td
-        self.session_token_expires = expiration_date
-        print("new expiration:")
-        print(self.session_token_expires.strftime("%H:%M:%S / %d-%m-%Y"))
-        self.save()
-
-    def __str__(self):
-        return self.username
 
 class JwtUser(AbstractUser):
     first_name = models.CharField(max_length=255)
@@ -77,6 +34,7 @@ class JwtUser(AbstractUser):
 
         return messages
 
+
 class Message(models.Model):
     author = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='sent_messages')
     recipient = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='received_messages')
@@ -94,6 +52,7 @@ class Message(models.Model):
         ).order_by('id')[:count]
 
         return messages
+
 
 # Ajout du modèle GameHistory
 class GameHistory(models.Model):
@@ -130,23 +89,66 @@ class GameHistory(models.Model):
 
 
 class MatchRequest(models.Model):
-    request_author = models.ForeignKey(User, related_name='author', on_delete=models.CASCADE)
-    target_user = models.ForeignKey(User, related_name='target', on_delete=models.SET_NULL, null=True,
+    request_author = models.ForeignKey(JwtUser, related_name='match_requests_authored', on_delete=models.CASCADE)
+    target_user = models.ForeignKey(JwtUser, related_name='match_requests_targeted', on_delete=models.SET_NULL, null=True,
                                     blank=True)
     ball_color = models.CharField(max_length=50)
+    fast = models.BooleanField(default=False)
     created_at = models.FloatField()
+    match_key = models.CharField()
 
     def __str__(self):
         return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
 
     @staticmethod
-    def request_match(request_author, target_user, ball_color):
+    def request_match(request_author, target_user, ball_color, fast):
         MatchRequest.objects.filter(request_author=request_author).delete()
         match_request = MatchRequest(
             request_author=request_author,
             target_user=target_user,
             ball_color=ball_color,
+            fast=fast,
             created_at=timestamp_now()
         )
         match_request.save()
         return match_request
+
+
+class AcknowledgedMatchRequest(models.Model):
+    request_author = models.ForeignKey(JwtUser, related_name='acknowledged_match_requests_authored', on_delete=models.CASCADE)
+    target_user = models.ForeignKey(JwtUser, related_name='acknowledged_match_requests_targeted', on_delete=models.SET_NULL, null=True,
+                                    blank=True)
+    ball_color = models.CharField(max_length=50)
+    fast = models.BooleanField(default=False)
+    is_bot = models.BooleanField(default=False)
+    match_key = models.CharField()
+
+    def __str__(self):
+        return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
+
+    @staticmethod
+    def acknowledge_request(request: MatchRequest):
+        MatchRequest.objects.filter(request_author=request.request_author).delete()
+        acknowledgement = AcknowledgedMatchRequest(
+            request_author=request.request_author,
+            target_user=request.target_user,
+            ball_color=request.ball_color,
+            fast=request.fast,
+            is_bot=False
+        )
+        acknowledgement.save()
+        return acknowledgement
+
+    @staticmethod
+    def acknowledge_bot_request(request_author, target_user, ball_color, fast):
+        MatchRequest.objects.filter(request_author=request_author).delete()
+        acknowledgement = AcknowledgedMatchRequest(
+            request_author=request_author,
+            target_user=target_user,
+            ball_color=ball_color,
+            fast=fast,
+            is_bot=True,
+            match_key=random_alphanum()
+        )
+        acknowledgement.save()
+        return acknowledgement

@@ -86,7 +86,7 @@ class WsConsumerCommon(WebsocketConsumer):
                 self.send(text_data='{"status":"unauthed"}')
             else:
                 self.send(text_data='{"status":"authed"}')
-                self.on_auth()
+                self.on_auth(msg_obj)
             return
 
         if msg_obj.get('func') is None:
@@ -95,7 +95,7 @@ class WsConsumerCommon(WebsocketConsumer):
             return
         self.funcs[msg_obj.get('func')](self, msg_obj)
 
-    def on_auth(self):
+    def on_auth(self, msg_obj):
         pass
 
     def send_json(self, content):

@@ -5,6 +5,8 @@ import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
 import { navigateTo } from "../utils/router.js";
+import store from "../store/index.js";
+import state from "../store/state.js";
 
 export default class Home extends Component {
 	constructor() {
@@ -230,8 +232,11 @@ export default class Home extends Component {
 				speed: speed,
 				ai : ai
 			};
+			if (state.currentGameData && 'opponent_username' in state.currentGameData) {
+				game['opponent_username'] = state.currentGameData['opponent_username'];
+			}
+			store.dispatch("setCurrentGameData", game);
 			//console.log(game);
-			localStorage.setItem('local-game', JSON.stringify(game));
 			//document.getElementById('local-game-modal').hide();
 			navigateTo("/local-game");
 		});
