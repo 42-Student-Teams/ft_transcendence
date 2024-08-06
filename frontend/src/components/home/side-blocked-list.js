@@ -94,10 +94,13 @@ export default class SideBlockedList extends Component {
         const button = event.currentTarget;
         const username = button.getAttribute('data-username');
         const userContainer = button.closest('.friend'); // Get the parent container of the user
+        const action = button.getAttribute('data-action'); // "block" or "unblock"
 
         try {
             const jwt = localStorage.getItem('jwt');
             const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
+            const endpoint = action === "block" ? "block_user" : "unblock_user";
+
             const response = await fetch(`${apiurl}/unblock_user`, {
                 method: 'POST',
                 headers: {
@@ -108,15 +111,48 @@ export default class SideBlockedList extends Component {
             });
 
             if (response.ok) {
+                if (action === "unblock") {
                 // Remove the user container from the DOM
                 userContainer.remove(); 
+                this.showToast(`User ${username} unblocked successfully.`, "success");
                 // Optionally, add the user back to the friends list
                 // You could call a method here to update the friends list if needed
             } else {
+                this.showToast(`User ${username} blocked successfully.`, "success");
+            }
+            } else {
                 console.error(`Failed to unblock user ${username}`);
+                this.showToast(`Failed to unblock user ${username}.`, "danger");
             }
         } catch (error) {
             console.error(`Error unblocking user ${username}:`, error);
+            this.showToast(`Error unblocking user ${username}.`, "danger");
         }
+    }
+    // Added code for block/unblock toast
+    showToast(message, type) {
+        // Bootstrap toast centered in the page
+        const toastHTML = `
+            <div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
+                <div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        `;
+        const toastContainer = document.createElement('div');
+        toastContainer.innerHTML = toastHTML;
+        document.body.appendChild(toastContainer);
+
+        const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+        toastElement.show();
+
+        setTimeout(() => {
+            document.body.removeChild(toastContainer);
+        }, 5000);
     }
 }
