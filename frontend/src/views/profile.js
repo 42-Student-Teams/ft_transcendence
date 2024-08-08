@@ -1,8 +1,9 @@
+import * as bootstrap from 'bootstrap';
 import NavBar from '../components/home/navbar.js';
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
+
 import Component from "../library/component.js";
-import { Toast } from 'bootstrap'
 
 export default class Profile extends Component {
     constructor() {
@@ -58,7 +59,7 @@ export default class Profile extends Component {
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-success">Save changes</button>
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save changes</button>
                         </div>
                     </form>
                 </div>
@@ -88,11 +89,6 @@ export default class Profile extends Component {
             const profilePicture = document.getElementById("edit-profile-picture").files[0];
             const firstName = document.getElementById("edit-first-name").value.trim();
             const lastName = document.getElementById("edit-last-name").value.trim();
-
-            // Close the modal first
-            const modalElement = document.getElementById('edit-profile-modal');
-            const modalInstance = bootstrap.Modal.getInstance(modalElement);
-            modalInstance.hide();
 
             // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
