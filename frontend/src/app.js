@@ -1,10 +1,9 @@
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap/dist/js/bootstrap.bundle.js';
 import "./assets/css/style.css";
 import store from "./store/index.js";
+import { tokenExpired } from "./utils/jwtUtils.js";
 import router, { navigateTo } from "./utils/router.js";
-import {openCommWebsocket} from "./utils/wsUtils.js";
-import {tokenExpired} from "./utils/jwtUtils.js";
+import { openCommWebsocket } from "./utils/wsUtils.js";
 
 // load components
 

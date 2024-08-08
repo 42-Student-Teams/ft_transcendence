@@ -21,9 +21,10 @@ function setIntraId(state, payload) {
 }
 
 // main
+
 function setLanguage(state, payload) {
-	state.languageId = payload.languageId;
-	return state;
+    state.language = payload;
+    return state;
 }
 
 function setWebSocket(state, payload) {
