@@ -371,9 +371,9 @@ canvas {
 .friend-status-indicator {
   position: absolute;
   bottom: 0;
-  left: -1px; /* Ajusté pour chevaucher légèrement l'image */
-  width: 20px; /* Taille augmentée comme demandé précédemment */
-  height: 20px;
+  left: -7px; /* Ajusté pour chevaucher légèrement l'image */
+  width: 17px; /* Taille augmentée comme demandé précédemment */
+  height: 17px;
   border-radius: 50%;
   border: 2px solid #fff;
   z-index: 2; /* Assurez-vous que l'indicateur est au-dessus de l'image */
