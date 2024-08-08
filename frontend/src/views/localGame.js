@@ -1,5 +1,7 @@
 import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
+import state from "../store/state.js";
+import {wsSend} from "../utils/wsUtils.js";
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -72,20 +74,32 @@ export default class LocalGame extends Component {
 		</div>
 			`;
 
-		this.element.innerHTML = view;
-		this.handleEvent();
+		//this.element.innerHTML = view;
+		/* of course it gives errors because we don't remder the navbar */
+		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
+		this.handleEvent(view);
 	}
 
-	async handleEvent() {
+	async handleEvent(view) {
 
 		const gameOptions = localStorage.getItem("local-game");
 
 		const obj = JSON.parse(gameOptions);
+
+		document.getElementById("start-game").addEventListener("click", async (event) => {
+			this.element.innerHTML = view;
+			this.startGame(obj);
+		});
+
+		wsSend('request_game', {'target_user': null, 'ball_color': obj.color, 'bot': obj.ai});
+	}
+
+	startGame(obj) {
 		let myModal = document.getElementById('exampleModal');
 
-		console.log('gameOptions',gameOptions);
+		//console.log('gameOptions',gameOptions);
 		console.log('obj',obj);
-		
+
 		class Paddle {
 			constructor(direction) {
 				this.direction = direction
@@ -152,7 +166,7 @@ export default class LocalGame extends Component {
 
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
-		
+
 		let startTime = Date.now() + 3 * 60 * 1000;
 		let stopperTime = true;
 		const paddle1 = new Paddle(1)
@@ -226,39 +240,39 @@ export default class LocalGame extends Component {
 			}
         };
 
-		
+
 		const handleKeyDown = (e) => {
 			controller[e.keyCode] && (controller[e.keyCode].pressed = true)
 		}
-		
+
 		const handleKeyUp = (e) => {
 			controller[e.keyCode] && (controller[e.keyCode].pressed = false)
 		}
-		
+
 		const runPressedButtons = () => {
 			Object.keys(controller).forEach(key => {
 				controller[key].pressed && controller[key].func()
 			})
 		}
-		
+
 		const moveBall = () => {
 			ball.x += ball.dx
 			ball.y += ball.dy
 		}
-		
+
 		const checkWallCollisions = () => {
 			((ball.y - ball.r <= 0) || (ball.y + ball.r >= canvas.height)) && (ball.dy = ball.dy * (-1))
 		}
-		
+
 		const reverseDirection = (paddle) => {
 			ball.dx = (-1) * ball.dx
 			// added this after lecture to make sure that if you clipped it while the ball was several pixels past the border, it wouldn't reverse direction twice.
 			ball.x += Math.sign(ball.dx) * 8
 			// added this after lecture to add a slice to the hit.
 			ball.dy = (ball.y - (paddle.y + (config.paddleHeight / 2))) / config.ballSlice
-			
+
 		}
-		
+
 		const checkPaddleCollisions = () => {
 			if (ball.x - ball.r <= config.paddleWidth) {
 				if (paddle1.checkCollision(ball)) { reverseDirection(paddle1) }
@@ -267,18 +281,18 @@ export default class LocalGame extends Component {
 				if (paddle2.checkCollision(ball)) { reverseDirection(paddle2) }
 			}
 		}
-		
+
 		const checkWin = () => {
 			(ball.x + ball.r <= 0) && win(paddle1);
 			(ball.x - ball.r >= canvas.width) && win(paddle2)
 		}
-		
+
 		const win = (paddle) => {
 			paddle.win()
 			resetBall()
 		}
-		
-		
+
+
 		const paintBall = () => {
 			ctx.beginPath();
 			ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
@@ -288,17 +302,17 @@ export default class LocalGame extends Component {
 			// ctx.strokeStyle = '#003300';
 			// ctx.stroke();
 		}
-		
+
 		const render = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			paddle1.render()
 			paddle2.render()
 			paintBall()
 		}
-		
+
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
-		
+
 		document.getElementById("start-game").addEventListener("click", () => {
 			document.getElementById("start-game").style.display = "none";
 			canvas.style.backgroundColor = '#EBEBED';
@@ -310,19 +324,19 @@ export default class LocalGame extends Component {
 			startTime = Date.now() + 3 * 60 * 1000 + 1000;
 
         });
-		
+
 		const MovePaddleAI = () => {
 			console.log('AI');
 			if (ball.y < paddle1.y && ball.dx < 0) {
 				paddle1.moveUp();
 			}
-			
+
 				if (ball.y > paddle1.y && ball.dx < 0) {
 				paddle1.moveDown();
 			}
 		}
-		
-		
+
+
 		const animate = () => {
 			render()
 			runPressedButtons()
@@ -335,7 +349,7 @@ export default class LocalGame extends Component {
 			updateTimer()
 			window.requestAnimationFrame(animate)
 		}
-		
+
 		animate()
 	}
 }

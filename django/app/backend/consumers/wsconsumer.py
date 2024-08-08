@@ -1,67 +1,50 @@
-import json
-
-from asgiref.sync import async_to_sync
-from django.conf import settings
-import jwt
-from channels.generic.websocket import WebsocketConsumer
-
-from backend.models import JwtUser
-
-from backend.models import Message
-
+from backend.models import JwtUser, Message, MatchRequest
 from backend.util import timestamp_now
+from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
-
-class WsConsumer(WebsocketConsumer):
+class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # todo: instead of comm, groups for all friends and the user should be joined
-        self.room_group_name = "comm"
-        self.authed = False
-        self.subscribed_groups = []
-        self.user: JwtUser = None
+    def update_user_status(self, status):
+        if self.user:
+            print(f"Updating status for user {self.user.username} to {status}")
+            self.user.status = status
+            self.user.save()
+            self.broadcast_status_change()
 
-        self.funcs = {
-            'ping': self.ping,
-            'direct_message': self.direct_message,
-        }
-
+    def broadcast_status_change(self):
+        for friend in self.user.friends.all():
+            self.send_channel(friend.username, 'friend_status_change', {
+                'user': self.user.username,
+                'status': self.user.status
+            })
 
     def connect(self):
-        print('someone connected', flush=True)
-        print(self.channel_layer, flush=True)
-        self.accept()
+        super().connect()
+        if self.authed:
+            self.update_user_status('Connected')
 
     def disconnect(self, close_code):
-        print('someone disconnected', flush=True)
-        for group in self.subscribed_groups:
-            async_to_sync(self.channel_layer.group_discard)(
-                group, self.channel_name
-            )
+        print(f"Disconnecting user: {self.user.username if self.user else 'Unknown'}")
+        if self.authed:
+            self.update_user_status('Offline')
+            self.broadcast_status_change()
+            self.user = None
+            self.authed = False
+        super().disconnect(close_code)
+    
+    @register_ws_func
+    def logout(self, msg_obj):
+        print(f"Logging out user: {self.user.username if self.user else 'Unknown'}")
+        if self.user:
+            self.update_user_status('Offline')
+            self.user = None
+            self.authed = False
 
-    def do_auth(self, msg_obj):
-        print('Doing auth', flush=True)
-        if msg_obj.get('jwt') is None:
-            print('RETURN', flush=True)
-            return
-        try:
-            payload = jwt.decode(msg_obj.get('jwt'), settings.JWT_SECRET, algorithms=['HS256'])
-        except jwt.ExpiredSignatureError:
-            print('RETURN', flush=True)
-            return
-        except (IndexError, jwt.DecodeError):
-            print('RETURN', flush=True)
-            return
-        if 'username' not in payload:
-            print('RETURN', flush=True)
-            return
-        self.user = JwtUser.objects.get(username=payload['username'])
-        if self.user is None:
-            print('RETURN', flush=True)
-            return
-        print('ALL GOOD', flush=True)
-        self.authed = True
+    def on_auth(self):
+        self.subscribe_to_groups()
+        self.update_user_status('Connected')
 
     def subscribe_to_groups(self):
         if self.user is None:
@@ -69,50 +52,25 @@ class WsConsumer(WebsocketConsumer):
         print(f'SUBSCRIBE: {self.user.username}', flush=True)
         if len(self.subscribed_groups) > 0:
             return
-        async_to_sync(self.channel_layer.group_add)(
-            self.user.username, self.channel_name
-        )
-        self.subscribed_groups.append(self.user.username)
+        self.subscribe_to_group(self.user.username)
         friends = self.user.friends.all()
         for friend in friends:
-            async_to_sync(self.channel_layer.group_add)(
-                friend.username, self.channel_name
-            )
-            self.subscribed_groups.append(friend.username)
+            self.subscribe_to_group(friend.username)
 
-    def receive(self, text_data):
-        print('RECEIVE', text_data, flush=True)
-        msg_obj = None
-        try:
-            msg_obj = json.loads(text_data)
-        except:
-            self.send(text_data='unauthed')
-            return
-        if not self.authed:
-            self.do_auth(msg_obj)
-            if not self.authed:
-                self.send(text_data='{"status":"unauthed"}');
-            else:
-                self.send(text_data='{"status":"authed"}');
-                self.subscribe_to_groups()
-            return
-
-        if msg_obj.get('func') is None:
-            return
-        if msg_obj.get('func') not in self.funcs.keys():
-            return
-        self.funcs[msg_obj.get('func')](msg_obj)
-
+    # WEBSOCKET RECEIVERS
+    @register_ws_func
     def ping(self, msg_obj):
-        self.send(text_data=json.dumps({'pong': 'pong'}))
+        self.send_json({'pong': 'pong'})
 
+    @register_ws_func
     def direct_message(self, msg_obj):
         print(f"Got message command: to: {msg_obj.get('friend_username')}, message: {msg_obj.get('message')}", flush=True)
         friend_username = msg_obj.get('friend_username')
         if friend_username is None or msg_obj.get('message') is None:
             return
-        friend = JwtUser.objects.get(username=friend_username)
-        if friend is None:
+        try:
+            friend = JwtUser.objects.get(username=friend_username)
+        except JwtUser.DoesNotExist:
             return
         blocked = self.user.blocked_users.filter(username=friend_username)
         if len(blocked) > 0:
@@ -123,18 +81,59 @@ class WsConsumer(WebsocketConsumer):
         print(f"Relaying message {msg_obj.get('message')} to channel", flush=True)
         print('Groups I\'m in:', flush=True)
         print(self.subscribed_groups, flush=True)
-        async_to_sync(self.channel_layer.group_send)(
-            friend.username, {"type": "channel_dm", "msg_obj": msg_obj}
-        )
+        self.send_channel(friend.username, 'channel_dm', msg_obj)
 
+    @register_ws_func
+    def request_game(self, msg_obj):
+        errormsg = {'type': 'request_game_resp', 'status': 'error'}
+        if msg_obj.get('ball_color') is None or msg_obj.get('ball_color') not in ['black', 'blue', 'red']:
+            msg_obj['ball_color'] = 'black'
+        if msg_obj.get('fast') is None:
+            msg_obj['fast'] = False
+        if msg_obj.get('ai') is None:
+            self.send_json(errormsg)
+            return
+        if msg_obj.get('ai') is None and msg_obj.get('target_user') is None:
+            self.send_json(errormsg)
+            return
+        if msg_obj.get('target_user') is not None:
+            if not JwtUser.objects.filter(username=msg_obj.get('target_user')).exists():
+                self.send_json(errormsg)
+                return
+            try:
+                friend = self.user.friends.get(username=msg_obj.get('target_user'))
+            except JwtUser.DoesNotExist:
+                self.send_json(errormsg)
+                return
+            blocked = self.user.blocked_users.filter(username=friend.username)
+            if len(blocked) > 0:
+                self.send_json(errormsg)
+                return
+            MatchRequest.request_match(request_author=self.user, target_user=friend)
+        elif msg_obj.get('ai'):
+            self.send_json({'type': 'request_game_resp', 'status': 'success', 'game_type': 'ai',
+                            'ball_color': msg_obj.get('ball_color'), 'fast': msg_obj.get('fast')})
+            return
+        else:
+            self.send_json(errormsg)
+
+    # CHANNEL RECEIVERS
     def channel_dm(self, event):
         print("Got dm on channel", flush=True)
         msg_obj = event["msg_obj"]
         if msg_obj.get('friend_username') == self.user.username:
-            # it could contain more fields, which is not desirable
             sanitized_msg_obj = {
                 'type': 'dm',
                 'author': msg_obj.get('author'),
                 'message': msg_obj.get('message'),
             }
-            self.send(text_data=json.dumps(sanitized_msg_obj));
+            self.send_json(sanitized_msg_obj)
+
+    def friend_status_change(self, event):
+        msg_obj = event["msg_obj"]
+        print(f"Received friend status change: {msg_obj}")
+        self.send_json({
+            'type': 'friend_status_update',
+            'username': msg_obj['user'],
+            'status': msg_obj['status']
+        })

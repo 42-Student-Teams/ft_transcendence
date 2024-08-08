@@ -5,4 +5,5 @@ export default {
 	language: localStorage.getItem('language') || 'en',
 	intraId: "intraId(lsaba-qu)",
 	socketConnection: null,
+	friends: [],
 };

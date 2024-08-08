@@ -3,12 +3,25 @@ import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import Component from "../../library/component.js";
 import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
+import store from "../../store/index.js";
 
 export default class SideFriendList extends Component {
   constructor() {
     super({ element: document.getElementById("side-friend-list") });
     this.friends = []; // Initialize friends as an empty array
     this.render();
+    
+    // S'abonner aux changements d'état
+    store.events.subscribe('stateChange', () => {
+      this.updateFriendStatuses(store.state.friends);
+
+    // Écouter les événements de mise à jour de statut d'ami
+    document.addEventListener('friendStatusUpdate', (event) => {
+      console.log('Received friendStatusUpdate event', event.detail);
+      this.updateFriendStatus(event.detail.username, event.detail.status);
+    });
+  });
+
   }
 
   async render() {
@@ -87,11 +100,15 @@ export default class SideFriendList extends Component {
           "Content-Type": "application/json",
         },
       });
-
+  
       if (response.ok) {
         const data = await response.json();
-        this.friends = data.friends || []; // Ensure it's an array
-        await this.renderFriendList();
+        if (data.status === 'success') {
+          this.friends = data.friends || [];
+          await this.renderFriendList();
+        } else {
+          console.error("Failed to fetch friend list:", data.message);
+        }
       } else {
         console.error("Failed to fetch friend list");
       }
@@ -112,38 +129,61 @@ export default class SideFriendList extends Component {
           ProfilePicture2,
           ProfilePicture3,
         ][index % 3]; // Cycle through profile pictures
-        const friendHtml = /*html*/ `
-          <div class="friend container py-3" data-username="${friend.username}">
-            <div class="row mr-4">
-              <div class="col-8 container user-info">
-                <div class="row">
-                  <div class="col friend-image">
-                    <img class="friend-img" src=${profilePicture} />
-                  </div>
-                  <div class="col friend-info">
-                    <span>${friend.username}</span>
-                    <span class="friend-status">${friend.status}</span>
-                  </div>
+      const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
+      const friendHtml = /*html*/ `
+        <div class="friend container py-3" data-username="${friend.username}">
+          <div class="row mr-4">
+            <div class="col-8 container user-info">
+              <div class="row">
+                <div class="col friend-image position-relative">
+                  <img class="friend-img" src=${profilePicture} />
+                  <span class="friend-status-indicator ${statusClass}"></span>
+                </div>
+                <div class="col friend-info">
+                  <span>${friend.username}</span>
+                  <span class="friend-status">${friend.status}</span>
                 </div>
               </div>
-              <div class="col-4 d-flex gap-2 friend-action">
-                <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
-                <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
-              </div>
+            </div>
+            <div class="col-4 d-flex gap-2 friend-action">
+              <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
+              <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
             </div>
           </div>
-        `;
-        friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
-      });
+        </div>
+      `;
+      friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
+    });
 
-      // Add event listeners to the buttons after rendering
-      this.element.querySelectorAll(".btn-block").forEach((button) => {
-        button.addEventListener("click", (event) =>
-          this.handleBlockFriend(event)
-        );
-      });
+    this.element.querySelectorAll(".btn-block").forEach((button) => {
+      button.addEventListener("click", (event) =>
+        this.handleBlockFriend(event)
+      );
+    });
+  } else {
+    friendDisplayElement.innerHTML = "<p>No friends found.</p>";
+  }
+}
+
+  updateFriendStatuses(friends) {
+   friends.forEach(friend => {
+        this.updateFriendStatus(friend.username, friend.status);
+    });
+  }
+
+  updateFriendStatus(username, status) {
+    console.log(`Updating status for ${username} to ${status}`);
+    const friendElement = this.element.querySelector(`.friend[data-username="${username}"]`);
+    if (friendElement) {
+      const statusIndicator = friendElement.querySelector('.friend-status-indicator');
+      const statusText = friendElement.querySelector('.friend-status');
+      
+      statusIndicator.classList.remove('status-connected', 'status-offline');
+      statusIndicator.classList.add(status === 'Connected' ? 'status-connected' : 'status-offline');
+      
+      statusText.textContent = status;
     } else {
-      friendDisplayElement.innerHTML = "<p>No friends found.</p>";
+      console.log(`Friend element for ${username} not found`);
     }
   }
 

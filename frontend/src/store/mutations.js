@@ -32,6 +32,17 @@ function setWebSocket(state, payload) {
 	return state;
 }
 
+function updateFriendStatus(state, payload) {
+    if (!state.friends) {
+        state.friends = [];
+    }
+    const friendIndex = state.friends.findIndex(friend => friend.username === payload.username);
+    if (friendIndex !== -1) {
+        state.friends[friendIndex].status = payload.status;
+    }
+    return state;
+}
+
 
 export default {
 	updateLocation,
@@ -39,5 +50,6 @@ export default {
 	logOut,
 	setLanguage,
 	setWebSocket,
+	updateFriendStatus,
 	// setIntraId,
 };

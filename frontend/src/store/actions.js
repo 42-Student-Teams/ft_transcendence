@@ -9,8 +9,11 @@ function logIn(context) {
 }
 
 function logOut(context) {
-	localStorage.clear();
-	context.commit("logOut");
+    if (state.socket && state.socket.readyState === WebSocket.OPEN) {
+        state.socket.send(JSON.stringify({func: 'logout'}));
+    }
+    localStorage.clear();
+    context.commit("logOut");
 }
 
 
@@ -28,6 +31,10 @@ function setWebSocket(context, payload) {
 	context.commit("setWebSocket", payload);
 }
 
+function updateFriendStatus(context, payload) {
+    context.commit("updateFriendStatus", payload);
+}
+
 export default {
 	updateLocation,
 	logIn,
@@ -35,4 +42,5 @@ export default {
 	setLanguage,
 	setIntraId,
 	setWebSocket,
+	updateFriendStatus,
 };
