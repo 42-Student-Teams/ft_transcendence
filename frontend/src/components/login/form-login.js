@@ -2,28 +2,24 @@ import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 import { openCommWebsocket } from "../../utils/wsUtils.js";
-import { login } from "/src/utils/langPack.js";
 
 export default class FormLogin extends Component {
     constructor() {
         super({ element: document.getElementById("formLogin") });
-        this.currentLang = store.state.language;
-        store.events.subscribe("stateChange", () => this.onStateChange());
         this.render();
     }
 
     async render() {
-        const langPack = login[this.currentLang];
         const view = /*html*/ `
             <form id="form-login">
                 <div class="input-group mb-3">
-                    <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="${langPack.username}">
+                    <input id="login-username" type="text" class="form-control form-control-xl bg-light fs-6" placeholder="Username">
                 </div>
                 <div class="input-group mb-3">
-                    <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="${langPack.password}">
+                    <input id="login-password" type="password" class="form-control form-control-lg bg-light fs-6" placeholder="Password">
                 </div>
                 <div class="input-group mb-3">
-                    <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">${langPack.loginButton}</button>
+                    <button id="login-submit" type="submit" class="btn btn-md btn-primary w-100 fs-5">Login</button>
                 </div>
             </form>
         `;
@@ -72,12 +68,5 @@ export default class FormLogin extends Component {
                 console.error("An error occurred:", error);
             }
         });
-    }
-
-    onStateChange() {
-        if (this.currentLang !== store.state.language) {
-            this.currentLang = store.state.language;
-            this.render();
-        }
     }
 }

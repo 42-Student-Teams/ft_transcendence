@@ -4,9 +4,8 @@ import { navigateTo } from "../../utils/router.js";
 import { login } from "/src/utils/langPack.js";
 
 export default class Navbar extends Component {
-    constructor(isLoggedIn = true) {
+    constructor() {
         super({ element: document.getElementById("navBar") });
-        this.isLoggedIn = isLoggedIn;
         this.currentLang = store.state.language;
         store.events.subscribe("stateChange", () => this.onStateChange());
         this.render();
@@ -19,18 +18,7 @@ export default class Navbar extends Component {
             <a id="home-page" class="navbar-brand ps-3">Transcendence</a>
             <div class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"></div>
             <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
-                ${this.isLoggedIn ? this.getLoggedInItems(langPack) : this.getLoggedOutItems(langPack)}
-            </ul>
-        `;
-
-        this.element = document.getElementById("navBar");
-        this.element.innerHTML = view;
-        this.handleEvent();
-    }
-
-    getLoggedInItems(langPack) {
-        return /*html*/ `
-            <li class="nav-item dropdown">
+                <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="true"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>
@@ -44,16 +32,6 @@ export default class Navbar extends Component {
                     </li>
                 </ul>
             </li>
-            ${this.getLanguageSelector(langPack)}
-        `;
-    }
-
-    getLoggedOutItems(langPack) {
-        return this.getLanguageSelector(langPack);
-    }
-
-    getLanguageSelector() {
-        return /*html*/ `
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="languageDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-globe"></i>
@@ -64,22 +42,25 @@ export default class Navbar extends Component {
                     <li><a class="dropdown-item" href="#" data-lang="es">${login.es.flag} Español ${this.currentLang === 'es' ? '✓' : ''}</a></li>
                 </ul>
             </li>
+            </ul>
         `;
+
+        this.element = document.getElementById("navBar");
+        this.element.innerHTML = view;
+        this.handleEvent();
     }
 
     async handleEvent() {
-        if (this.isLoggedIn) {
-            this.element.querySelector("#profile-link")?.addEventListener("click", (event) => {
-                event.preventDefault();
-                navigateTo("/profile");
-            });
+        this.element.querySelector("#profile-link")?.addEventListener("click", (event) => {
+            event.preventDefault();
+            navigateTo("/profile");
+        });
 
-            this.element.querySelector("#btnLogout")?.addEventListener("click", (event) => {
-                event.preventDefault();
-                store.dispatch("logOut");
-                navigateTo("/login");
-            });
-        }
+        this.element.querySelector("#btnLogout")?.addEventListener("click", (event) => {
+            event.preventDefault();
+            store.dispatch("logOut");
+            navigateTo("/login");
+        });
 
         this.element.querySelector("#home-page").addEventListener("click", (event) => {
             event.preventDefault();
