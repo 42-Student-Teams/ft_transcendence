@@ -368,3 +368,34 @@ canvas {
   color: white;
 }
 
+.friend-status-indicator {
+  position: absolute;
+  bottom: 0;
+  left: -1px; /* Ajusté pour chevaucher légèrement l'image */
+  width: 20px; /* Taille augmentée comme demandé précédemment */
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  z-index: 2; /* Assurez-vous que l'indicateur est au-dessus de l'image */
+}
+  
+  .status-connected {
+	background-color: #228B21; /* Vert, même couleur que .friend-status-online */
+  }
+  
+  .status-offline {
+	background-color: gray; /* Gris, même couleur que .friend-status-offline */
+  }
+  
+  .friend-image {
+	position: relative;
+	margin-left: 8px; /* Ajusté pour compenser la taille plus grande de l'indicateur */
+  }
+  
+  .friend-img {
+	position: relative;
+	z-index: 0; /* Assurez-vous que l'image est en dessous de l'indicateur */
+  }
+  
+  
+ 

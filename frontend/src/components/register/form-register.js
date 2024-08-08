@@ -1,7 +1,8 @@
 import Component from "../../library/component.js";
-import { addInputEventListeners, handleEvent, resetErrors, showError } from "../../utils/formValidation.js";
 import store from "../../store/index.js";
+import { addInputEventListeners, handleEvent, showError } from "../../utils/formValidation.js";
 import { navigateTo } from "../../utils/router.js";
+import { openCommWebsocket } from "../../utils/wsUtils.js";
 
 export default class FormRegister extends Component {
     constructor() {
@@ -55,6 +56,7 @@ export default class FormRegister extends Component {
                 </div>
             </form>
         `;
+        this.element = document.getElementById("formRegister");
         this.element.innerHTML = view;
 
         const fields = ["firstname", "lastname", "username", "email", "password"];
@@ -91,6 +93,9 @@ export default class FormRegister extends Component {
 
                     if (response.ok) {
                         store.dispatch("logIn");
+                        const jsonData = await response.json();
+                        localStorage.setItem('jwt', jsonData.jwt);
+                        openCommWebsocket();
                         navigateTo("/");
                     } else {
                         showError('form-register', 'registration');

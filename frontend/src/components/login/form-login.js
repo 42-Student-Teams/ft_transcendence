@@ -1,19 +1,16 @@
 import Component from "../../library/component.js";
 import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
-import state from "../../store/state.js";
-import {env} from "process";
-import {handleMessage} from "../../websocket/wshandler.js";
+import { openCommWebsocket } from "../../utils/wsUtils.js";
 import { addInputEventListeners, showError, resetErrors } from "../../utils/formValidation.js";
 
-export default class Login extends Component {
+export default class FormLogin extends Component {
     constructor() {
         super({ element: document.getElementById("formLogin") });
         this.render();
     }
 
     async render() {
-
         const view = /*html*/ `
         <form id="form-login" novalidate>
             <div class="input-group mb-3">
@@ -41,9 +38,7 @@ export default class Login extends Component {
     }
 
     async handleEvent() {
-
         this.element.querySelector("#login-submit").addEventListener("click", async (event) => {
-            // Prevent Default Submit Behavior
             event.preventDefault();
 
             // Reset previous errors
@@ -89,24 +84,15 @@ export default class Login extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
-                    /* open socket */
-                    let socket = new WebSocket(`wss://${window.location.host}/wss/comm/`);
-                    socket.onmessage = handleMessage;
-                    socket.addEventListener("open", (ev) => {
-                        socket.send(JSON.stringify({ "jwt": localStorage.getItem('jwt') }));
-                    });
-                    store.dispatch("setWebSocket", socket);
-
+                    openCommWebsocket();
                     console.log(store.state.socket);
                     navigateTo("/");
-                }
-                else {
+                } else {
                     console.error("Login failed:");
                     showError('login', 'username'); // Optionally show general error
                     throw new Error("Login failed: Invalid username or password.");
                 }
             } catch (error) {
-                // Handle network or other errors here
                 console.error("An error occurred:", error);
             }
         });

@@ -3,6 +3,8 @@ import 'bootstrap/dist/js/bootstrap.bundle.js';
 import "./assets/css/style.css";
 import store from "./store/index.js";
 import router, { navigateTo } from "./utils/router.js";
+import {openCommWebsocket} from "./utils/wsUtils.js";
+import {tokenExpired} from "./utils/jwtUtils.js";
 
 // load components
 
@@ -75,10 +77,18 @@ async function checkAuthStatus() {
 	}
 }
 
+// todo somewhere here: openCommWebsocket
+
 function handleDefaultRoute() {
-	if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
-		navigateTo("/");
-	} else {
-		router();
-	}
+    if (tokenExpired()) {
+        navigateTo("/login");
+    } else {
+        store.dispatch("logIn");
+        openCommWebsocket();
+        if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
+            navigateTo("/");
+        } else {
+            router();
+        }
+    }
 }

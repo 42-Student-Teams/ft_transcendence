@@ -21,14 +21,26 @@ function setIntraId(state, payload) {
 }
 
 // main
+
 function setLanguage(state, payload) {
-	state.languageId = payload.languageId;
-	return state;
+    state.language = payload;
+    return state;
 }
 
 function setWebSocket(state, payload) {
 	state.socket = payload;
 	return state;
+}
+
+function updateFriendStatus(state, payload) {
+    if (!state.friends) {
+        state.friends = [];
+    }
+    const friendIndex = state.friends.findIndex(friend => friend.username === payload.username);
+    if (friendIndex !== -1) {
+        state.friends[friendIndex].status = payload.status;
+    }
+    return state;
 }
 
 
@@ -38,5 +50,6 @@ export default {
 	logOut,
 	setLanguage,
 	setWebSocket,
+	updateFriendStatus,
 	// setIntraId,
 };
