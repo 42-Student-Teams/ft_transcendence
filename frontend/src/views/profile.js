@@ -2,6 +2,7 @@ import NavBar from '../components/home/navbar.js';
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
 import Component from "../library/component.js";
+import { Toast } from 'bootstrap'
 
 export default class Profile extends Component {
     constructor() {
