@@ -3,6 +3,7 @@ import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import Component from "../../library/component.js";
 import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
+import { showToast } from "../../utils/toastUtils.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -185,12 +186,15 @@ export default class SideFriendList extends Component {
       });
 
       if (response.ok) {
+        showToast(`User ${username} blocked successfully.`, "success");
         console.log(`Successfully blocked friend ${username}`);
         friendContainer.remove();
       } else {
+        showToast(`Failed to block user ${username}.`, "danger");
         console.error(`Failed to block friend ${username}`);
       }
     } catch (error) {
+      showToast(`Error blocking user ${username}.`, "danger");
       console.error(`Error blocking friend ${username}:`, error);
     }
   }
