@@ -99,6 +99,12 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
+		window.sup = function() {
+			console.log('sup');
+			wsSend('client_update', {'update': 'lol'}, state.gameSocket);
+		}
+
+		wsSend('client_update', {'update': 'lol'}, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
 
 		let obj = {
@@ -114,6 +120,14 @@ export default class LocalGame extends Component {
 
 		//console.log('gameOptions',gameOptions);
 		console.log('obj',obj);
+
+
+
+
+		document.getElementById("start-game").style.display = "none";
+		document.getElementById('score-right').innerText = 0;
+		document.getElementById('score-left').innerText = 0;
+		document.getElementById('Winner-text').innerText = "";
 
 		class Paddle {
 			constructor(direction) {
@@ -328,7 +342,7 @@ export default class LocalGame extends Component {
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
 
-		document.getElementById("start-game").addEventListener("click", () => {
+		/*document.getElementById("start-game").addEventListener("click", () => {
 			document.getElementById("start-game").style.display = "none";
 			canvas.style.backgroundColor = '#EBEBED';
 			document.getElementById('score-right').innerText = 0;
@@ -338,7 +352,7 @@ export default class LocalGame extends Component {
 			stopperTime = false;
 			startTime = Date.now() + 3 * 60 * 1000 + 1000;
 
-        });
+        });*/
 
 		const MovePaddleAI = () => {
 			console.log('AI');
@@ -366,5 +380,11 @@ export default class LocalGame extends Component {
 		}
 
 		animate()
+
+
+		canvas.style.backgroundColor = '#EBEBED';
+		resetBall();
+		stopperTime = false;
+		startTime = Date.now() + 3 * 60 * 1000 + 1000;
 	}
 }

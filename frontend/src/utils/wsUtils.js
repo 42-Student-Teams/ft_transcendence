@@ -13,11 +13,11 @@ function openCommWebsocket() {
     store.dispatch("setWebSocket", socket);
 }
 
-export function openGameWebsocket(acknowledge_id) {
+export function openGameWebsocket(match_key) {
     let socket = new WebSocket(`wss://${window.location.host }/wss/game/`);
     socket.onmessage = handleGameMessage;
     socket.addEventListener("open", (ev) => {
-        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "acknowledge_id": acknowledge_id}));
+        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "match_key": match_key}));
     });
     store.dispatch("setGameSocket", socket);
 

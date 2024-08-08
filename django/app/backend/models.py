@@ -95,7 +95,7 @@ class MatchRequest(models.Model):
     ball_color = models.CharField(max_length=50)
     fast = models.BooleanField(default=False)
     created_at = models.FloatField()
-    match_key = models.CharField()
+    match_key = models.CharField(null=True)
 
     def __str__(self):
         return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
@@ -121,7 +121,7 @@ class AcknowledgedMatchRequest(models.Model):
     ball_color = models.CharField(max_length=50)
     fast = models.BooleanField(default=False)
     is_bot = models.BooleanField(default=False)
-    match_key = models.CharField()
+    match_key = models.CharField(null=True)
 
     def __str__(self):
         return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
@@ -148,7 +148,7 @@ class AcknowledgedMatchRequest(models.Model):
             ball_color=ball_color,
             fast=fast,
             is_bot=True,
-            match_key=random_alphanum()
+            match_key=random_alphanum(10)
         )
         acknowledgement.save()
         return acknowledgement

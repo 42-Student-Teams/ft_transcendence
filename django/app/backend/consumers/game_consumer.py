@@ -2,8 +2,10 @@ import json
 
 from backend.models import AcknowledgedMatchRequest, JwtUser
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
+from backend.consumers.game_controller import GameController
 from backend.util import random_bot_name
 
+from asgiref.sync import async_to_sync
 
 class GameConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
@@ -12,21 +14,36 @@ class GameConsumer(WsConsumerCommon):
         self.is_bot: bool = False
         self.opponent: JwtUser = None
         self.fast: bool = False
+        self.game_controller: GameController = None
+        self.controller_channel = None
 
     def on_auth(self, msg_obj):
-        if msg_obj.get('acknowledge_id') is None:
+        if msg_obj.get('match_key') is None:
             self.close()
             return
         try:
-            acknowledgement: AcknowledgedMatchRequest = AcknowledgedMatchRequest.objects.get(id=msg_obj.get('acknowledge_id'))
+            acknowledgement: AcknowledgedMatchRequest = AcknowledgedMatchRequest.objects.get(match_key=msg_obj.get('match_key'))
         except AcknowledgedMatchRequest.DoesNotExist:
             self.close()
             return
-        AcknowledgedMatchRequest.objects.filter(id=msg_obj.get('acknowledge_id')).delete()
+        AcknowledgedMatchRequest.objects.filter(match_key=msg_obj.get('match_key')).delete()
         self.ball_color = acknowledgement.ball_color
         self.is_bot = acknowledgement.is_bot
         self.opponent = acknowledgement.target_user
         self.fast = acknowledgement.fast
+
+        # this means we are the requesting user, we create the game controller
+        if self.user.username == acknowledgement.request_author.username:
+            self.game_controller = GameController(acknowledgement)
+
+            async_to_sync(self.game_controller.__call__)(None, None, None)
+
+            #self.game_controller(None, None, None)
+            #print(f'BRUHHHHH: {self.game_controller(None, None, None).channel_name}', flush=True)
+            #print(dir(self.game_controller.consumer_class), flush=True)
+            self.controller_channel = f'{acknowledgement.request_author.username}_{acknowledgement.match_key}'
+            self.subscribe_to_group(self.controller_channel)
+
         self.send_json({
             'type': 'start',
             'ball_color': self.ball_color,
@@ -34,33 +51,9 @@ class GameConsumer(WsConsumerCommon):
             'opponent': self.opponent.username if self.opponent else f'{random_bot_name()} (BOT)',
             'fast': self.fast})
 
-    def subscribe_to_groups(self):
-        if self.user is None:
-            return
-        print(f'SUBSCRIBE: {self.user.username}', flush=True)
-        if len(self.subscribed_groups) > 0:
-            return
-        self.subscribe_to_group(self.user.username)
-        friends = self.user.friends.all()
-        for friend in friends:
-            self.subscribe_to_group(friend.username)
-
     @register_ws_func
     def ping(self, msg_obj):
         self.send(text_data=json.dumps({'pong': 'pong'}))
-
-    @register_ws_func
-    def start(self, msg_obj):
-        print(f'START MESSAGE: {msg_obj}', flush=True)
-        if not 'game_id' in msg_obj:
-            return
-        try:
-            acknowledgement = AcknowledgedMatchRequest.objects.get(game_id=msg_obj['game_id'])
-        except AcknowledgedMatchRequest.DoesNotExist:
-            return
-        AcknowledgedMatchRequest.objects.filter(request_author=self.user).delete()
-        print(f'STARTING GAME FOR USER {acknowledgement.request_author.username}', flush=True)
-        # acknowledgement contains all the verified info needed to start a game
 
     @register_ws_func
     def join(self, msg_obj):
@@ -69,5 +62,12 @@ class GameConsumer(WsConsumerCommon):
         # a game will have its channel as an alphanum ID, which will be sent to the joinee via comm
         # wrong key and you're not allowed in
 
+    @register_ws_func
+    def client_update(self, msg_obj):
+        print(f'GC: got update from user: {msg_obj}, sending to channel {self.controller_channel}', flush=True)
+        self.send_channel(self.controller_channel, 'client_update_relay', msg_obj)
+
+
     def relay_from_controller(self, event):
+        print(f'Relaying from controller: {event}', flush=True)
         self.send(text_data=json.dumps(event["msg_obj"]))

@@ -28,8 +28,8 @@ function handleMessage(msg) {
             break;
         /* 3.5) Happens immediately when playing against bot, or after an opponent got matched */
         case 'game_acknowledgement':
-            if (('acknowledge_id' in msg_obj)) {
-                openGameWebsocket(msg_obj['acknowledge_id']);
+            if (('match_key' in msg_obj)) {
+                openGameWebsocket(msg_obj['match_key']);
             }
             break;
         default:
