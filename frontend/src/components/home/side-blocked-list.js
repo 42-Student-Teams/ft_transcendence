@@ -1,4 +1,5 @@
 import Component from "../../library/component.js";
+import { showToast } from "../../utils/toastUtils.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
@@ -95,10 +96,13 @@ export default class SideBlockedList extends Component {
         const username = button.getAttribute('data-username');
         const userContainer = button.closest('.friend'); // Get the parent container of the user
 
+        console.log(`ici je bloque: ${username}`);
+
         try {
             const jwt = localStorage.getItem('jwt');
             const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
-            const response = await fetch(`${apiurl}/unblock_user`, {
+
+            const response = await fetch(`${apiurl}/unblock_user`, { // block endpoints
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${jwt}`,
@@ -108,15 +112,16 @@ export default class SideBlockedList extends Component {
             });
 
             if (response.ok) {
-                // Remove the user container from the DOM
-                userContainer.remove(); 
-                // Optionally, add the user back to the friends list
-                // You could call a method here to update the friends list if needed
+                // DIRECTLY HANDLE UNBLOCK OPERATION
+                userContainer.remove(); // REMOVE THE USER FROM THE DISPLAY
+                showToast(`User ${username} unblocked successfully.`, "success");
             } else {
                 console.error(`Failed to unblock user ${username}`);
+                showToast(`Failed to unblock user ${username}.`, "danger");
             }
         } catch (error) {
             console.error(`Error unblocking user ${username}:`, error);
+            showToast(`Error unblocking user ${username}.`, "danger");
         }
     }
 }

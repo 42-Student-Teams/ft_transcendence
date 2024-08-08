@@ -2,6 +2,7 @@ import Component from "../../library/component.js";
 import state from "../../store/state.js";
 import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
 import {get_messages} from "../../utils/apiutils.js";
+import {wsSend} from "../../utils/wsUtils.js";
 
 export default class SideChat extends Component {
     constructor() {
@@ -34,15 +35,13 @@ export default class SideChat extends Component {
     async handleEvent() {
         window.fetchChatHistory = fetchChatHistory;
         window.sendMessage = function () {
-            //alert('lol');
-            //console.log(store.state.socket);
             let msg = document.getElementById("message-input").value.trim();
             if (msg.length == 0) {
                 return;
             }
             let friend_name = document.getElementById("side-chat").getAttribute("data-username");
             console.log(`sending message '${msg}' to user ${friend_name}`);
-            state.socket.send(JSON.stringify({"func": "direct_message", "friend_username": friend_name, "message": msg}));
+            wsSend('direct_message', {"friend_username": friend_name, "message": msg});
             document.getElementById("message-input").value = '';
             chatInsertMessage("You", msg);
         }

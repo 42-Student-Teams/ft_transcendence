@@ -1,5 +1,7 @@
 import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
+import state from "../store/state.js";
+import {wsSend} from "../utils/wsUtils.js";
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -72,19 +74,31 @@ export default class LocalGame extends Component {
 		</div>
 			`;
 
-		this.element.innerHTML = view;
-		this.handleEvent();
+		//this.element.innerHTML = view;
+		/* of course it gives errors because we don't remder the navbar */
+		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
+		this.handleEvent(view);
 	}
 
-	async handleEvent() {
+	async handleEvent(view) {
 
 		const gameOptions = localStorage.getItem("local-game");
 
 		const obj = JSON.parse(gameOptions);
+
+		document.getElementById("start-game").addEventListener("click", async (event) => {
+			this.element.innerHTML = view;
+			this.startGame(obj);
+		});
+
+		wsSend('request_game', {'target_user': null, 'ball_color': obj.color, 'bot': obj.ai});
+	}
+
+	startGame(obj) {
 		let myModal = document.getElementById('exampleModal');
 
-		console.log('gameOptions', gameOptions);
-		console.log('obj', obj);
+		//console.log('gameOptions',gameOptions);
+		console.log('obj',obj);
 
 		class Paddle {
 			constructor(direction) {

@@ -22,4 +22,5 @@ urlpatterns=[
     path('get_userProfile', views.getUserProfileView.as_view(), name='get_user_profile'),
     path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGames'),
     path('history_postGames', views.GameHistoryCreateView.as_view(), name='history_postGames'),
+    #path('friend_status', views.FriendStatusView.as_view(), name='friend_status'),
 ]
