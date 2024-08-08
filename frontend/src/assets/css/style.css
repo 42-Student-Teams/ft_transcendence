@@ -398,4 +398,33 @@ canvas {
   }
   
   
- 
+ /* Styles de base pour les boutons d'icônes */
+.btn-icon {
+	background: none;
+	border: none;
+	padding: 0.5rem;
+	cursor: pointer;
+	transition: color 0.3s ease;
+	color: #4E5057; /* Couleur par défaut pour les icônes */
+  }
+  
+  /* Styles pour l'icône de message */
+  .btn-direct-message:hover {
+	color: #0a58ca; /* Bleu au survol */
+  }
+  
+  /* Styles pour l'icône de blocage */
+  .btn-block:hover {
+	color: #dc3545; /* Rouge au survol */
+  }
+  
+  /* Suppression du contour au focus pour tous les boutons */
+  .btn:focus {
+	outline: none;
+	box-shadow: none;
+  }
+  
+  /* Optionnel : ajustement de la taille des icônes si nécessaire */
+  .btn-icon i {
+	font-size: 1.2rem; /* Ajustez selon vos préférences */
+  }

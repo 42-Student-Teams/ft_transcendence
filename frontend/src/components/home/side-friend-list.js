@@ -79,12 +79,18 @@ export default class SideFriendList extends Component {
     });
 
     /* Here the user clicked on the chat icon next to a friend */
-    this.element.addEventListener("click", (event) => {
-      let button = event.target.closest(".btn-direct-message");
-      if (button) {
-        this.handleDirectMessage(event, button.getAttribute('data-username'));
-      } else if (event.target.closest(".btn-unblock")) {
-        this.handleBlockFriend(event);
+    this.element.addEventListener("click", async (event) => {
+      const profileImage = event.target.closest(".view-profile");
+      if (profileImage) {
+        const username = profileImage.getAttribute('data-username');
+        await this.handleViewProfile(username);
+      } else {
+        let button = event.target.closest(".btn-direct-message");
+        if (button) {
+          this.handleDirectMessage(event, button.getAttribute('data-username'));
+        } else if (event.target.closest(".btn-block")) {
+          this.handleBlockFriend(event);
+        }
       }
     });
   }
@@ -131,27 +137,31 @@ export default class SideFriendList extends Component {
         ][index % 3]; // Cycle through profile pictures
       const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
       const friendHtml = /*html*/ `
-        <div class="friend container py-3" data-username="${friend.username}">
-          <div class="row mr-4">
-            <div class="col-8 container user-info">
-              <div class="row">
-                <div class="col friend-image position-relative">
-                  <img class="friend-img" src=${profilePicture} />
-                  <span class="friend-status-indicator ${statusClass}"></span>
-                </div>
-                <div class="col friend-info">
-                  <span>${friend.username}</span>
-                  <span class="friend-status">${friend.status}</span>
-                </div>
-              </div>
-            </div>
-            <div class="col-4 d-flex gap-2 friend-action">
-              <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
-              <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
-            </div>
+  <div class="friend container py-3" data-username="${friend.username}">
+    <div class="row align-items-center">
+      <div class="col-8 user-info">
+        <div class="d-flex align-items-center">
+          <div class="friend-image position-relative me-3">
+            <img class="friend-img rounded-circle view-profile" src=${profilePicture} width="50" height="50" data-username="${friend.username}" style="cursor: pointer;" />
+            <span class="friend-status-indicator ${statusClass}"></span>
+          </div>
+          <div class="friend-info">
+            <div>${friend.username}</div>
+            <small class="friend-status">${friend.status}</small>
           </div>
         </div>
-      `;
+      </div>
+      <div class="col-4 d-flex justify-content-end gap-2">
+        <button class="btn btn-icon btn-direct-message" data-username="${friend.username}" title="Message">
+          <i class="fas fa-comment"></i>
+        </button>
+        <button class="btn btn-icon btn-block" data-username="${friend.username}" title="Block">
+          <i class="fas fa-user-slash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+`;
       friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
     });
 
@@ -256,6 +266,30 @@ export default class SideFriendList extends Component {
       }
     } catch (error) {
       console.error(`Error adding friend ${username}:`, error);
+    }
+  }
+
+  async handleViewProfile(username) {
+    try {
+      const jwt = localStorage.getItem("jwt");
+      const apiurl = process.env.API_URL;
+      const response = await fetch(`${apiurl}/get_userProfile?username=${encodeURIComponent(username)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${jwt}`,
+          'Content-Type': 'application/json'
+        }
+      });
+  
+      if (response.ok) {
+        const profileData = await response.json();
+        console.log("Profil de l'ami récupéré :", profileData);
+      } else {
+        const errorData = await response.json();
+        console.error('Erreur lors de la récupération du profil :', errorData.message);
+      }
+    } catch (error) {
+      console.error('Erreur :', error);
     }
   }
 }

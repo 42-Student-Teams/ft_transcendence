@@ -365,21 +365,39 @@ class ChatGetMessagesView(APIView):
 
 class getUserProfileView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        requesting_user = check_jwt(request)
+        if not requesting_user:
+            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
         
-        # Vérification de l'existence de l'utilisateur
-        if not user:
+        friend_username = request.GET.get('username')
+        if not friend_username:
+            return Response({'status': 'error', 'message': 'Username parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user = JwtUser.objects.get(username=friend_username)
+            
+            # Vérifiez si l'utilisateur demandé est un ami de l'utilisateur connecté
+            requesting_user_obj = JwtUser.objects.get(username=requesting_user)
+            if user not in requesting_user_obj.friends.all():
+                return Response({'status': 'error', 'message': 'You can only view profiles of your friends'}, status=status.HTTP_403_FORBIDDEN)
+            
+            parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+            parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+            
+            profile_data = {
+                'nom': user.last_name,
+                'prenom': user.first_name,
+                'username': user.username,
+                'status': user.status,
+                'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else None,
+                'parties_jouees': parties_jouees,
+                'parties_gagnees': parties_gagnees
+            }
+            
+            return Response(profile_data, status=status.HTTP_200_OK)
+        
+        except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Préparation des données du profil
-        profile_data = {
-            'nom': user.last_name,
-            'prénom': user.first_name,
-            'username': user.username,
-            'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else None
-        }
-        
-        return Response(profile_data, status=status.HTTP_200_OK)
 
 
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
