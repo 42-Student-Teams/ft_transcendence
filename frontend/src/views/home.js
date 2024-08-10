@@ -4,6 +4,7 @@ import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
+import store from "../store/index.js";
 import { navigateTo } from "../utils/router.js";
 import * as bootstrap from 'bootstrap';
 
@@ -309,12 +310,12 @@ export default class Home extends Component {
                 return;
             }
 			
-			
 			try {
                 // Simulate backend interaction
                 //const response = await this.postTournamentData(game);
                 //if (response.status !== 200) throw new Error("Backend error");
-
+				store.dispatch("setJoinTournamentNickName", nickname);
+				console.log(store.state.joinNickname);
                 navigateTo("/join-tournament");
             } catch (error) {
                 this.showToast("Incorrect input or server error. Please try again.", "danger");

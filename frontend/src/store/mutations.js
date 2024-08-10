@@ -27,6 +27,11 @@ function setLanguage(state, payload) {
     return state;
 }
 
+function setJoinTournamentNickName(state, payload) {
+    state.joinNickname = payload;
+    return state;
+}
+
 function setWebSocket(state, payload) {
 	state.socket = payload;
 	return state;
@@ -51,5 +56,6 @@ export default {
 	setLanguage,
 	setWebSocket,
 	updateFriendStatus,
+	setJoinTournamentNickName,
 	// setIntraId,
 };

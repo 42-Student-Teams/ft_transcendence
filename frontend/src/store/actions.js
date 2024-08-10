@@ -27,6 +27,10 @@ function setIntraId(context, payload) {
 	context.commit("setIntraId", payload);
 }
 
+function setJoinTournamentNickName(context, payload) {
+    context.commit("setJoinTournamentNickName", payload);
+}
+
 function setWebSocket(context, payload) {
 	context.commit("setWebSocket", payload);
 }
@@ -41,6 +45,7 @@ export default {
 	logOut,
 	setLanguage,
 	setIntraId,
+	setJoinTournamentNickName,
 	setWebSocket,
 	updateFriendStatus,
 };
