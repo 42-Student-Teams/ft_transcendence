@@ -82,7 +82,7 @@ class WsConsumer(WsConsumerCommon):
         elif msg_obj.get('ai'):
             acknowledgement = AcknowledgedMatchRequest.acknowledge_bot_request(
                 self.user, None, msg_obj.get('ball_color'),
-            msg_obj.get('fast'))
+                msg_obj.get('fast'))
             self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement.match_key})
             return
         else:

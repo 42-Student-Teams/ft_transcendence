@@ -2,6 +2,7 @@ import {chatInsertMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
 import state from "../store/state.js";
 import store from "../store/index.js";
+import {updateFromSocket} from "../views/localGame.js";
 
 function handleMessage(msg) {
     console.log('Received socket message:');
@@ -38,12 +39,12 @@ function handleMessage(msg) {
 }
 
 function handleGameMessage(msg) {
-    console.log('Received socket game message:');
+    //console.log('Received socket game message:');
     if (!('data' in msg)) {
         return;
     }
     let msg_obj = JSON.parse(msg['data']);
-    console.log(msg);
+    //console.log(msg);
 
     if (!('type' in msg_obj)) {
         return;
@@ -63,8 +64,8 @@ function handleGameMessage(msg) {
             store.dispatch("setCurrentGameData", gameData);
             window.startGame(gameData);
             break;
-        case 'test':
-            console.log('test');
+        case 'relay_from_controller':
+            updateFromSocket(msg_obj);
             break;
         default:
             return;

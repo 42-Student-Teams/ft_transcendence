@@ -2,6 +2,45 @@ import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
 import state from "../store/state.js";
 import {wsSend} from "../utils/wsUtils.js";
+import {usernameFromToken} from "../utils/jwtUtils.js";
+
+function updateFromSocket(msg_obj) {
+	//console.log(msg_obj);
+	if (!Object.hasOwn(window, 'gameState')) {
+		return;
+	}
+	if ('waiting_between_points' in msg_obj) {
+
+	} else if ('author_points' in msg_obj) {
+		console.log(`Author points: ${msg_obj['author_points']}`);
+	} else if ('opponent_points' in msg_obj) {
+		console.log(`Opponent points: ${msg_obj['opponent_points']}`);
+	} else if ('countdown' in msg_obj) {
+		console.log(`Countdown: ${msg_obj['countdown']}`);
+	} else {
+		if (!('timestamp' in msg_obj) || msg_obj['timestamp'] === null) {
+			msg_obj['timestamp'] = 0;
+		}
+		if (window.gameState.currentUsername === window.gameState.opponent_username) {
+			if (msg_obj['timestamp'] >= window.gameState.lastTimestamp) {
+				window.gameState.youPaddle.x = msg_obj['opponent_paddle_pos']['x'];
+				window.gameState.youPaddle.y = msg_obj['opponent_paddle_pos']['y'];
+			}
+			window.gameState.opponentPaddle.x = msg_obj['author_paddle_pos']['x'];
+			window.gameState.opponentPaddle.y = msg_obj['author_paddle_pos']['y'];
+		} else {
+			if (msg_obj['timestamp'] >= window.gameState.lastTimestamp) {
+				window.gameState.youPaddle.x = msg_obj['author_paddle_pos']['x'];
+				window.gameState.youPaddle.y = msg_obj['author_paddle_pos']['y'];
+			}
+			window.gameState.opponentPaddle.x = msg_obj['opponent_paddle_pos']['x'];
+			window.gameState.opponentPaddle.y = msg_obj['opponent_paddle_pos']['y'];
+		}
+		window.gameState.ball.x = msg_obj['ball_pos']['x'];
+		window.gameState.ball.y = msg_obj['ball_pos']['y'];
+	}
+
+}
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -84,10 +123,6 @@ export default class LocalGame extends Component {
 		window.startGame = this.startGame;
 		window.gameHtml = view;
 		window.thisElement = element;
-		/*document.getElementById("start-game").addEventListener("click", async (event) => {
-			this.element.innerHTML = view;
-			this.startGame(obj);
-		});*/
 
 		/* 1) client initiates game request */
 		wsSend('request_game', {
@@ -99,27 +134,28 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
-		window.sup = function() {
-			console.log('sup');
-			wsSend('client_update', {'update': 'lol'}, state.gameSocket);
-		}
 
 		wsSend('client_update', {'update': 'lol'}, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
 
-		let obj = {
+		window.gameState = {
 			color: obj_.ball_color,
 			speed: obj_.fast,
 			ai : obj_.is_bot,
-			opponent_username: obj_.opponent_username
+			opponent_username: obj_.opponent_username,
+			youPaddle: null,
+			opponentPaddle: null,
+			ball: null,
+			currentUsername: usernameFromToken(),
+			lastTimestamp: 0,
 		};
 
-		document.getElementById('left_player').innerText = obj.opponent_username;
+		document.getElementById('left_player').innerText = obj_.opponent_username;
 
 		let myModal = document.getElementById('exampleModal');
 
 		//console.log('gameOptions',gameOptions);
-		console.log('obj',obj);
+		console.log('obj', obj_);
 
 
 
@@ -130,12 +166,8 @@ export default class LocalGame extends Component {
 		document.getElementById('Winner-text').innerText = "";
 
 		class Paddle {
-			constructor(direction) {
-				this.direction = direction
-				this.y = config.canvasHeight / 2 - config.paddleHeight / 2
-				direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
-				direction === 1 ? this.name = "You" : this.name = obj.opponent_username;
-				this.score = 0
+			constructor() {
+
 			}
 
 			render = () => {
@@ -143,37 +175,18 @@ export default class LocalGame extends Component {
 				ctx.fillRect(this.x, this.y, config.paddleWidth, config.paddleHeight);
 			}
 
-			checkCollision = (ball) => {
-				console.log("checking")
-				return !!((this.y <= (ball.y + ball.r)) && (this.y + config.paddleHeight >= (ball.y - ball.r)))
-			}
-
 			moveDown = () => {
 				this.y += config.paddleSpeed;
-				(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight)
+				(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight);
+				window.gameState.lastTimestamp = Math.trunc(Date.now());
+				wsSend('client_update', {'pad': this.y, 'timestamp': window.gameState.lastTimestamp}, state.gameSocket);
 			}
 
 			moveUp = () => {
-				this.y -= config.paddleSpeed
-				this.y < 0 && (this.y = 0)
-			}
-
-			setWinner = () => {
-				this.score++;
-				if (this.direction === 1) {
-					document.getElementById('score-right').innerText = this.score;
-				} else {
-					document.getElementById('score-left').innerText = this.score;
-				}
-			}
-
-			win = () => {
-				this.score++;
-				if (this.direction === 1) {
-					document.getElementById('score-right').innerText = this.score;
-				} else {
-					document.getElementById('score-left').innerText = this.score;
-				}
+				this.y -= config.paddleSpeed;
+				this.y < 0 && (this.y = 0);
+				window.gameState.lastTimestamp = Math.trunc(Date.now());
+				wsSend('client_update', {'pad': this.y, 'timestamp': window.gameState.lastTimestamp}, state.gameSocket);
 			}
 		}
 
@@ -188,7 +201,7 @@ export default class LocalGame extends Component {
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 3,
+			ballXSpeed: obj_.speed * 6 || 3,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
@@ -198,38 +211,27 @@ export default class LocalGame extends Component {
 
 		let startTime = Date.now() + 3 * 60 * 1000;
 		let stopperTime = true;
-		const paddle1 = new Paddle(1)
-		const paddle2 = new Paddle(-1)
-		let endTime = startTime - Date.now()
+		window.gameState.youPaddle = new Paddle(); //paddle1
+		window.gameState.opponentPaddle = new Paddle(); //paddle2
+		let endTime = startTime - Date.now();
 
-
-		const startBall = () => {
-			ball.dx = config.ballXSpeed * Math.sign(Math.random() - .5)
-			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
-		}
-
-		const controller = obj.ai ?{
-			38: { pressed: false, func: paddle2.moveUp },
-			40: { pressed: false, func: paddle2.moveDown },
+		const controller = window.gameState.ai ?{
+			38: { pressed: false, func: window.gameState.youPaddle.moveUp },
+			40: { pressed: false, func: window.gameState.youPaddle.moveDown },
 		} : {
-			87: { pressed: false, func: paddle1.moveUp },
-			83: { pressed: false, func: paddle1.moveDown },
-			38: { pressed: false, func: paddle2.moveUp },
-			40: { pressed: false, func: paddle2.moveDown },
+			87: { pressed: false, func: window.gameState.opponentPaddle.moveUp },
+			83: { pressed: false, func: window.gameState.opponentPaddle.moveDown },
+			38: { pressed: false, func: window.gameState.youPaddle.moveUp },
+			40: { pressed: false, func: window.gameState.youPaddle.moveDown },
 		};
 
-		const ball = {
+		window.gameState.ball = {
 			r: 8,
-			color: obj.color,
+			color: obj_.color,
 		}
 
 
 		const resetBall = () => {
-			ball.x = canvas.width / 2,
-			ball.y = canvas.height / 2,
-				// let's delay before starting each round
-			ball.dx = 0
-			ball.dy = 0
 			if (paddle1.score === 3 || paddle2.score === 3) {
 				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!`: document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
 				paddle1.score = 0;
@@ -238,14 +240,6 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = startTime - Date.now();
 				stopperTime = true;
-				// if (myModal) {
-				// 	myModal.style.display = "block";
-				// 	// $('#myModal').modal('show')
-				// 	console.log('myModal exists');
-				// } else {
-				// 	console.log('myModal not found');
-				// }
-
 			}
 			else{
 				canvas.style.backgroundColor = '#EBEBED';
@@ -256,13 +250,12 @@ export default class LocalGame extends Component {
 		}
 
 		const updateTimer = () => {
-			if (stopperTime == false) {
+			if (stopperTime == false) {
 				const sparetime = startTime - Date.now();
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-			}
-			else {
+			} else {
 				const minutes = Math.floor(endTime / 60000);
 				const seconds = Math.floor((endTime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -284,107 +277,58 @@ export default class LocalGame extends Component {
 			})
 		}
 
-		const moveBall = () => {
-			ball.x += ball.dx
-			ball.y += ball.dy
-		}
-
-		const checkWallCollisions = () => {
-			((ball.y - ball.r <= 0) || (ball.y + ball.r >= canvas.height)) && (ball.dy = ball.dy * (-1))
-		}
-
-		const reverseDirection = (paddle) => {
-			ball.dx = (-1) * ball.dx
-			// added this after lecture to make sure that if you clipped it while the ball was several pixels past the border, it wouldn't reverse direction twice.
-			ball.x += Math.sign(ball.dx) * 8
-			// added this after lecture to add a slice to the hit.
-			ball.dy = (ball.y - (paddle.y + (config.paddleHeight / 2))) / config.ballSlice
-
-		}
-
-		const checkPaddleCollisions = () => {
-			if (ball.x - ball.r <= config.paddleWidth) {
-				if (paddle1.checkCollision(ball)) { reverseDirection(paddle1) }
-			}
-			if (ball.x + ball.r >= canvas.width - config.paddleWidth) {
-				if (paddle2.checkCollision(ball)) { reverseDirection(paddle2) }
-			}
-		}
-
-		const checkWin = () => {
-			(ball.x + ball.r <= 0) && win(paddle1);
-			(ball.x - ball.r >= canvas.width) && win(paddle2)
-		}
-
-		const win = (paddle) => {
-			paddle.win()
-			resetBall()
-		}
-
-
 		const paintBall = () => {
+			console.log(`drawing ball ${window.gameState.ball.x}, ${window.gameState.ball.y}`);
 			ctx.beginPath();
-			ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
-			ctx.fillStyle = ball.color;
+			ctx.arc(window.gameState.ball.x, window.gameState.ball.y, window.gameState.ball.r,
+				0, 2 * Math.PI, false);
+			ctx.fillStyle = window.gameState.ball.color;
 			ctx.fill();
-			// ctx.lineWidth = 5;
-			// ctx.strokeStyle = '#003300';
-			// ctx.stroke();
 		}
 
 		const render = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			paddle1.render()
-			paddle2.render()
-			paintBall()
+			window.gameState.youPaddle.render();
+			window.gameState.opponentPaddle.render();
+			paintBall();
 		}
 
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
 
-		/*document.getElementById("start-game").addEventListener("click", () => {
-			document.getElementById("start-game").style.display = "none";
-			canvas.style.backgroundColor = '#EBEBED';
-			document.getElementById('score-right').innerText = 0;
-			document.getElementById('score-left').innerText = 0;
-			document.getElementById('Winner-text').innerText = "";
-			resetBall();
-			stopperTime = false;
-			startTime = Date.now() + 3 * 60 * 1000 + 1000;
-
-        });*/
-
-		const MovePaddleAI = () => {
+		/*const MovePaddleAI = () => {
 			console.log('AI');
-			if (ball.y < paddle1.y && ball.dx < 0) {
-				paddle1.moveUp();
+			if (window.gameState.ball.y < paddle1.y && window.gameState.ball.dx < 0) {
+				window.gameState.opponentPaddle.moveUp();
 			}
 
-				if (ball.y > paddle1.y && ball.dx < 0) {
-				paddle1.moveDown();
+			if (ball.y > paddle1.y && ball.dx < 0) {
+				window.gameState.opponentPaddle.moveDown();
 			}
-		}
+		}*/
 
 
 		const animate = () => {
-			render()
-			runPressedButtons()
-			checkWallCollisions()
-			checkPaddleCollisions()
-			moveBall()
-			if (obj.ai)
-				MovePaddleAI()
-			checkWin()
-			updateTimer()
-			window.requestAnimationFrame(animate)
+			render();
+			runPressedButtons();
+			//checkWallCollisions();
+			//checkPaddleCollisions();
+			//moveBall();
+			/*if (obj.ai) {
+				MovePaddleAI();
+			}*/
+			//checkWin();
+			//updateTimer();
+			window.requestAnimationFrame(animate);
 		}
 
-		animate()
-
+		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
-		resetBall();
+		//resetBall();
 		stopperTime = false;
 		startTime = Date.now() + 3 * 60 * 1000 + 1000;
 	}
 }
+
+export { updateFromSocket };
