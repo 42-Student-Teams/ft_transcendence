@@ -1,7 +1,8 @@
+import asyncio
 import json
 
-from asgiref.sync import async_to_sync
-from channels.generic.websocket import WebsocketConsumer
+from asgiref.sync import async_to_sync, sync_to_async
+from channels.generic.websocket import AsyncWebsocketConsumer
 from backend.models import JwtUser
 
 from django.conf import settings
@@ -14,7 +15,7 @@ def register_ws_func(func):
     return func
 
 
-class WsConsumerCommon(WebsocketConsumer):
+class WsConsumerCommon(AsyncWebsocketConsumer):
     funcs = {}
 
     def __init__(self, *args, **kwargs):
@@ -31,20 +32,20 @@ class WsConsumerCommon(WebsocketConsumer):
                 self.__class__.funcs[name] = self.__class__.__dict__[name]
 
 
-    def connect(self):
+    async def connect(self):
         print('someone connected', flush=True)
         print(self.channel_layer, flush=True)
-        self.accept()
+        await self.accept()
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         print('someone disconnected', flush=True)
         for group in self.subscribed_groups:
-            async_to_sync(self.channel_layer.group_discard)(
+            await self.channel_layer.group_discard(
                 group, self.channel_name
             )
 
-    def subscribe_to_group(self, group):
-        async_to_sync(self.channel_layer.group_add)(
+    async def subscribe_to_group(self, group):
+        await self.channel_layer.group_add(
             group, self.channel_name
         )
         self.subscribed_groups.append(group)
@@ -72,36 +73,37 @@ class WsConsumerCommon(WebsocketConsumer):
         print('ALL GOOD', flush=True)
         self.authed = True
 
-    def receive(self, text_data):
+    async def receive(self, text_data):
         print('RECEIVE', text_data, flush=True)
         msg_obj = None
         try:
             msg_obj = json.loads(text_data)
         except:
-            self.send(text_data='unauthed')
+            await self.send(text_data='unauthed')
             return
         if not self.authed:
-            self.do_auth(msg_obj)
+            print('Not authed, doing auth', flush=True)
+            await sync_to_async(self.do_auth)(msg_obj)
             if not self.authed:
-                self.send(text_data='{"status":"unauthed"}')
+                await self.send(text_data='{"status":"unauthed"}')
             else:
-                self.send(text_data='{"status":"authed"}')
-                self.on_auth(msg_obj)
+                await self.send(text_data='{"status":"authed"}')
+                await self.on_auth(msg_obj)
             return
 
         if msg_obj.get('func') is None:
             return
         if msg_obj.get('func') not in self.funcs.keys():
             return
-        self.funcs[msg_obj.get('func')](self, msg_obj)
+        await self.funcs[msg_obj.get('func')](self, msg_obj)
 
-    def on_auth(self, msg_obj):
+    async def on_auth(self, msg_obj):
         pass
 
-    def send_json(self, content):
-        self.send(text_data=json.dumps(content))
+    async def send_json(self, content):
+        await self.send(text_data=json.dumps(content))
 
-    def send_channel(self, channel, msgtype, content):
-        async_to_sync(self.channel_layer.group_send)(
+    async def send_channel(self, channel, msgtype, content):
+        await self.channel_layer.group_send(
             channel, {"type": msgtype, "msg_obj": content}
         )

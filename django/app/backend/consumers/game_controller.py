@@ -1,8 +1,9 @@
+import asyncio
 import random
 import threading
 import time
 
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
 
 from backend.models import JwtUser, AcknowledgedMatchRequest
@@ -117,16 +118,17 @@ class GameController():
     def start(self):
         print('Start!', flush=True)
         self.running = True
-        self.game_thread = threading.Thread(target=self.game_loop)
+        #self.game_thread = threading.Thread(target=self.game_loop)
         self.reset_ball()
-        self.game_thread.start()
+        #self.game_thread.start()
+        asyncio.create_task(self.game_loop())
 
     def stop(self):
         self.running = False
         if self.game_thread:
             self.game_thread.join()
 
-    def game_loop(self):
+    async def game_loop(self):
         print(f'Initial ballpos: {self.ball.x}, {self.ball.y}', flush=True)
         while self.running:
             if self.restart_timeout:
@@ -204,7 +206,8 @@ class GameController():
             self.send_game_update(update)
 
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)
-            time.sleep(1 / 60)
+            #time.sleep(1 / 60)
+            await asyncio.sleep(0.05)
 
     def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
