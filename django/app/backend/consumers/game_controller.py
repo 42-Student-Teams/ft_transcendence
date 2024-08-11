@@ -115,7 +115,7 @@ class GameController():
         self.ball = Ball()
         self.reset_ball()
 
-    def start(self):
+    async def start(self):
         print('Start!', flush=True)
         self.running = True
         #self.game_thread = threading.Thread(target=self.game_loop)
@@ -123,7 +123,7 @@ class GameController():
         #self.game_thread.start()
         asyncio.create_task(self.game_loop())
 
-    def stop(self):
+    async def stop(self):
         self.running = False
         if self.game_thread:
             self.game_thread.join()
@@ -209,16 +209,16 @@ class GameController():
             #time.sleep(1 / 60)
             await asyncio.sleep(0.05)
 
-    def send_game_update(self, update):
+    async def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
         self.send_channel(self.controller_channel, 'relay_from_controller', update)
 
-    def send_channel(self, channel, msgtype, content):
+    async def send_channel(self, channel, msgtype, content):
         async_to_sync(self.channel_layer.group_send)(
             channel, {"type": msgtype, "msg_obj": content}
         )
 
-    def client_update_relay(self, msg_obj):
+    async def client_update_relay(self, msg_obj):
         #print("Client update received in controller:", flush=True)
         #print(msg_obj, flush=True)
         if 'opponent_joined' in msg_obj:

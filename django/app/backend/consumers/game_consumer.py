@@ -29,6 +29,9 @@ class GameConsumer(WsConsumerCommon):
         except AcknowledgedMatchRequest.DoesNotExist:
             return None
 
+    def get_request_author_username(self, acknowledgement):
+    	return acknowledgement.request_author.username
+ 
     def delete_acknowledgement_by_key(self, key):
         AcknowledgedMatchRequest.objects.filter(match_key=key).delete()
 
@@ -57,9 +60,10 @@ class GameConsumer(WsConsumerCommon):
         await self.subscribe_to_group(self.opponent_channel)
 
         # this means we are the requesting user, we create the game controller
-        if self.user.username == acknowledgement.request_author.username:
+        request_author_username = await database_sync_to_async(self.get_request_author_username)(acknowledgement)
+        if self.user.username == request_author_username:
             self.game_controller = GameController(acknowledgement)
-            self.game_controller.start()
+            await self.game_controller.start()
 
         # maybe we should wait for the opponent...
         await self.send_json({

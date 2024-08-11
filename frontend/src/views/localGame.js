@@ -1,11 +1,10 @@
-import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
 import state from "../store/state.js";
-import {wsSend} from "../utils/wsUtils.js";
-import {usernameFromToken} from "../utils/jwtUtils.js";
+import { wsSend } from "../utils/wsUtils.js";
+import { usernameFromToken } from "../utils/jwtUtils.js";
 
 function updateFromSocket(msg_obj) {
-	//console.log(msg_obj);
+	console.log(msg_obj);
 	if (!Object.hasOwn(window, 'gameState')) {
 		return;
 	}
@@ -39,7 +38,6 @@ function updateFromSocket(msg_obj) {
 		window.gameState.ball.x = msg_obj['ball_pos']['x'];
 		window.gameState.ball.y = msg_obj['ball_pos']['y'];
 	}
-
 }
 
 export default class LocalGame extends Component {
@@ -49,20 +47,12 @@ export default class LocalGame extends Component {
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
 		this.render();
-		this.components = {
-			navBar: new NavBar(),
-		};
 	}
 
 	async render() {
 
 		const view = /*html*/ `
-
-
     	<div class="h-100 d-flex flex-column">
-      		<div class="row chat-rm-margin">
-        		<nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
-      		</div>
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
        			<h1  id=left_player class="display-5">...</h1>
@@ -115,7 +105,12 @@ export default class LocalGame extends Component {
 
 		//this.element.innerHTML = view;
 		/* of course it gives errors because we don't remder the navbar */
-		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">Please wait...</button>`;
+		this.element.innerHTML = /*html*/ `
+		<button class="btn btn-primary" type="button" id="start-game">
+			<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+			<span role="status">Please wait...</span>
+		</button>
+		`;
 		this.handleEvent(view, this.element);
 	}
 
@@ -126,22 +121,22 @@ export default class LocalGame extends Component {
 
 		/* 1) client initiates game request */
 		wsSend('request_game', {
-											'target_user': state.currentGameData['opponent_username'],
-											'ball_color': state.currentGameData['color'],
-											'ai': state.currentGameData['ai'],
-											'fast': state.currentGameData['speed']
-											});
+			'target_user': state.currentGameData['opponent_username'],
+			'ball_color': state.currentGameData['color'],
+			'ai': state.currentGameData['ai'],
+			'fast': state.currentGameData['speed']
+		});
 	}
 
 	startGame(obj_) {
 
-		wsSend('client_update', {'update': 'lol'}, state.gameSocket);
+		wsSend('client_update', { 'update': 'lol' }, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
 
 		window.gameState = {
 			color: obj_.ball_color,
 			speed: obj_.fast,
-			ai : obj_.is_bot,
+			ai: obj_.is_bot,
 			opponent_username: obj_.opponent_username,
 			youPaddle: null,
 			opponentPaddle: null,
@@ -154,11 +149,7 @@ export default class LocalGame extends Component {
 
 		let myModal = document.getElementById('exampleModal');
 
-		//console.log('gameOptions',gameOptions);
-		console.log('obj', obj_);
-
-
-
+		console.log('Gameoptions', obj_);
 
 		document.getElementById("start-game").style.display = "none";
 		document.getElementById('score-right').innerText = 0;
@@ -179,14 +170,14 @@ export default class LocalGame extends Component {
 				this.y += config.paddleSpeed;
 				(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight);
 				window.gameState.lastTimestamp = Math.trunc(Date.now());
-				wsSend('client_update', {'pad': this.y, 'timestamp': window.gameState.lastTimestamp}, state.gameSocket);
+				wsSend('client_update', { 'pad': this.y, 'timestamp': window.gameState.lastTimestamp }, state.gameSocket);
 			}
 
 			moveUp = () => {
 				this.y -= config.paddleSpeed;
 				this.y < 0 && (this.y = 0);
 				window.gameState.lastTimestamp = Math.trunc(Date.now());
-				wsSend('client_update', {'pad': this.y, 'timestamp': window.gameState.lastTimestamp}, state.gameSocket);
+				wsSend('client_update', { 'pad': this.y, 'timestamp': window.gameState.lastTimestamp }, state.gameSocket);
 			}
 		}
 
@@ -215,7 +206,7 @@ export default class LocalGame extends Component {
 		window.gameState.opponentPaddle = new Paddle(); //paddle2
 		let endTime = startTime - Date.now();
 
-		const controller = window.gameState.ai ?{
+		const controller = window.gameState.ai ? {
 			38: { pressed: false, func: window.gameState.youPaddle.moveUp },
 			40: { pressed: false, func: window.gameState.youPaddle.moveDown },
 		} : {
@@ -233,7 +224,7 @@ export default class LocalGame extends Component {
 
 		const resetBall = () => {
 			if (paddle1.score === 3 || paddle2.score === 3) {
-				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!`: document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
+				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
 				paddle1.score = 0;
 				paddle2.score = 0;
 				document.getElementById("start-game").style.display = "block";
@@ -241,9 +232,9 @@ export default class LocalGame extends Component {
 				endTime = startTime - Date.now();
 				stopperTime = true;
 			}
-			else{
+			else {
 				canvas.style.backgroundColor = '#EBEBED';
-				setTimeout(() => 	{
+				setTimeout(() => {
 					startBall();
 				}, 1000);
 			}
@@ -260,7 +251,7 @@ export default class LocalGame extends Component {
 				const seconds = Math.floor((endTime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 			}
-        };
+		};
 
 
 		const handleKeyDown = (e) => {
@@ -278,7 +269,6 @@ export default class LocalGame extends Component {
 		}
 
 		const paintBall = () => {
-			console.log(`drawing ball ${window.gameState.ball.x}, ${window.gameState.ball.y}`);
 			ctx.beginPath();
 			ctx.arc(window.gameState.ball.x, window.gameState.ball.y, window.gameState.ball.r,
 				0, 2 * Math.PI, false);
