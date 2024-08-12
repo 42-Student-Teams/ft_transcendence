@@ -5,6 +5,7 @@ import Component from "../../library/component.js";
 import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
 import { showToast } from "../../utils/toastUtils.js";
 import store from "../../store/index.js";
+import FriendProfileInfo from "../profile/FriendProfileInfo.js";
 
 export default class SideFriendList extends Component {
   constructor() {
@@ -274,26 +275,25 @@ export default class SideFriendList extends Component {
   }
 
   async handleViewProfile(username) {
-    try {
-      const jwt = localStorage.getItem("jwt");
-      const apiurl = process.env.API_URL;
-      const response = await fetch(`${apiurl}/get_userProfile?username=${encodeURIComponent(username)}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${jwt}`,
-          'Content-Type': 'application/json'
-        }
-      });
-  
-      if (response.ok) {
-        const profileData = await response.json();
-        console.log("Profil de l'ami récupéré :", profileData);
-      } else {
-        const errorData = await response.json();
-        console.error('Erreur lors de la récupération du profil :', errorData.message);
-      }
-    } catch (error) {
-      console.error('Erreur :', error);
-    }
-  }
+    console.log("Handling view profile for:", username);
+    // Importer dynamiquement le composant FriendProfile
+    const { default: FriendProfile } = await import('/src/views/friendProfile.js');
+    
+    // Créer une nouvelle instance de FriendProfile
+    const friendProfileView = new FriendProfile();
+    
+    // Définir le nom d'utilisateur de l'ami
+    friendProfileView.setFriendUsername(username);
+    
+    // Obtenir l'élément racine de l'application
+    const appElement = document.getElementById("app");
+    
+    // Vider le contenu actuel de l'app
+    appElement.innerHTML = '';
+    
+    // Ajouter la vue rendue à l'élément app
+    appElement.appendChild(friendProfileView.element);
+}
+
+
 }

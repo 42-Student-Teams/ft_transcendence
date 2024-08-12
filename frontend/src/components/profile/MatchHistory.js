@@ -28,7 +28,7 @@ export default class MatchHistory extends Component {
             </div>
         </div>
         `;
-        this.element = document.getElementById('matchHistory');
+
         this.element.innerHTML = view;
     }
 
