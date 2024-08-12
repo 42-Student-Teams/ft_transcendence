@@ -1,27 +1,31 @@
+// /src/views/friendProfile.js
 import Component from "../library/component.js";
 import NavBar from '../components/home/navbar.js';
-import FriendProfileInfo from "../components/profile/FriendProfileInfo.js";
 import FriendMatchHistory from "../components/profile/FriendMatchHistory.js";
+import FriendProfileInfo from "../components/profile/FriendProfileInfo.js";
 
 export default class FriendProfile extends Component {
     constructor() {
-        super({ element: document.createElement('app') });
+        super({ element: document.getElementById("app") });
         this.friendUsername = null;
         this.components = {
             navBar: new NavBar(),
-            friendProfileInfo: new FriendProfileInfo(),
-            friendMatchHistory: new FriendMatchHistory(),
+            friendProfileInfo: null,
+            friendMatchHistory: null,
         };
     }
 
     setFriendUsername(username) {
-        console.log("FriendProfile: Setting friend username:", username);
         this.friendUsername = username;
         this.render();
     }
 
-    render() {
-        console.log("FriendProfile: Rendering with username:", this.friendUsername);
+    async render() {
+        if (!this.friendUsername) {
+            console.error("Friend username not set");
+            return;
+        }
+
         const view = /*html*/ `
         <div class="h-100 d-flex flex-column bg-custom vh-100">
             <div class="row m-0">
@@ -37,15 +41,15 @@ export default class FriendProfile extends Component {
             </div>
         </div>
         `;
-        this.element.innerHTML = view;
         
-        // Rendre la barre de navigation
+        this.element.innerHTML = view;
         this.components.navBar.render();
 
-        // Définir le nom d'utilisateur et rendre FriendProfileInfo
+        // Initialiser les composants après que les éléments sont créés dans le DOM
+        this.components.friendProfileInfo = new FriendProfileInfo();
+        this.components.friendMatchHistory = new FriendMatchHistory();
+
         this.components.friendProfileInfo.setFriendUsername(this.friendUsername);
-        
-        // Définir le nom d'utilisateur et rendre FriendMatchHistory
-        this.components.friendMatchHistory.setUsername(this.friendUsername);
+        this.components.friendMatchHistory.setFriendUsername(this.friendUsername);
     }
 }

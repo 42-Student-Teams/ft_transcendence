@@ -274,26 +274,33 @@ export default class SideFriendList extends Component {
     }
   }
 
+//   async handleViewProfile(username) {
+//     console.log("Handling view profile for:", username);
+//     // Importer dynamiquement le composant FriendProfile
+//     const { default: FriendProfile } = await import('/src/views/friendProfile.js');
+    
+//     // Créer une nouvelle instance de FriendProfile
+//     const friendProfileView = new FriendProfile();
+    
+//     // Définir le nom d'utilisateur de l'ami
+//     friendProfileView.setFriendUsername(username);
+    
+//     // Obtenir l'élément racine de l'application
+//     const appElement = document.getElementById("app");
+    
+//     // Vider le contenu actuel de l'app
+//     appElement.innerHTML = '';
+    
+//     // Ajouter la vue rendue à l'élément app
+//     appElement.appendChild(friendProfileView.element);
+// }
   async handleViewProfile(username) {
     console.log("Handling view profile for:", username);
-    // Importer dynamiquement le composant FriendProfile
     const { default: FriendProfile } = await import('/src/views/friendProfile.js');
     
-    // Créer une nouvelle instance de FriendProfile
     const friendProfileView = new FriendProfile();
-    
-    // Définir le nom d'utilisateur de l'ami
     friendProfileView.setFriendUsername(username);
-    
-    // Obtenir l'élément racine de l'application
-    const appElement = document.getElementById("app");
-    
-    // Vider le contenu actuel de l'app
-    appElement.innerHTML = '';
-    
-    // Ajouter la vue rendue à l'élément app
-    appElement.appendChild(friendProfileView.element);
-}
+  }
 
 
 }
