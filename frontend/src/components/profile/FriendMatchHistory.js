@@ -1,4 +1,3 @@
-// /src/components/profile/FriendMatchHistory.js
 import Component from "../../library/component.js";
 
 export default class FriendMatchHistory extends Component {

@@ -251,7 +251,7 @@ class FriendListView(APIView):
             friend_list = [{
                 'username': friend.username,
                 'status': friend.status,
-                'profile_picture': friend.avatar.url if friend.avatar else None
+                'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else None
             } for friend in friends]
             
             return Response({
@@ -389,7 +389,7 @@ class getUserProfileView(APIView):
                 'prenom': user.first_name,
                 'username': user.username,
                 'status': user.status,
-                'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else None,
+                #'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png'),
                 'parties_jouees': parties_jouees,
                 'parties_gagnees': parties_gagnees
             }

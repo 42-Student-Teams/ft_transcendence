@@ -300,7 +300,7 @@ export default class SideFriendList extends Component {
     
     const friendProfileView = new FriendProfile();
     friendProfileView.setFriendUsername(username);
-  }
+}
 
 
 }

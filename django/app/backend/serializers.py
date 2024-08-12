@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 class JwtUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = JwtUser
-        fields = ('username', 'password', 'isoauth')
+        fields = ('username', 'password', 'isoauth', 'first_name', 'last_name')
         extra_kwargs = {
             'password': {'write_only': True},
         }
