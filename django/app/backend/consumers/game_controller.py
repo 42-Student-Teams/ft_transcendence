@@ -134,7 +134,7 @@ class GameController():
             if self.restart_timeout:
                 print('Restart timeout!', flush=True)
                 self.restart_timeout = False
-                time.sleep(1)
+                asyncio.sleep(1)
                 self.start_ball()
                 self.send_game_update({
                     "waiting_between_points": False
@@ -144,7 +144,7 @@ class GameController():
                 self.send_game_update({
                     'countdown': 3 - self.countdown_elapsed
                 })
-                time.sleep(1)
+                asyncio.sleep(1)
                 self.countdown_elapsed += 1
                 if self.countdown_elapsed >= 3:
                     self.start_ball()
@@ -207,7 +207,8 @@ class GameController():
 
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)
             #time.sleep(1 / 60)
-            await asyncio.sleep(0.05)
+            # await asyncio.sleep(0.05)
+            await asyncio.sleep(0.02)
 
     async def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
