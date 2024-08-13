@@ -30,13 +30,13 @@ class Paddle():
 
     # Only for bot
     def move_down(self):
-        self.y += self.config.paddleSpeed;
+        self.y += self.config.paddleSpeed
         if self.y + self.config.paddleHeight > self.config.canvasHeight:
             self.y = self.config.paddleHeight - self.config.paddleHeight
 
     # Only for bot
     def move_up(self):
-        self.y -= self.config.paddleSpeed;
+        self.y -= self.config.paddleSpeed
         if self.y < self.config.paddleSpeed:
             self.y = 0
 
@@ -100,7 +100,7 @@ class GameController():
         self.channel_layer = get_channel_layer()
         self.controller_channel = f'controller_{acknowledgement.match_key}'
         self.event_queue = []
-        self.queue_lock = threading.Lock()
+        self.queue_lock = asyncio.Lock()
         self.running = False
         self.game_thread = None
         self.countdown_elapsed = 0
@@ -110,8 +110,8 @@ class GameController():
 
         self.config = Config()
 
-        self.author_paddle = Paddle(0, self.config);
-        self.opponent_paddle = Paddle(1, self.config);
+        self.author_paddle = Paddle(0, self.config)
+        self.opponent_paddle = Paddle(1, self.config)
         self.ball = Ball()
         self.reset_ball()
 
@@ -153,7 +153,7 @@ class GameController():
             timestamp = None
             # Process all events in the queue
             while self.event_queue:
-                with self.queue_lock:
+                async with self.queue_lock:
                     event = self.event_queue.pop(0)
                     #print(f'Processing event {event}', flush=True)
                     #TODO: check for bounds
@@ -203,7 +203,7 @@ class GameController():
             }
             if timestamp is not None:
                 update['timestamp'] = timestamp
-            self.send_game_update(update)
+            await self.send_game_update(update)
 
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)
             #time.sleep(1 / 60)
@@ -211,10 +211,11 @@ class GameController():
 
     async def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
-        self.send_channel(self.controller_channel, 'relay_from_controller', update)
+        await self.send_channel(self.controller_channel, 'relay_from_controller', update)
 
     async def send_channel(self, channel, msgtype, content):
-        async_to_sync(self.channel_layer.group_send)(
+        print(f"Sending to channel: {channel}, message: {content}", flush=True)
+        await (self.channel_layer.group_send)(
             channel, {"type": msgtype, "msg_obj": content}
         )
 
@@ -224,7 +225,7 @@ class GameController():
         if 'opponent_joined' in msg_obj:
             pass
         else:
-            with self.queue_lock:
+            async with self.queue_lock:
                 self.event_queue.append(msg_obj)
 
     # Ported funcs
