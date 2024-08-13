@@ -389,31 +389,25 @@ export default class LocalGame extends Component {
 			// 	  console.log("1");
 
 			if (ball.dx < 0 && (Date.now() - looktime > 1000 || (ball.x - ball.r <= config.paddleWidth && paddle1.checkCollision(ball)))) {
+				
 				let mod = (ball.x * Math.abs(ball.dy / ball.dx)) % (2.00 * config.canvasHeight);
 
 				console.log("mod,", mod);
 				looktime = Date.now();
-				if (mod > config.canvasHeight) {
-					paddle1.aipos_cal = ball.y - Math.sign(ball.dy) * (mod - config.canvasHeight) - config.paddleHeight / 2;
-					if (paddle1.aipos_cal < 0)
-						paddle1.aipos_cal = paddle1.aipos_cal * -1;
-					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
-						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
+				
+				let s = ball.y;
+				while (mod > config.canvasHeight || mod < 0) {
+					if (mod >= config.canvasHeight) {
+						mod = 2 * config.canvasHeight - mod - s;
+						s = 0;
+					}
+					else {
+						mod = math.abs(r + s);
+						s = 0;
+					}
 				}
-				else {
-					console.log("ball.y", ball.y);
-					console.log("math signe", Math.sign(ball.dy));
-					console.log("mod,", mod);
-					console.log("config.paddleHeight,", config.paddleHeight);
-					paddle1.aipos_cal = ball.y + Math.sign(ball.dy) * mod - config.paddleHeight / 2;
-					console.log("cal++++,", paddle1.aipos_cal);
-					if (paddle1.aipos_cal < 0)
-						paddle1.aipos_cal = paddle1.aipos_cal * -1;
-					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
-						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
-					console.log("cal,", paddle1.aipos_cal);
-					console.log("------------");
-				}
+				paddle1.aipos_cal = mod;
+				console.log("aipos_cal,", paddle1.aipos_cal);
 
 			}
 
