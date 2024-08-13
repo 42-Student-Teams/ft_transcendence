@@ -155,7 +155,6 @@ class GameController():
             while self.event_queue:
                 async with self.queue_lock:
                     event = self.event_queue.pop(0)
-                    #print(f'Processing event {event}', flush=True)
                     #TODO: check for bounds
                     if 'pad' in event and event['pad'] is not None:
                         timestamp = event['timestamp']
@@ -188,7 +187,6 @@ class GameController():
                 self.opponent_score += 1
                 self.send_game_update({"opponent_points": self.opponent_score})
                 print('opponent scored!')
-                print(f'ballpos: {self.ball.x}, {self.ball.y}', flush=True)
                 self.reset_ball(True)
                 continue
 
@@ -208,21 +206,18 @@ class GameController():
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)
             #time.sleep(1 / 60)
             # await asyncio.sleep(0.05)
-            await asyncio.sleep(0.02)
+            await asyncio.sleep(0.017)
 
     async def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
         await self.send_channel(self.controller_channel, 'relay_from_controller', update)
 
     async def send_channel(self, channel, msgtype, content):
-        print(f"Sending to channel: {channel}, message: {content}", flush=True)
         await (self.channel_layer.group_send)(
             channel, {"type": msgtype, "msg_obj": content}
         )
 
     async def client_update_relay(self, msg_obj):
-        #print("Client update received in controller:", flush=True)
-        #print(msg_obj, flush=True)
         if 'opponent_joined' in msg_obj:
             pass
         else:

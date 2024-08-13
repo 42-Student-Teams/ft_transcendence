@@ -34,7 +34,6 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
 
     async def connect(self):
         print('someone connected', flush=True)
-        print(self.channel_layer, flush=True)
         await self.accept()
 
     async def disconnect(self, close_code):

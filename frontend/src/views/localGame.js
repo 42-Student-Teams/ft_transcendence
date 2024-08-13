@@ -1,7 +1,7 @@
 import Component from "../library/component.js";
 import state from "../store/state.js";
-import { wsSend } from "../utils/wsUtils.js";
 import { usernameFromToken } from "../utils/jwtUtils.js";
+import { wsSend } from "../utils/wsUtils.js";
 
 function updateFromSocket(msg_obj) {
 	console.log(msg_obj);

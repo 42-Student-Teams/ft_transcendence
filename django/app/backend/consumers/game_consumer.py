@@ -41,7 +41,6 @@ class GameConsumer(WsConsumerCommon):
             return
 
         acknowledgement: AcknowledgedMatchRequest = await database_sync_to_async(self.get_acknowledgement_by_key)(msg_obj.get('match_key')) #AcknowledgedMatchRequest.objects.get(match_key=msg_obj.get('match_key'))
-        # print(f"Acknowledgment fetched: {acknowledgement}", flush=True)
 
         if acknowledgement is None:
             await self.close()
@@ -55,8 +54,6 @@ class GameConsumer(WsConsumerCommon):
         # This is the channel via which the GameController will dispatch updates to both clients
         self.controller_channel = f'controller_{acknowledgement.match_key}'
         await self.subscribe_to_group(self.controller_channel)
-        print(f"Subscribed to controller_channel: {self.controller_channel}", flush=True)
-
 
         # This is the channel through which the Opponent will send its data to the Autshor (which will just be
         # forwarded to the controller)
@@ -68,7 +65,6 @@ class GameConsumer(WsConsumerCommon):
         if self.user.username == request_author_username:
             self.game_controller = GameController(acknowledgement)
             await self.game_controller.start()
-            print("GameController started", flush=True)
 
         # maybe we should wait for the opponent...
         await self.send_json({
@@ -104,5 +100,4 @@ class GameConsumer(WsConsumerCommon):
 
 
     async def relay_from_controller(self, event):
-        print(f'Relaying from controller: {event}', flush=True)
         await self.send(text_data=json.dumps(event["msg_obj"]))
