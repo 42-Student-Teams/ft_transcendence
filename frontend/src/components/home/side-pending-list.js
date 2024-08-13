@@ -2,6 +2,7 @@ import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
+import { showToast } from "../../utils/toastUtils.js";
 
 
 export default class SidePendingList extends Component {
@@ -113,11 +114,14 @@ export default class SidePendingList extends Component {
 			if (response.ok) {
 				// Remove the friend container from the DOM
 				friendContainer.remove();
+				showToast(`Friend request from ${username} accepted`, 'success');
 			} else {
-				console.error(`Failed to accept friend request for ${username}`);
-			}
+                console.error(`Failed to accept friend request for ${username}`);
+                showToast(`Failed to accept friend request from ${username}`, 'danger');
+            }
 		} catch (error) {
-			console.error(`Error accepting friend request for ${username}:`, error);
-		}
+            console.error(`Error accepting friend request for ${username}:`, error);
+            showToast(`Error accepting friend request from ${username}`, 'danger');
+        }
 	}
 }

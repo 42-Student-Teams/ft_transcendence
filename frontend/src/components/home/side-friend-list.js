@@ -253,13 +253,16 @@ export default class SideFriendList extends Component {
       });
 
       if (response.ok) {
-        console.log(`Successfully added friend ${username}`);
+        console.log(`Successfully sent friend request to ${username}`);
+        showToast(`Friend request sent to ${username} successfully.`, "success");
         await this.getFriendList();
-      } else {
-        console.error(`Failed to add friend ${username}`);
-      }
-    } catch (error) {
-      console.error(`Error adding friend ${username}:`, error);
+    } else {
+        showToast(`Failed to send friend request to ${username}.`, "danger");
+        console.error(`Failed to send friend request to ${username}`);
     }
+} catch (error) {
+    showToast(`Error sending friend request to ${username}.`, "danger");
+    console.error(`Error sending friend request to ${username}:`, error);
+  }
   }
 }
