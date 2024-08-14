@@ -1,3 +1,5 @@
+import * as bootstrap from 'bootstrap';
+
 export function showToast(message, type) {
     if (typeof bootstrap === 'undefined') {
         console.error('Bootstrap is not defined');
