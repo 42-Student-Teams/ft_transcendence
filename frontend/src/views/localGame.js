@@ -95,10 +95,18 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj) {
-		let myModal = document.getElementById('exampleModal');
 
-		//console.log('gameOptions',gameOptions);
-		console.log('obj',obj);
+		const config = {
+			canvasWidth: 900,
+			canvasHeight: 500,
+			paddleWidth: 10,
+			paddleHeight: 80,
+			paddleSpeed: 8,
+			ballXSpeed: obj.speed * 6 || 1,
+			ballYSpeed: 3,
+			ballSlice: 4
+		}
+
 
 		class Paddle {
 			constructor(direction) {
@@ -108,25 +116,27 @@ export default class LocalGame extends Component {
 				direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
 				this.aipos_cal = 0
+				this.size = config.paddleHeight;
+				this.speed = config.paddleSpeed;
 			}
 
 			render = () => {
 				ctx.fillStyle = "#FF0000";
-				ctx.fillRect(this.x, this.y, config.paddleWidth, config.paddleHeight);
+				ctx.fillRect(this.x, this.y, config.paddleWidth, this.size);
 			}
 
 			checkCollision = (ball) => {
 				// console.log("checking")
-				return !!((this.y <= (ball.y + ball.r)) && (this.y + config.paddleHeight >= (ball.y - ball.r)))
+				return !!((this.y <= (ball.y + ball.r)) && (this.y + this.size >= (ball.y - ball.r)))
 			}
 
 			moveDown = () => {
-				this.y += config.paddleSpeed;
-				(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight)
+				this.y += this.speed;
+				(this.y + this.size > canvas.height) && (this.y = canvas.height - this.size)
 			}
 
 			moveUp = () => {
-				this.y -= config.paddleSpeed
+				this.y -= this.speed
 				this.y < 0 && (this.y = 0)
 			}
 
@@ -150,20 +160,11 @@ export default class LocalGame extends Component {
 		}
 
 
+
 		const canvas = document.getElementById("myCanvas")
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
 
-		const config = {
-			canvasWidth: 900,
-			canvasHeight: 500,
-			paddleWidth: 10,
-			paddleHeight: 80,
-			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 1,
-			ballYSpeed: 1,
-			ballSlice: 4
-		}
 
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
@@ -179,7 +180,7 @@ export default class LocalGame extends Component {
 
 
 		const startBall = () => {
-			ball.dx = config.ballXSpeed * Math.sign(Math.random() - .5)
+			ball.dx = config.ballXSpeed * Math.sign(Math.random() - 1)
 			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
 		}
 
@@ -276,7 +277,9 @@ export default class LocalGame extends Component {
 			// added this after lecture to make sure that if you clipped it while the ball was several pixels past the border, it wouldn't reverse direction twice.
 			ball.x += Math.sign(ball.dx) * 8
 			// added this after lecture to add a slice to the hit.
-			ball.dy = (ball.y - (paddle.y + (config.paddleHeight / 2))) / config.ballSlice
+			ball.dy = (ball.y - (paddle.y + (paddle.size / 2))) / config.ballSlice
+			console.log("-----", paddle1.y)
+			console.log("++++", paddle1.aipos_cal)
 
 		}
 
@@ -305,9 +308,6 @@ export default class LocalGame extends Component {
 			ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
 			ctx.fillStyle = ball.color;
 			ctx.fill();
-			// ctx.lineWidth = 5;
-			// ctx.strokeStyle = '#003300';
-			// ctx.stroke();
 		}
 
 		const render = () => {
@@ -390,44 +390,49 @@ export default class LocalGame extends Component {
 
 			if (ball.dx < 0 && (Date.now() - looktime > 1000 || (ball.x - ball.r <= config.paddleWidth && paddle1.checkCollision(ball)))) {
 				
-				let mod = (ball.x * Math.abs(ball.dy / ball.dx)) % (2.00 * config.canvasHeight);
+				let b = ((ball.x - config.paddleWidth - ball.r) * Math.abs(ball.dy / ball.dx));
 
-				console.log("mod,", mod);
+				console.log("b", b);
+				console.log("ball.x,", ball.x);
+				console.log("ball.y,", ball.y);
+				console.log("ball.dy,", ball.dy);
+				console.log("ball.dx,", ball.dx);	
+				
 				looktime = Date.now();
 				
-				let s = ball.y;
-				while (mod > config.canvasHeight || mod < 0) {
-					if (mod >= config.canvasHeight) {
-						mod = 2 * config.canvasHeight - mod - s;
-						s = 0;
+				// let mod = ball.y + Math.sign(ball.dy) * (b % (2.00 * (config.canvasHeight -  2 * ball.r)));
+				let mod = ball.y + Math.sign(ball.dy) * b;
+				console.log("mod*", mod);
+				mod = mod % (2 * (config.canvasHeight - 2 * ball.r));
+				console.log("mod", mod);
+				while (mod > config.canvasHeight - ball.r || mod < ball.r) {
+					if (mod > config.canvasHeight - ball.r) {
+						mod = 2 * (config.canvasHeight - ball.r) - mod;
+						console.log("mod1", mod);
 					}
 					else {
-						mod = math.abs(r + s);
-						s = 0;
+						mod = ball.r + Math.abs(mod - ball.r);
+						console.log("mod2", mod);
 					}
 				}
-				paddle1.aipos_cal = mod;
+				paddle1.aipos_cal = mod - paddle1.size / 2;
 				console.log("aipos_cal,", paddle1.aipos_cal);
-
+				console.log("paddle1.y,", paddle1.y);
+				console.log("------");
+				
 			}
+			
+			if (paddle1.aipos_cal - paddle1.y <= - paddle1.speed && ball.dx < 0) {
 
-			if (paddle1.aipos_cal < paddle1.y && ball.dx < 0) {
 				paddle1.moveUp();
 			}
+			
+			if (paddle1.aipos_cal - paddle1.y >= paddle1.speed && ball.dx < 0) {
 
-			if (paddle1.aipos_cal > paddle1.y && ball.dx < 0) {
 				paddle1.moveDown();
 			}
+			
 
-
-			// let ran = Math.random();
-			// if (ball.y < paddle1.y  && ball.dx < 0 && ran < 0.8) {
-			// 	paddle1.moveUp();
-			// }
-
-			// 	if (ball.y >©paddle1.y  && ball.dx < 0 && ran < 0.8) {
-			// 	paddle1.moveDown();
-			// }
 		}
 
 
