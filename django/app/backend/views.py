@@ -1,13 +1,16 @@
 import os
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, FileResponse
+from django.templatetags.static import static
+from django.urls import reverse
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q
 #Q est spécifique à Django et fait partie de son ORM (Object-Relational Mapping).
 #combine plusieurs conditions avec des opérateurs logiques OR (|) ou AND (&).
+
 
 import jwt
 from .jwt_util import jwt_response, check_jwt
@@ -18,6 +21,7 @@ from rest_framework.response import Response
 from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
 
 from .util import get_user_info
+
 
 
 def index(request):
@@ -251,7 +255,7 @@ class FriendListView(APIView):
             friend_list = [{
                 'username': friend.username,
                 'status': friend.status,
-                'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else None
+                'avatar': friend.avatar.url if friend.avatar else request.build_absolute_uri('/media/default_avatar.png')
             } for friend in friends]
             
             return Response({
@@ -299,6 +303,10 @@ class BlockedListView(APIView):
 
 
 ###-------------------------------------------------------------------------------------###
+# class DefaultAvatarView(APIView):
+#     def get(self, request):
+#         image_path = os.path.join(settings.BASE_DIR, 'files', 'default_avatar.png')
+#         return FileResponse(open(image_path, 'rb'), content_type='image/png')
 
 class UpdateProfilePictureView(APIView):
 
@@ -323,7 +331,7 @@ class UpdateProfilePictureView(APIView):
         return Response({
             'status': 'success',
             'message': 'Avatar updated successfully',
-            'avatar_url': user.avatar.url if user.avatar else None
+            'avatar_url': user.avatar.url if user.avatar else static('rest_framework/img/default_avatar.png')
         }, status=status.HTTP_200_OK)
 
 class ChatGetMessagesView(APIView):
@@ -389,7 +397,7 @@ class getUserProfileView(APIView):
                 'prenom': user.first_name,
                 'username': user.username,
                 'status': user.status,
-                #'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png'),
+                'avatar': user.avatar.url if user.avatar else static('rest_framework/img/default_avatar.png'),
                 'parties_jouees': parties_jouees,
                 'parties_gagnees': parties_gagnees
             }
@@ -436,4 +444,15 @@ class GameHistoryListView(APIView):
             'status': 'success',
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
+    
+
+def serve_default_avatar(request):
+    avatar_path = os.path.join(settings.BASE_DIR, 'files', 'default_avatar.png')
+    if os.path.exists(avatar_path):
+        return FileResponse(open(avatar_path, 'rb'), content_type='image/png')
+    else:
+        return HttpResponse(f"File not found at {avatar_path}", status=404)
+
+
+
     

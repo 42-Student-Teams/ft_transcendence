@@ -17,6 +17,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -135,10 +138,23 @@ USE_I18N = True
 USE_TZ = True
 
 
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = 'staticfiles'
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'staticfiles'),
+# ]
+
+# Configuration pour les médias
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Chemin vers le dossier contenant l'avatar par défaut
+DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -165,6 +181,3 @@ TOKEN_EXPIRATION_MINUTES:int = os.getenv("TOKEN_EXPIRATION_MINUTES", 15)
 
 
 AUTH_USER_MODEL = 'backend.jwtuser'
-
-MEDIA_ROOT = '/staticfiles'
-MEDIA_URL = '/staticfiles/'

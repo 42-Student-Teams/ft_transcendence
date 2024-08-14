@@ -1,6 +1,3 @@
-import ProfilePicture1 from "../../assets/image/pp-6.jpg";
-import ProfilePicture2 from "../../assets/image/pp-7.png";
-import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import Component from "../../library/component.js";
 import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
 import { showToast } from "../../utils/toastUtils.js";
@@ -113,6 +110,7 @@ export default class SideFriendList extends Component {
         const data = await response.json();
         if (data.status === 'success') {
           this.friends = data.friends || [];
+          console.log("Friends data:", this.friends)
           await this.renderFriendList();
         } else {
           console.error("Failed to fetch friend list:", data.message);
@@ -127,45 +125,55 @@ export default class SideFriendList extends Component {
 
   renderFriendList() {
     const friendDisplayElement = document.getElementById("friend-list-display");
-    friendDisplayElement.innerHTML = ""; // Clear any existing content
-    //console.log("Friends:", this.friends);
-
+    friendDisplayElement.innerHTML = "";
+  
     if (this.friends.length > 0) {
-      this.friends.forEach((friend, index) => {
-        const profilePicture = [
-          ProfilePicture1,
-          ProfilePicture2,
-          ProfilePicture3,
-        ][index % 3]; // Cycle through profile pictures
-      const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
-      const friendHtml = /*html*/ `
-  <div class="friend container py-3" data-username="${friend.username}">
-    <div class="row align-items-center">
-      <div class="col-8 user-info">
-        <div class="d-flex align-items-center">
-          <div class="friend-image position-relative me-3">
-            <img class="friend-img rounded-circle view-profile" src=${profilePicture} width="50" height="50" data-username="${friend.username}" style="cursor: pointer;" />
-            <span class="friend-status-indicator ${statusClass}"></span>
+      this.friends.forEach((friend) => {
+        console.log("Rendering friend:", friend);
+       
+        const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
+        
+        // const defaultAvatarPath = '/static/default.png';
+
+        console.log("Avatar path:", friend.avatar);
+        // console.log("Default avatar path:", defaultAvatarPath);
+        const friendHtml = /*html*/ `
+          <div class="friend container py-3" data-username="${friend.username}">
+            <div class="row align-items-center">
+              <div class="col-8 user-info">
+                <div class="d-flex align-items-center">
+                  <div class="friend-image position-relative me-3">
+                  <img 
+                                class="friend-img rounded-circle view-profile" 
+                                src="${friend.avatar}" 
+                                width="50" 
+                                height="50" 
+                                data-username="${friend.username}" 
+                                style="cursor: pointer;" 
+                                onerror="console.error('Failed to load avatar for ${friend.username}', this.src); this.onerror=null; this.src='/media/default_avatar.png';"
+                                onload="console.log('Avatar loaded successfully for ${friend.username}', this.src);"
+                            />
+                    <span class="friend-status-indicator ${statusClass}"></span>
+                  </div>
+                  <div class="friend-info">
+                    <div>${friend.username}</div>
+                    <small class="friend-status">${friend.status}</small>
+                  </div>
+                </div>
+              </div>
+              <div class="col-4 d-flex justify-content-end gap-2">
+                <button class="btn btn-icon btn-direct-message" data-username="${friend.username}" title="Message">
+                  <i class="fas fa-comment"></i>
+                </button>
+                <button class="btn btn-icon btn-block" data-username="${friend.username}" title="Block">
+                  <i class="fas fa-user-slash"></i>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="friend-info">
-            <div>${friend.username}</div>
-            <small class="friend-status">${friend.status}</small>
-          </div>
-        </div>
-      </div>
-      <div class="col-4 d-flex justify-content-end gap-2">
-        <button class="btn btn-icon btn-direct-message" data-username="${friend.username}" title="Message">
-          <i class="fas fa-comment"></i>
-        </button>
-        <button class="btn btn-icon btn-block" data-username="${friend.username}" title="Block">
-          <i class="fas fa-user-slash"></i>
-        </button>
-      </div>
-    </div>
-  </div>
-`;
-      friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
-    });
+        `;
+        friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
+      });
 
     this.element.querySelectorAll(".btn-block").forEach((button) => {
       button.addEventListener("click", (event) =>
