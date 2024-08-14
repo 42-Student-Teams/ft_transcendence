@@ -389,7 +389,7 @@ class GameHistoryCreateView(APIView):
         username = check_jwt(request)
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
         serializer = GameHistoryCreateSerializer(data=request.data)
         if serializer.is_valid():
             game_history = serializer.save()
@@ -403,17 +403,20 @@ class GameHistoryCreateView(APIView):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
-
 class GameHistoryListView(APIView):
     def get(self, request):
         username = check_jwt(request)
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
         user = JwtUser.objects.get(username=username)
-        parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
+        parties = GameHistory.objects.filter(
+            Q(joueur1=user) | 
+            (Q(joueur2=user) & Q(is_ai_opponent=False)) |
+            (Q(joueur1=user) & Q(is_ai_opponent=True))
+        ).order_by('-date_partie')
+        
         serializer = GameHistorySerializer(parties, many=True)
-
         return Response({
             'status': 'success',
             'historique': serializer.data
