@@ -10,9 +10,9 @@ export default class MatchHistory extends Component {
 
     async render() {
         const view = /*html*/ `
-            <div class="card p-3">
-                <div class="card-body">
-                    <h5 class="card-title text-center">Match History</h5>
+            <div class="card p-2 m-0">
+                <div class="card-body p-2 m-0">
+                    <h5 class="card-title text-center mt-3 mb-4">Match History</h5>
                     <div id="match-list-display" class="mt-3"></div>
                 </div>
             </div>
@@ -68,27 +68,27 @@ export default class MatchHistory extends Component {
     }
 
     createMatch(match, isLastMatch) {
-    const result = match.gagnant_username === match.joueur1_username ? "Victory" : "Defeat";
-    const resultClass = result === "Victory" ? "badge-success" : "badge-danger";
-    const score = `${match.score_joueur1} - ${match.score_joueur2}`;
-    const date = new Date(match.date_partie).toLocaleString(); // Format the date
+        const result = match.gagnant_username === match.joueur1_username ? "Victory" : "Defeat";
+        const resultClass = result === "Victory" ? "text-success" : "text-danger";
+        const score = `${match.score_joueur1} - ${match.score_joueur2}`;
+        const date = new Date(match.date_partie).toLocaleString(); // Format the date
 
-    return `
-    <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
-        <div class="d-flex flex-column align-items-center">
-            <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-1">
-            <small class="text-muted text-truncate" style="max-width: 100px;">${match.joueur1_username}</small>
+        return `
+        <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-2">
+                <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
+            </div>
+            <div class="text-center">
+                <span class="${resultClass} d-block mb-1">${result}</span>
+                <p class="mb-1">${score}</p>
+                <small class="text-muted">${date}</small>
+            </div>
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-2">
+                <small class="text-muted text-truncate text-center" ">${match.joueur2_username}</small>
+            </div>
         </div>
-        <div class="text-center">
-            <span class="badge ${resultClass}">${result}</span>
-            <p class="mb-0">${score}</p>
-            <small class="text-muted">${date}</small>
-        </div>
-        <div class="d-flex flex-column align-items-center">
-            <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-1">
-            <small class="text-muted text-truncate" style="max-width: 100px;">${match.joueur2_username}</small>
-        </div>
-    </div>
-    `;
-}
+        `;
+    }
 }

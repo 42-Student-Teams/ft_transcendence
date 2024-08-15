@@ -20,7 +20,7 @@ export default class ProfileInfo extends Component {
                     </div>
                     <div class="w-100 border-top mt-2 pt-3">
                         <div class="text-center">
-                            <h6 class="mb-0">Wins: 10</h6>
+                            <h6 class="text-muted mb-0">Wins: 10</h6>
                             <h6 class="text-muted mb-0">Losses: 0</h6>
                         </div>
                     </div>
