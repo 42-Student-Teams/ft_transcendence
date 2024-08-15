@@ -18,7 +18,7 @@ from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, ImageModelSerializer
 
 from .util import get_user_info
 
@@ -100,6 +100,7 @@ class UserUpdateView(APIView):
     def post(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
         avatar = request.FILES.get('avatar')
+        print(avatar)
         if avatar is not None:
             user.avatar = avatar
             user.save()
@@ -255,8 +256,12 @@ class FriendListView(APIView):
             friend_list = [{
                 'username': friend.username,
                 'status': friend.status,
-                'avatar': friend.avatar.url if friend.avatar else request.build_absolute_uri('/media/default_avatar.png')
+                'avatar': friend.avatar.url
+                # 'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png')
             } for friend in friends]
+            for friend in friend_list:
+                print("\n Ici la haut " + friend['avatar'])
+            
             
             return Response({
                 'status': 'success',
@@ -445,14 +450,25 @@ class GameHistoryListView(APIView):
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
     
+# class ImageView(APIView):
+#     def get(self, request, *args, **kwargs):
+#         images = JwtUser.objects.get()
+#         serializer = ImageModelSerializer(images,context = {'request': request},many= True)
+#         return Response(serializer.data,status = status.HTTP_200_OK)
 
-def serve_default_avatar(request):
-    avatar_path = os.path.join(settings.BASE_DIR, 'files', 'default_avatar.png')
-    if os.path.exists(avatar_path):
-        return FileResponse(open(avatar_path, 'rb'), content_type='image/png')
+class ImageView(APIView):
+    def get(self, request, *args, **kwargs):
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+            serializer = ImageModelSerializer(user, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except JwtUser.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+def test_avatar(request):
+    file_path = os.path.join(settings.MEDIA_ROOT, 'default_avatar.png')
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'))
     else:
-        return HttpResponse(f"File not found at {avatar_path}", status=404)
-
-
-
+        return HttpResponse("File not found", status=404)
     

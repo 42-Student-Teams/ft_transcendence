@@ -1,8 +1,14 @@
 .env
 
+
+
+
 .idea
 .idea/
 django/app/app/__pycache__/
+
+django/app/staticfiles
+django/staticfiles
 
 
 */__pycache__/

@@ -12,12 +12,23 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from django.conf import settings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
+# DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
+
+# avatar_dir = os.path.join(settings.MEDIA_ROOT, 'avatars')
+# print(f"Le chemin du dossier avatars est : {avatar_dir}")
+
+# print(f"Le dossier existe : {os.path.exists(avatar_dir)}")
+
+# if os.path.exists(avatar_dir):
+#     print("Fichiers dans le dossier avatars :")
+#     for file in os.listdir(avatar_dir):
+#         print(file)
 
 
 # Quick-start development settings - unsuitable for production
@@ -143,18 +154,21 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = 'staticfiles'
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'staticfiles'),
+    # os.path.join(BASE_DIR, 'staticfiles'),
 # ]
 
 # Configuration pour les médias
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = ''
+MEDIA_ROOT = os.path.join(BASE_DIR, '')
+
+
+
 
 # Chemin vers le dossier contenant l'avatar par défaut
-DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
+# DEFAULT_AVATAR_PATH = os.path.join(BASE_DIR, 'files', 'default_avatar.png')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

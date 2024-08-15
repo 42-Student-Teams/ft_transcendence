@@ -1,9 +1,13 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+
 
 from .models import User, JwtUser, Message, GameHistory
 from .util import get_user_info
 
+
+#-----------------------------------------User's--------------------------------------#
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -44,6 +48,7 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ('id', 'author_username', 'recipient_username', 'content', 'timestamp')
 
+#-----------------------------------------Game History--------------------------------------#
 
 class GameHistorySerializer(serializers.ModelSerializer):
     joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
@@ -67,3 +72,29 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
         joueur1 = JwtUser.objects.get(username=validated_data.pop('joueur1_username'))
         joueur2 = JwtUser.objects.get(username=validated_data.pop('joueur2_username'))
         return GameHistory.objects.create(joueur1=joueur1, joueur2=joueur2, **validated_data)
+    
+
+#-----------------------------------------img--------------------------------------#
+# class ImageModelSerializer(serializers.ModelSerializer): 
+#     class Meta:
+#         model = JwtUser
+#         fields = ['avatar']
+
+#         def get_avatar_url(self,obj):
+#             request = self.context.get('request')
+#             avatar_url = obj.fingerprint.url
+#             return request.build_absolute_uri(avatar_url)
+
+class ImageModelSerializer(serializers.ModelSerializer):
+    # avatar_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = JwtUser
+        fields = ['avatar']
+
+    #def get_avatar_url(self, obj):
+
+        # request = self.context.get('request')
+        # if obj.avatar and hasattr(obj.avatar, 'url'):
+        #     return request.build_absolute_uri(obj.avatar.url)
+        # return None

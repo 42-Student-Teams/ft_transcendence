@@ -144,15 +144,14 @@ export default class SideFriendList extends Component {
                 <div class="d-flex align-items-center">
                   <div class="friend-image position-relative me-3">
                   <img 
-                                class="friend-img rounded-circle view-profile" 
-                                src="${friend.avatar}" 
-                                width="50" 
-                                height="50" 
-                                data-username="${friend.username}" 
-                                style="cursor: pointer;" 
-                                onerror="console.error('Failed to load avatar for ${friend.username}', this.src); this.onerror=null; this.src='/media/default_avatar.png';"
-                                onload="console.log('Avatar loaded successfully for ${friend.username}', this.src);"
-                            />
+                      class="friend-img rounded-circle view-profile" 
+                      src="${friend.avatar}" 
+                      width="50" 
+                      height="50" 
+                      data-username="${friend.username}" 
+                      style="cursor: pointer;" 
+                      onerror="this.onerror=null; this.src='app/media/default_avatar.png';"
+                    />
                     <span class="friend-status-indicator ${statusClass}"></span>
                   </div>
                   <div class="friend-info">
