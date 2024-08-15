@@ -43,4 +43,8 @@ server {
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
     }
+
+    location /static/ {
+        alias /var/www/django/staticfiles/;
+    }
 }

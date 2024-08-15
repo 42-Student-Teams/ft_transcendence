@@ -92,9 +92,8 @@ class ImageModelSerializer(serializers.ModelSerializer):
         model = JwtUser
         fields = ['avatar']
 
-    #def get_avatar_url(self, obj):
-
-        # request = self.context.get('request')
-        # if obj.avatar and hasattr(obj.avatar, 'url'):
-        #     return request.build_absolute_uri(obj.avatar.url)
-        # return None
+    def get_avatar_url(self, obj):
+        request = self.context.get('request')
+        if obj.avatar and hasattr(obj.avatar, 'url'):
+            return request.build_absolute_uri(obj.avatar.url)
+        return None

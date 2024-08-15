@@ -25,7 +25,7 @@ urlpatterns=[
     path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGames'),
     path('history_postGames', views.GameHistoryCreateView.as_view(), name='history_postGames'),
     path('avatars', views.ImageView.as_view(), name='png'),
-    path('test', views.test_avatar, name='default_avatar'),
+    # path('test', views.test_avatar, name='default_avatar'),
     #path('default-avatar/', views.DefaultAvatarView.as_view(), name='default_avatar'),
     #path('friend_status', views.FriendStatusView.as_view(), name='friend_status'),
 ]

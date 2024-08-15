@@ -465,10 +465,10 @@ class ImageView(APIView):
         except JwtUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-def test_avatar(request):
-    file_path = os.path.join(settings.MEDIA_ROOT, 'default_avatar.png')
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, 'rb'))
-    else:
-        return HttpResponse("File not found", status=404)
+# def test_avatar(request):
+#     file_path = os.path.join(settings.MEDIA_ROOT, 'default_avatar.png')
+#     if os.path.exists(file_path):
+#         return FileResponse(open(file_path, 'rb'))
+#     else:
+#         return HttpResponse("File not found", status=404)
     
