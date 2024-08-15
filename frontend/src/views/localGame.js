@@ -116,8 +116,8 @@ export default class LocalGame extends Component {
 				direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
 				this.aipos_cal = 0
-				this.size = config.paddleHeight;
-				this.speed = config.paddleSpeed;
+				this.size = config.paddleHeight
+				this.speed = config.paddleSpeed
 			}
 
 			render = () => {
@@ -159,6 +159,24 @@ export default class LocalGame extends Component {
 			}
 		}
 
+		class BiggerPad {
+			constructor() {
+				this.time_ap = 0
+				this.time_disp = 0
+				this.happened = false
+				this.effect = false
+				this.x = 50
+				this.y = 50
+				this.size = 200
+				this.effect_time = 5000
+				this.app_time = 7000
+				this.off_time = 14000
+	
+			}
+
+		}
+
+				
 
 
 		const canvas = document.getElementById("myCanvas")
@@ -173,6 +191,7 @@ export default class LocalGame extends Component {
 		let stopperTime = true;
 		const paddle1 = new Paddle(1)
 		const paddle2 = new Paddle(-1)
+		const bigpad = new BiggerPad()
 		let endTime = 0
 		let looktime = 0
 		// document.getElementById('left-player') = paddle1.name;
@@ -202,9 +221,8 @@ export default class LocalGame extends Component {
 
 		const resetBall = () => {
 			ball.x = canvas.width / 2,
-				ball.y = canvas.height / 2,
-				// let's delay before starting each round
-				ball.dx = 0
+			ball.y = canvas.height / 2,
+			ball.dx = 0
 			ball.dy = 0
 			if (paddle1.score === 3 || paddle2.score === 3) {
 				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
@@ -217,13 +235,6 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = Date.now() - startTime;
 				stopperTime = true;
-				// if (myModal) {
-				// 	myModal.style.display = "block";
-				// 	// $('#myModal').modal('show')
-				// 	console.log('myModal exists');
-				// } else {
-				// 	console.log('myModal not found');
-				// }
 
 			}
 			else {
@@ -278,8 +289,6 @@ export default class LocalGame extends Component {
 			ball.x += Math.sign(ball.dx) * 8
 			// added this after lecture to add a slice to the hit.
 			ball.dy = (ball.y - (paddle.y + (paddle.size / 2))) / config.ballSlice
-			console.log("-----", paddle1.y)
-			console.log("++++", paddle1.aipos_cal)
 
 		}
 
@@ -310,12 +319,30 @@ export default class LocalGame extends Component {
 			ctx.fill();
 		}
 
+		const render_pu = () => {
+			let r = Math.random();
+			if (r < 0.1 &&  bigpad.happened == false && stopperTime == false && Date.now() - bigpad.time_disp > bigpad.off_time ) {
+				bigpad.time_ap = Date.now();
+				bigpad.happened = true;	
+			}
+			if (bigpad.happened == true) {
+				ctx.fillStyle = "#FFFF00";
+				ctx.fillRect(bigpad.x, bigpad.y, bigpad.size, bigpad.size);
+				if (Date.now() - bigpad.time_ap > bigpad.app_time)
+					bigpad.happened = false;
+					bigpad.time_disp = Date.now();
+			}
+		}
+
 		const render = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			render_pu()
 			paddle1.render()
 			paddle2.render()
 			paintBall()
 		}
+
+		
 
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
@@ -337,7 +364,6 @@ export default class LocalGame extends Component {
 			try {
 				// Make the POST request with the login credentials
 				const apiurl = process.env.API_URL;
-
 
 				const data = {
 					date_partie: new Date(),
@@ -381,58 +407,49 @@ export default class LocalGame extends Component {
 
 
 		const MovePaddleAI = () => {
-			// let t = canvasWidth
-			// let mod = (t * ball.dx / ball.dy - ball.y) % 2
-			// if ( mod > 1 && mod < -1)
-			// 	  console.log("2");
-			// if ( mod < 1 && mod > -1)
-			// 	  console.log("1");
 
 			if (ball.dx < 0 && (Date.now() - looktime > 1000 || (ball.x - ball.r <= config.paddleWidth && paddle1.checkCollision(ball)))) {
 				
 				let b = ((ball.x - config.paddleWidth - ball.r) * Math.abs(ball.dy / ball.dx));
-
-				console.log("b", b);
-				console.log("ball.x,", ball.x);
-				console.log("ball.y,", ball.y);
-				console.log("ball.dy,", ball.dy);
-				console.log("ball.dx,", ball.dx);	
-				
 				looktime = Date.now();
-				
-				// let mod = ball.y + Math.sign(ball.dy) * (b % (2.00 * (config.canvasHeight -  2 * ball.r)));
 				let mod = ball.y + Math.sign(ball.dy) * b;
-				console.log("mod*", mod);
 				mod = mod % (2 * (config.canvasHeight - 2 * ball.r));
-				console.log("mod", mod);
 				while (mod > config.canvasHeight - ball.r || mod < ball.r) {
 					if (mod > config.canvasHeight - ball.r) {
 						mod = 2 * (config.canvasHeight - ball.r) - mod;
-						console.log("mod1", mod);
 					}
 					else {
 						mod = ball.r + Math.abs(mod - ball.r);
-						console.log("mod2", mod);
 					}
 				}
 				paddle1.aipos_cal = mod - paddle1.size / 2;
-				console.log("aipos_cal,", paddle1.aipos_cal);
-				console.log("paddle1.y,", paddle1.y);
-				console.log("------");
-				
 			}
 			
 			if (paddle1.aipos_cal - paddle1.y <= - paddle1.speed && ball.dx < 0) {
-
 				paddle1.moveUp();
 			}
 			
 			if (paddle1.aipos_cal - paddle1.y >= paddle1.speed && ball.dx < 0) {
-
 				paddle1.moveDown();
 			}
 			
 
+		}
+
+		const checkbig = () => {
+			if (bigpad.happened == true
+				&& ball.y <= bigpad.y + bigpad.size && ball.y >= bigpad.y 
+				&& ball	.x <= bigpad.x + bigpad.size && ball.x >= bigpad.x ) {
+				paddle1.size = paddle1.size + 20;
+				bigpad.time_disp = Date.now();
+				bigpad.happened = false;
+				bigpad.effect = true;
+			}
+			if (Date.now() - bigpad.time_disp > bigpad.effect_time && bigpad.effect == true) {	
+				paddle1.size = paddle1.size - 20;
+				bigpad.effect = false;
+			}
+			
 		}
 
 
@@ -445,6 +462,7 @@ export default class LocalGame extends Component {
 			if (obj.ai)
 				MovePaddleAI()
 			checkWin()
+			checkbig()
 			updateTimer()
 			window.requestAnimationFrame(animate)
 		}
