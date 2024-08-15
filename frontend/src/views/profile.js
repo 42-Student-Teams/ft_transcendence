@@ -91,7 +91,7 @@ export default class Profile extends Component {
 
             // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
-                setTimeout(() => showToast(), 100);
+                showToast("Incorrect input, please try again.", "danger");
                 return;
             }
 
