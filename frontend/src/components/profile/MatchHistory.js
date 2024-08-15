@@ -52,7 +52,7 @@ export default class MatchHistory extends Component {
         }
     }
 
-    renderMatchHistory() {
+    async renderMatchHistory() {
         const matchDisplayElement = document.getElementById("match-list-display");
         matchDisplayElement.innerHTML = ''; // Clear any existing content
 
