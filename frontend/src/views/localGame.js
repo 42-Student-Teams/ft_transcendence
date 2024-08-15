@@ -2,6 +2,7 @@ import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
 import state from "../store/state.js";
 import {wsSend} from "../utils/wsUtils.js";
+import * as bootstrap from 'bootstrap';
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -67,7 +68,7 @@ export default class LocalGame extends Component {
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 						<button type="button" class="btn btn-primary">Save changes</button>
-					</div>
+					</div>	
 					</div>
 				</div>
 			</div>
@@ -162,18 +163,37 @@ export default class LocalGame extends Component {
 		class BiggerPad {
 			constructor() {
 				this.time_ap = 0
-				this.time_disp = 0
+				this.time_disp = Date.now()
 				this.happened = false
 				this.effect = false
-				this.x = 50
-				this.y = 50
-				this.size = 200
+				this.x = Math.random() * (canvas.width - 200)
+				this.y = Math.random() * (canvas.height - 200)
+				this.size = 50
 				this.effect_time = 5000
-				this.app_time = 7000
+				this.app_time = 14000
 				this.off_time = 14000
+				this.color = "#FFFF00"
 	
+			}	
+			reset = () => {
+				this.time_disp = Date.now()
+				this.happened = false
+				this.x = Math.random() * (canvas.width - 200)
+				this.y = Math.random() * (canvas.height - 200)
 			}
-
+			render = () => {
+				let r = Math.random();
+				if (r < 0.1 &&  bigpad.happened == false && stopperTime == false && Date.now() - bigpad.time_disp > bigpad.off_time ) {
+					bigpad.time_ap = Date.now();
+					bigpad.happened = true;	
+				}
+				if (bigpad.happened == true) {
+					ctx.fillStyle = this.color;
+					ctx.fillRect(bigpad.x, bigpad.y, bigpad.size, bigpad.size);
+					if (Date.now() - bigpad.time_ap > bigpad.app_time)
+						bigpad.reset();
+				}
+			}
 		}
 
 				
@@ -319,24 +339,9 @@ export default class LocalGame extends Component {
 			ctx.fill();
 		}
 
-		const render_pu = () => {
-			let r = Math.random();
-			if (r < 0.1 &&  bigpad.happened == false && stopperTime == false && Date.now() - bigpad.time_disp > bigpad.off_time ) {
-				bigpad.time_ap = Date.now();
-				bigpad.happened = true;	
-			}
-			if (bigpad.happened == true) {
-				ctx.fillStyle = "#FFFF00";
-				ctx.fillRect(bigpad.x, bigpad.y, bigpad.size, bigpad.size);
-				if (Date.now() - bigpad.time_ap > bigpad.app_time)
-					bigpad.happened = false;
-					bigpad.time_disp = Date.now();
-			}
-		}
-
 		const render = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			render_pu()
+			bigpad.render()
 			paddle1.render()
 			paddle2.render()
 			paintBall()
@@ -441,9 +446,9 @@ export default class LocalGame extends Component {
 				&& ball.y <= bigpad.y + bigpad.size && ball.y >= bigpad.y 
 				&& ball	.x <= bigpad.x + bigpad.size && ball.x >= bigpad.x ) {
 				paddle1.size = paddle1.size + 20;
-				bigpad.time_disp = Date.now();
 				bigpad.happened = false;
 				bigpad.effect = true;
+				bigpad.reset();
 			}
 			if (Date.now() - bigpad.time_disp > bigpad.effect_time && bigpad.effect == true) {	
 				paddle1.size = paddle1.size - 20;
