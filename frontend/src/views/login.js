@@ -4,7 +4,6 @@ import BtnRegisterInLogin from '../components/login/btn-register-in-login.js';
 import FormLogin from '../components/login/form-login.js';
 import Component from "../library/component.js";
 import store from "../store/index.js";
-import { login } from "/src/utils/langPack.js";
 
 export default class Login extends Component {
     constructor() {
@@ -18,8 +17,6 @@ export default class Login extends Component {
     }
 
     async render() {
-        const langPack = login[this.currentLang];
-
         const view = /*html*/ `
         <div class="d-flex flex-column min-vh-100">
             <div class="container flex-grow-1 d-flex justify-content-center align-items-center">
@@ -48,17 +45,5 @@ export default class Login extends Component {
         `;
 
         this.element.innerHTML = view;
-    }
-
-    onStateChange() {
-        if (this.currentLang !== store.state.language) {
-            this.currentLang = store.state.language;
-            this.render();
-            // Mise à jour des composants enfants
-            this.components.navbar.render();
-            this.components.btnAuth0.render();
-            this.components.btnRegisterInLogin.render();
-            this.components.formLogin.render();
-        }
     }
 }

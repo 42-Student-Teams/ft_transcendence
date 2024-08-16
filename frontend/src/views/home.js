@@ -7,10 +7,13 @@ import Component from "../library/component.js";
 import store from "../store/index.js";
 import { navigateTo } from "../utils/router.js";
 import * as bootstrap from 'bootstrap';
+import { home } from "/src/utils/langPack.js";
 
 export default class Home extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
+		this.currentLang = store.state.language; // Ajout de la langue courante
+        store.events.subscribe("stateChange", () => this.onStateChange()); // Abonnement aux changements d'état
 		this.render();
 
 		this.components = {
@@ -24,9 +27,9 @@ export default class Home extends Component {
 	}
 
 	async render() {
-		// const languageId = store.state.languageId;
+        const langPack = home[this.currentLang]; // Utilisation du pack de langue pour la page d'accueil
 
-		const view = /*html*/ `
+        const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
             <div class="row chat-rm-margin ">
               <nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
@@ -35,81 +38,81 @@ export default class Home extends Component {
               <div class="chat-rm-margin row flex-grow-1 h-100">
                 <div id="" class="chat-flex col bg-white h-100 d-flex flex-column collapse collapse">
                   <div class="d-flex flex-column h-100 gap-4 p-4 overflow-auto ">
-					<div class="btn-group" role="group" aria-label="Basic button group">
-  						<button type="button" id="btn-toggle-friends" class="btn btn-primary active">Friends</button>
-						<button type="button" id="btn-toggle-pending" class="btn btn-primary">Pending</button>
-						<button type="button" id="btn-toggle-blocked" class="btn btn-primary">Blocked</button>
-					</div>
+                    <div class="btn-group" role="group" aria-label="Basic button group">
+                        <button type="button" id="btn-toggle-friends" class="btn btn-primary active">${langPack.friends}</button>
+                        <button type="button" id="btn-toggle-pending" class="btn btn-primary">${langPack.pending}</button>
+                        <button type="button" id="btn-toggle-blocked" class="btn btn-primary">${langPack.blocked}</button>
+                    </div>
                     <div id="side-chat" class="d-none flex-column h-100 gap-3"></div>
                     <div id="side-friend-list" class="d-flex flex-column h-100 gap-3"></div>
-					<div id="side-blocked-list" class="d-none flex-column h-100 gap-3"></div>
-					<div id="side-pending-list" class="d-none flex-column h-100 gap-3"></div>
+                    <div id="side-blocked-list" class="d-none flex-column h-100 gap-3"></div>
+                    <div id="side-pending-list" class="d-none flex-column h-100 gap-3"></div>
                   </div>
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
-					<div class="d-flex gap-4">
-						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online
-						</button>
-					  	<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
-					  		<i class="fa-solid fa-dice"></i> Create Tournament
-						</button>
-						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
-					  		<i class="fa-solid fa-users"></i> Join Tournament
-						</button>
-					</div>
+                    <div class="d-flex gap-4">
+                        <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> ${langPack.online}
+                        </button>
+                        <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
+                            <i class="fa-solid fa-dice"></i> ${langPack.createTournament}
+                        </button>
+                        <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
+                            <i class="fa-solid fa-users"></i> ${langPack.joinTournament}
+                        </button>
+                    </div>
                 </div>
               </div>
             </div>
           </div>
 
-		<!-- Modal Local Game -->
-		<div class="modal" id="local-game-modal" tabindex="-1">
-		  <div class="modal-dialog modal-dialog-centered">
-		    <div class="modal-content">
-			<form class="">
-		    	<div class="modal-header">
-		        	<h5 class="modal-title" id="modalVerticallyCenteredLabel">Settings of the Game</h5>
-		        	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-		      	</div>
-		    	<div class="modal-body">
-					<div class="p-3">
-						<div class="form-check form-switch">
-							<label class="form-check-label" for="formSwitchCheckLocal">Fast Ball Speed</label>
-							<input class="form-check-input" type="checkbox" id="formSwitchCheckLocal" aria-describedby="speedBallCheckLocal">
-						</div>
-						<div id="speedBallCheckLocal" class="form-text ">By default the speed of the ball is set to normal</div>
-					</div>
-					<div class="p-3">
-						<div class="form-check form-switch">
-							<label class="form-check-label" for="formAiCheckLocal">AI</label>
-							<input class="form-check-input" type="checkbox" id="formAiCheckLocal" aria-describedby="AiCheckLocal">
-						</div>
-						<div id="AiCheckLocal" class="form-text ">By default is not AI</div>
-					</div>
-					<div class="p-3">
-						<div class="form-check form-check-inline">
-						  <input class="form-check-input" type="radio" name="radioColorOptions" aria-describedby="inlineRadioLocalColors" id="radio-color-black" value="black" checked>
-						  <label class="form-check-label" for="radio-local-color-black">Black</label>
-						</div>
-						<div class="form-check form-check-inline">
-						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-blue" value="blue">
-						  <label class="form-check-label" for="radio-color-blue">Blue</label>
-						</div>
-						<div class="form-check form-check-inline">
-						  <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-red" value="red">
-						  <label class="form-check-label" for="radio-color-blue">Red</label>
-						</div>
-						<div id="inlineRadioLocalColors" class="form-text ">By default color of the ball is set to Black</div>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-						<button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">Play</button>
-					</div>
-				</form>
-		    </div>
-		  </div>
-		</div>
+        <!-- Modal Local Game -->
+        <div class="modal" id="local-game-modal" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <form class="">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalVerticallyCenteredLabel">${langPack.settingsGameTitle}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="p-3">
+                        <div class="form-check form-switch">
+                            <label class="form-check-label" for="formSwitchCheckLocal">${langPack.fastBallSpeed}</label>
+                            <input class="form-check-input" type="checkbox" id="formSwitchCheckLocal" aria-describedby="speedBallCheckLocal">
+                        </div>
+                        <div id="speedBallCheckLocal" class="form-text ">${langPack.fastBallSpeedDescription}</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="form-check form-switch">
+                            <label class="form-check-label" for="formAiCheckLocal">${langPack.aiOpponent}</label>
+                            <input class="form-check-input" type="checkbox" id="formAiCheckLocal" aria-describedby="AiCheckLocal">
+                        </div>
+                        <div id="AiCheckLocal" class="form-text ">${langPack.aiOpponentDescription}</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="radioColorOptions" aria-describedby="inlineRadioLocalColors" id="radio-color-black" value="black" checked>
+                          <label class="form-check-label" for="radio-local-color-black">${langPack.black}</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-blue" value="blue">
+                          <label class="form-check-label" for="radio-color-blue">${langPack.blue}</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="radio" name="radioColorOptions" id="radio-local-color-red" value="red">
+                          <label class="form-check-label" for="radio-color-blue">${langPack.red}</label>
+                        </div>
+                        <div id="inlineRadioLocalColors" class="form-text ">${langPack.ballColorDescription}</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${langPack.cancel}</button>
+                    <button id="btn-play-local" type="button" data-bs-dismiss="modal" class="btn btn-success">${langPack.play}</button>
+                </div>
+            </form>
+            </div>
+          </div>
+        </div>
 		<!-- Modal Tournament Game -->	
 		<div class="modal" id="tournament-game-modal" tabindex="-1">
 		  <div class="modal-dialog modal-dialog-centered">
@@ -453,4 +456,11 @@ export default class Home extends Component {
 			document.body.removeChild(toastContainer);
 		}, 5000);
 	}
+
+	onStateChange() {
+        if (this.currentLang !== store.state.language) {
+            this.currentLang = store.state.language;
+            this.render();
+        }
+    }
 }
