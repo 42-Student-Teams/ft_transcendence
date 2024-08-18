@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
-from django.conf import settings
 from django.conf.urls.static import static
+from django.conf import settings
 
 #UpdateProfilePictureView
 
@@ -28,5 +28,6 @@ urlpatterns=[
     # path('test', views.test_avatar, name='default_avatar'),
     #path('default-avatar/', views.DefaultAvatarView.as_view(), name='default_avatar'),
     #path('friend_status', views.FriendStatusView.as_view(), name='friend_status'),
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
+#urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

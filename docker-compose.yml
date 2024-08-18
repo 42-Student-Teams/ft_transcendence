@@ -42,7 +42,6 @@ services:
       - ${APP_PORT}:8000
     volumes:
       - ./django/app:/app
-      - staticfiles:/staticfiles
     env_file:
       - .env
     networks:
@@ -64,6 +63,7 @@ services:
       - 80:80
       - 443:443
     volumes:
+      - ./django/app/staticfiles:/var/www/backend/staticfiles/
       - nginx-data:/etc/nginx
       - ./nginx/logs:/var/log/nginx
     env_file:

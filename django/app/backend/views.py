@@ -450,12 +450,6 @@ class GameHistoryListView(APIView):
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
     
-# class ImageView(APIView):
-#     def get(self, request, *args, **kwargs):
-#         images = JwtUser.objects.get()
-#         serializer = ImageModelSerializer(images,context = {'request': request},many= True)
-#         return Response(serializer.data,status = status.HTTP_200_OK)
-
 class ImageView(APIView):
     def get(self, request, *args, **kwargs):
         try:
@@ -464,11 +458,3 @@ class ImageView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except JwtUser.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-# def test_avatar(request):
-#     file_path = os.path.join(settings.MEDIA_ROOT, 'default_avatar.png')
-#     if os.path.exists(file_path):
-#         return FileResponse(open(file_path, 'rb'))
-#     else:
-#         return HttpResponse("File not found", status=404)
-    
