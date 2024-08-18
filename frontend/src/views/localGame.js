@@ -9,7 +9,15 @@ function updateFromSocket(msg_obj) {
 		return;
 	}
 	if ('waiting_between_points' in msg_obj) {
-		//alert('lel');
+		let cnv = document.getElementById('myCanvas');
+		if (!cnv) {
+			return;
+		}
+		if (msg_obj['waiting_between_points']) {
+			cnv.style.backgroundColor = '#9c9c9e';
+		} else {
+			cnv.style.backgroundColor = '#EBEBED';
+		}
 
 	} else if ('author_points' in msg_obj) {
 		console.log(`Author points: ${msg_obj['author_points']}`);
@@ -21,6 +29,7 @@ function updateFromSocket(msg_obj) {
 		console.log(`Countdown: ${msg_obj['countdown']}`);
 		document.getElementById('Timer').innerText = msg_obj['countdown'];
 		if (msg_obj['countdown'] === 0) {
+			window.gameState.started = true;
 			document.getElementById('Timer').innerText = '';
 		}
 	} else {
@@ -136,7 +145,6 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
-
 		wsSend('client_update', { 'update': 'lol' }, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
 
@@ -151,6 +159,7 @@ export default class LocalGame extends Component {
 			opponent_username: obj_.opponent_username,
 			author_username: obj_.author_username,
 			lastTimestamp: 0,
+			started: false,
 		};
 
 		if (window.gameState.author_username === window.gameState.currentUsername) {
@@ -197,6 +206,7 @@ export default class LocalGame extends Component {
 
 
 		const canvas = document.getElementById("myCanvas")
+		canvas.style.backgroundColor = '#9c9c9e';
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
 
@@ -269,10 +279,18 @@ export default class LocalGame extends Component {
 
 
 		const handleKeyDown = (e) => {
+			e.preventDefault();
+			if (!window.gameState.started) {
+				return;
+			}
 			controller[e.keyCode] && (controller[e.keyCode].pressed = true)
 		}
 
 		const handleKeyUp = (e) => {
+			e.preventDefault();
+			if (!window.gameState.started) {
+				return;
+			}
 			controller[e.keyCode] && (controller[e.keyCode].pressed = false)
 		}
 

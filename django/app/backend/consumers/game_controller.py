@@ -32,7 +32,7 @@ class Paddle():
     def move_down(self):
         self.y += self.config.paddleSpeed
         if self.y + self.config.paddleHeight > self.config.canvasHeight:
-            self.y = self.config.paddleHeight - self.config.paddleHeight
+            self.y = self.config.canvasHeight - self.config.paddleHeight
 
     # Only for bot
     def move_up(self):
@@ -187,13 +187,13 @@ class GameController():
             self.ball.move()
             if self.ball.check_win_paddle(self.author_paddle, self.config):
                 self.author_score += 1
-                await self.send_game_update({"author_points": self.author_score})
+                await self.send_game_update({"opponent_points": self.author_score})
                 print('author scored!')
                 self.reset_ball(True)
                 continue
             elif self.ball.check_win_paddle(self.opponent_paddle, self.config):
                 self.opponent_score += 1
-                await self.send_game_update({"opponent_points": self.opponent_score})
+                await self.send_game_update({"author_points": self.opponent_score})
                 print('opponent scored!')
                 self.reset_ball(True)
                 continue
