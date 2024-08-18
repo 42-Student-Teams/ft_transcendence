@@ -70,15 +70,18 @@ class Ball():
             self.dy *= -1
 
     def reverse_direction(self, paddle: Paddle, config: Config):
-        self.dy *= -1
+        self.dx *= -1
         self.x += sign(self.dx) * 8
         self.dy = (self.y - (paddle.y + (config.paddleHeight / 2))) / config.ballSlice
 
     def check_paddle_collisions(self, config: Config, paddle1: Paddle, paddle2: Paddle):
         if self.x - self.r <= config.paddleWidth:
             if paddle1.check_collision(self):
+                print('COLLISION 1!!!!', flush=True)
                 self.reverse_direction(paddle1, config)
+        if self.x + self.r >= config.canvasWidth:
             if paddle2.check_collision(self):
+                print(f'COLLISION 2! paddle2.x {paddle2.x}, y: {paddle2.y}, ball.x: {self.x}, y: {self.y}', flush=True)
                 self.reverse_direction(paddle2, config)
 
     def check_win_paddle(self, paddle: Paddle, config: Config):
@@ -89,9 +92,9 @@ class Ball():
 
 
 def move_paddle_ai(ball: Ball, paddle: Paddle):
-    if ball.y < paddle.y and ball.dx < 0:
+    if ball.y < paddle.y and ball.dx > 0:
         paddle.move_up()
-    if ball.y > paddle.y and ball.dx < 0:
+    if ball.y > paddle.y and ball.dx > 0:
         paddle.move_down()
 
 class GameController():
@@ -110,6 +113,7 @@ class GameController():
 
         self.config = Config()
 
+        # The author of a match is always on the left, his opponent on the right
         self.author_paddle = Paddle(0, self.config)
         self.opponent_paddle = Paddle(1, self.config)
         self.ball = Ball()
@@ -121,9 +125,13 @@ class GameController():
         #self.game_thread = threading.Thread(target=self.game_loop)
         self.reset_ball()
         #self.game_thread.start()
+
+        # This seems to be blocking
+        #await asyncio.create_task(self.game_loop())
         asyncio.create_task(self.game_loop())
 
     async def stop(self):
+        print("Stop!", flush=True)
         self.running = False
         if self.game_thread:
             self.game_thread.join()
@@ -134,19 +142,19 @@ class GameController():
             if self.restart_timeout:
                 print('Restart timeout!', flush=True)
                 self.restart_timeout = False
-                asyncio.sleep(1)
+                await asyncio.sleep(1)
                 self.start_ball()
-                self.send_game_update({
+                await self.send_game_update({
                     "waiting_between_points": False
                 })
                 continue
-            if self.countdown_elapsed < 3:
-                self.send_game_update({
+            if self.countdown_elapsed <= 3:
+                await self.send_game_update({
                     'countdown': 3 - self.countdown_elapsed
                 })
-                asyncio.sleep(1)
+                await asyncio.sleep(1)
                 self.countdown_elapsed += 1
-                if self.countdown_elapsed >= 3:
+                if self.countdown_elapsed > 3:
                     self.start_ball()
                 continue
 
@@ -155,7 +163,7 @@ class GameController():
             while self.event_queue:
                 async with self.queue_lock:
                     event = self.event_queue.pop(0)
-                    #TODO: check for bounds
+                    # TODO: check for bounds
                     if 'pad' in event and event['pad'] is not None:
                         timestamp = event['timestamp']
                         if event['username'] == self.acknowledgement.request_author.username:
@@ -179,13 +187,13 @@ class GameController():
             self.ball.move()
             if self.ball.check_win_paddle(self.author_paddle, self.config):
                 self.author_score += 1
-                self.send_game_update({"author_points": self.author_score})
+                await self.send_game_update({"author_points": self.author_score})
                 print('author scored!')
                 self.reset_ball(True)
                 continue
             elif self.ball.check_win_paddle(self.opponent_paddle, self.config):
                 self.opponent_score += 1
-                self.send_game_update({"opponent_points": self.opponent_score})
+                await self.send_game_update({"opponent_points": self.opponent_score})
                 print('opponent scored!')
                 self.reset_ball(True)
                 continue

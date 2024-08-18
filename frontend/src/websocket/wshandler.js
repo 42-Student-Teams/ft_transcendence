@@ -1,6 +1,5 @@
 import {chatInsertMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
-import state from "../store/state.js";
 import store from "../store/index.js";
 import {updateFromSocket} from "../views/localGame.js";
 
@@ -58,7 +57,8 @@ function handleGameMessage(msg) {
                                 'ball_color': msg_obj['ball_color'],
                                 'fast': msg_obj['fast'],
                                 'opponent_username': msg_obj['opponent'],
-                                'is_bot': msg_obj['is_bot']
+                                'author_username': msg_obj['author'],
+                                'is_bot': msg_obj['is_bot'],
                                 };
             // This might actually not be needed, since we pass gameData directly to startGame
             store.dispatch("setCurrentGameData", gameData);

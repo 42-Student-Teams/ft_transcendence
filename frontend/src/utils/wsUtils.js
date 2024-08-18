@@ -14,6 +14,7 @@ function openCommWebsocket() {
 }
 
 export function openGameWebsocket(match_key) {
+    console.log(`Opening game socket for key ${match_key}`);
     let socket = new WebSocket(`wss://${window.location.host }/wss/game/`);
     socket.onmessage = handleGameMessage;
     socket.addEventListener("open", (ev) => {

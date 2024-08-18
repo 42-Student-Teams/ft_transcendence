@@ -36,6 +36,7 @@ class GameConsumer(WsConsumerCommon):
         AcknowledgedMatchRequest.objects.filter(match_key=key).delete()
 
     async def on_auth(self, msg_obj):
+        print('Received auth message', flush=True)
         if msg_obj.get('match_key') is None:
             await self.close()
             return
@@ -67,12 +68,17 @@ class GameConsumer(WsConsumerCommon):
             await self.game_controller.start()
 
         # maybe we should wait for the opponent...
+        print('Sending start json', flush=True)
         await self.send_json({
             'type': 'start',
             'ball_color': self.ball_color,
             'is_bot': self.is_bot,
+            'author': self.user.username,
             'opponent': self.opponent.username if self.opponent else f'{random_bot_name()} (BOT)',
             'fast': self.fast})
+
+    async def on_disconnect(self):
+        await self.game_controller.stop()
 
     @register_ws_func
     async def ping(self, msg_obj):

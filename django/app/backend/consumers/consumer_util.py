@@ -31,10 +31,12 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
             if hasattr(self.__class__.__dict__[name], "is_registered"):
                 self.__class__.funcs[name] = self.__class__.__dict__[name]
 
-
     async def connect(self):
         print('someone connected', flush=True)
         await self.accept()
+
+    async def on_disconnect(self):
+        pass
 
     async def disconnect(self, close_code):
         print('someone disconnected', flush=True)
@@ -42,6 +44,8 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(
                 group, self.channel_name
             )
+        await self.on_disconnect()
+        await self.close()
 
     async def subscribe_to_group(self, group):
         await self.channel_layer.group_add(

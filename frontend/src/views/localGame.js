@@ -9,13 +9,20 @@ function updateFromSocket(msg_obj) {
 		return;
 	}
 	if ('waiting_between_points' in msg_obj) {
+		//alert('lel');
 
 	} else if ('author_points' in msg_obj) {
 		console.log(`Author points: ${msg_obj['author_points']}`);
+		document.getElementById('score-left').innerText = msg_obj['author_points'];
 	} else if ('opponent_points' in msg_obj) {
 		console.log(`Opponent points: ${msg_obj['opponent_points']}`);
+		document.getElementById('score-right').innerText = msg_obj['opponent_points'];
 	} else if ('countdown' in msg_obj) {
 		console.log(`Countdown: ${msg_obj['countdown']}`);
+		document.getElementById('Timer').innerText = msg_obj['countdown'];
+		if (msg_obj['countdown'] === 0) {
+			document.getElementById('Timer').innerText = '';
+		}
 	} else {
 		if (!('timestamp' in msg_obj) || msg_obj['timestamp'] === null) {
 			msg_obj['timestamp'] = 0;
@@ -58,7 +65,7 @@ export default class LocalGame extends Component {
        			<h1  id=left_player class="display-5">...</h1>
         		<br/>
         		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">You</h1>
+        		<h1  id=right_player class="display-5">...</h1>
      		 </div>
       		<div class="d-flex justify-content-center align-items-center">
         		<div class="game-container d-flex justify-content-center align-items-center gap-5">
@@ -68,7 +75,7 @@ export default class LocalGame extends Component {
         			<div class="col text-center">
         	    		<div class="game-canva rounded">
         	    			<div class="canvanbutton">
-								<button class="btn btn-primary" id=start-game> New Game</button>
+								<button class="btn btn-primary" id=start-game>New Game</button>
 								<div id="Winner-text" class="position-absolute text-center h1"></div>
 								<div id="Timer" class="position-absolute text-center h1"></div>
 								<canvas id="myCanvas"></canvas>
@@ -111,7 +118,7 @@ export default class LocalGame extends Component {
 			<span role="status">Please wait...</span>
 		</button>
 		`;
-		this.handleEvent(view, this.element);
+		await this.handleEvent(view, this.element);
 	}
 
 	async handleEvent(view, element) {
@@ -137,15 +144,22 @@ export default class LocalGame extends Component {
 			color: obj_.ball_color,
 			speed: obj_.fast,
 			ai: obj_.is_bot,
-			opponent_username: obj_.opponent_username,
 			youPaddle: null,
 			opponentPaddle: null,
 			ball: null,
 			currentUsername: usernameFromToken(),
+			opponent_username: obj_.opponent_username,
+			author_username: obj_.author_username,
 			lastTimestamp: 0,
 		};
 
-		document.getElementById('left_player').innerText = obj_.opponent_username;
+		if (window.gameState.author_username === window.gameState.currentUsername) {
+			document.getElementById('left_player').innerText = 'You';
+			document.getElementById('right_player').innerText = obj_.opponent_username;
+		} else {
+			document.getElementById('left_player').innerText = obj_.opponent_username;
+			document.getElementById('right_player').innerText = 'You';
+		}
 
 		let myModal = document.getElementById('exampleModal');
 
@@ -296,6 +310,15 @@ export default class LocalGame extends Component {
 				window.gameState.opponentPaddle.moveDown();
 			}
 		}*/
+
+
+		function getAuthorScoreElem() {
+			if (window.gameState.currentUsername === window.gameState.opponent_username) {
+				return document.getElementById('');
+			} else {
+
+			}
+		}
 
 
 		const animate = () => {

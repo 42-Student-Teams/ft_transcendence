@@ -70,7 +70,7 @@ class WsConsumer(WsConsumerCommon):
         return match
 
     # 2) server gets game request and replies to it with either a match_request_id
-    #    or a
+    #    or an acknowledgement (game start), in the case of game against AI
     @register_ws_func
     async def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
