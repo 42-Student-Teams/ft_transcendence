@@ -381,8 +381,33 @@ class getUserProfileView(APIView):
         requesting_user = check_jwt(request)
         if not requesting_user:
             return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            user = JwtUser.objects.get(username=requesting_user)
+            parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+            parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+            
+            profile_data = {
+            	'nom': user.last_name,
+            	'prenom': user.first_name,
+            	'username': user.username,
+            	'avatar': user.avatar.url,
+            	'parties_jouees': parties_jouees,
+            	'parties_gagnees': parties_gagnees
+            }
+            
+            return Response(profile_data, status=status.HTTP_200_OK)
+		
+        except JwtUser.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+class getFriendProfileView(APIView):
+    def get(self, request):
+        requesting_user = check_jwt(request)
+        if not requesting_user:
+            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
         
-        friend_username = request.GET.get('username')
+        friend_username = request.data.get('username')
         if not friend_username:
             return Response({'status': 'error', 'message': 'Username parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -402,7 +427,7 @@ class getUserProfileView(APIView):
                 'prenom': user.first_name,
                 'username': user.username,
                 'status': user.status,
-                'avatar': user.avatar.url if user.avatar else static('rest_framework/img/default_avatar.png'),
+                'avatar': user.avatar.url,
                 'parties_jouees': parties_jouees,
                 'parties_gagnees': parties_gagnees
             }
@@ -449,12 +474,13 @@ class GameHistoryListView(APIView):
             'status': 'success',
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
-    
-class ImageView(APIView):
-    def get(self, request, *args, **kwargs):
-        try:
-            user = JwtUser.objects.get(username=check_jwt(request))
-            serializer = ImageModelSerializer(user, context={'request': request})
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+# Returns the avatar 
+#class ImageView(APIView):
+#    def get(self, request, *args, **kwargs):
+#        try:
+#            user = JwtUser.objects.get(username=check_jwt(request))
+#            serializer = ImageModelSerializer(user, context={'request': request})
+#            return Response(serializer.data, status=status.HTTP_200_OK)
+#        except JwtUser.DoesNotExist:
+#            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
