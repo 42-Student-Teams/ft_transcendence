@@ -3,22 +3,33 @@ import state from "../../store/state.js";
 import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
 import {get_messages} from "../../utils/apiutils.js";
 import {wsSend} from "../../utils/wsUtils.js";
+import { home } from "../../utils/langPack.js"; 
+import store from "../../store/index.js";
 
 export default class SideChat extends Component {
     constructor() {
         super({ element: document.getElementById("side-chat") });
+        this.currentLang = store.state.language;
         this.render();
+        
+        store.events.subscribe('stateChange', () => {
+            if (this.currentLang !== store.state.language) {
+                this.currentLang = store.state.language;
+                this.render();
+            }
+        });
     }
 
     async render() {
+        const langPack = home[this.currentLang];
 
         const view = /*html*/ `
             <div id="messages-container" class="gap-3 row chat-messages overflow-auto flex-grow-1">
-              <!-- Messages go here -->
+                <!-- Messages go here -->
             </div>
             <div id="chat-input-messages" class="gap-4 d-flex flex-grow-0">
-              <input type="text" id="message-input" class="form-control" placeholder="Message" />
-              <button onclick="sendMessage()" id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
+                <input type="text" id="message-input" class="form-control" placeholder="${langPack.messagePlaceholder}" />
+                <button onclick="sendMessage()" id="send-message" class="btn btn-primary rounded-circle"><i id="icon-send" class=" fa-regular fa-paper-plane"></i></button>
             </div>
         `;
 

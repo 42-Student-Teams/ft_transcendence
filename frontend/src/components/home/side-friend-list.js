@@ -6,32 +6,38 @@ import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
 import { showToast } from "../../utils/toastUtils.js";
 import store from "../../store/index.js";
 
+import { home } from "../../utils/langPack.js";
+
 export default class SideFriendList extends Component {
   constructor() {
     super({ element: document.getElementById("side-friend-list") });
     this.friends = []; // Initialize friends as an empty array
+    this.currentLang = store.state.language;
     this.render();
-    
-    // S'abonner aux changements d'état
+
     store.events.subscribe('stateChange', () => {
       this.updateFriendStatuses(store.state.friends);
+      if (this.currentLang !== store.state.language) {
+        this.currentLang = store.state.language;
+        this.render();
+      }
+    });
 
     // Écouter les événements de mise à jour de statut d'ami
     document.addEventListener('friendStatusUpdate', (event) => {
       console.log('Received friendStatusUpdate event', event.detail);
       this.updateFriendStatus(event.detail.username, event.detail.status);
     });
-  });
-
   }
 
   async render() {
+    const langPack = home[this.currentLang];
     const view = /*html*/ `
       <div>
-        <h1>You can add friends with their username.</h1>
+        <h1>${langPack.addFriendsTitle}</h1>
       </div>
       <div class="d-flex flex-grow-0 gap-3 pb-4">
-        <input type="text" id="friend-username" class="form-control" placeholder="Username" />
+        <input type="text" id="friend-username" class="form-control" placeholder="${langPack.usernamePlaceholder}" />
         <button id="btn-add-friend" class="btn btn-success flex-fill">
           <i id="icon-send" class="ml-4 fa fa-user-plus"></i>
         </button>
@@ -42,21 +48,21 @@ export default class SideFriendList extends Component {
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="modalVerticallyCenteredLabel">Block</h5>
+              <h5 class="modal-title" id="modalVerticallyCenteredLabel">${langPack.blockModalTitle}</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-              Are you sure you want to block this <b>user</b> ?<br/>Blocking this user will also remove them from your friends list.
+              ${langPack.blockModalBody}
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
-              <button type="button" class="btn btn-danger" id="confirm-block-button">Block</button>
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${langPack.cancel}</button>
+              <button type="button" class="btn btn-danger" id="confirm-block-button">${langPack.block}</button>
             </div>
           </div>
         </div>
       </div>
     `;
-	  this.element = document.getElementById("side-friend-list");
+    this.element = document.getElementById("side-friend-list");
     this.element.innerHTML = view;
     await this.getFriendList();
     this.handleEvent();
@@ -119,52 +125,46 @@ export default class SideFriendList extends Component {
   }
 
   renderFriendList() {
+    const langPack = home[this.currentLang];
     const friendDisplayElement = document.getElementById("friend-list-display");
     friendDisplayElement.innerHTML = ""; // Clear any existing content
-    //console.log("Friends:", this.friends);
 
     if (this.friends.length > 0) {
       this.friends.forEach((friend, index) => {
-        const profilePicture = [
-          ProfilePicture1,
-          ProfilePicture2,
-          ProfilePicture3,
-        ][index % 3]; // Cycle through profile pictures
-      const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
-      const friendHtml = /*html*/ `
-        <div class="friend container py-3" data-username="${friend.username}">
-          <div class="row mr-4">
-            <div class="col-8 container user-info">
-              <div class="row">
-                <div class="col friend-image position-relative">
-                  <img class="friend-img" src=${profilePicture} />
-                  <span class="friend-status-indicator ${statusClass}"></span>
-                </div>
-                <div class="col friend-info">
-                  <span>${friend.username}</span>
-                  <span class="friend-status">${friend.status}</span>
+        const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3];
+        const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
+        const friendHtml = /*html*/ `
+          <div class="friend container py-3" data-username="${friend.username}">
+            <div class="row mr-4">
+              <div class="col-8 container user-info">
+                <div class="row">
+                  <div class="col friend-image position-relative">
+                    <img class="friend-img" src=${profilePicture} />
+                    <span class="friend-status-indicator ${statusClass}"></span>
+                  </div>
+                  <div class="col friend-info">
+                    <span>${friend.username}</span>
+                    <span class="friend-status">${langPack[friend.status.toLowerCase()]}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="col-4 d-flex gap-2 friend-action">
-              <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
-              <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
+              <div class="col-4 d-flex gap-2 friend-action">
+                <button id="message_button" class="btn-direct-message btn rounded" data-username="${friend.username}"><i class="fa-solid fa-comment"></i></button>
+                <button class="btn rounded btn-block" data-username="${friend.username}"><i class="fa-solid fa-user-large-slash"></i></button>
+              </div>
             </div>
           </div>
-        </div>
-      `;
-      friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
-    });
+        `;
+        friendDisplayElement.insertAdjacentHTML("beforeend", friendHtml);
+      });
 
-    this.element.querySelectorAll(".btn-block").forEach((button) => {
-      button.addEventListener("click", (event) =>
-        this.handleBlockFriend(event)
-      );
-    });
-  } else {
-    friendDisplayElement.innerHTML = "<p>No friends found.</p>";
+      this.element.querySelectorAll(".btn-block").forEach((button) => {
+        button.addEventListener("click", (event) => this.handleBlockFriend(event));
+      });
+    } else {
+      friendDisplayElement.innerHTML = `<p>${langPack.noFriendsFound}</p>`;
+    }
   }
-}
 
   updateFriendStatuses(friends) {
    friends.forEach(friend => {
@@ -209,6 +209,7 @@ export default class SideFriendList extends Component {
   }
 
   async handleBlockFriend(event) {
+    const langPack = home[this.currentLang];
     const button = event.currentTarget;
     const username = button.getAttribute('data-username');
     const friendContainer = button.closest('.friend');
@@ -226,15 +227,15 @@ export default class SideFriendList extends Component {
       });
 
       if (response.ok) {
-        showToast(`User ${username} blocked successfully.`, "success");
+        showToast(langPack.userBlockedSuccess.replace('{username}', username), "success");
         console.log(`Successfully blocked friend ${username}`);
         friendContainer.remove();
       } else {
-        showToast(`Failed to block user ${username}.`, "danger");
+        showToast(langPack.userBlockFailed.replace('{username}', username), "danger");
         console.error(`Failed to block friend ${username}`);
       }
     } catch (error) {
-      showToast(`Error blocking user ${username}.`, "danger");
+      showToast(langPack.userBlockError.replace('{username}', username), "danger");
       console.error(`Error blocking friend ${username}:`, error);
     }
   }
