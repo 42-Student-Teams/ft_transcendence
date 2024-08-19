@@ -23,6 +23,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         self.authed = False
         self.subscribed_groups = []
         self.user: JwtUser = None
+        self.user_username: str = None
 
         # For every method in a child class marked with the register_ws_func decorator
         # we append it to the funcs dict
@@ -70,6 +71,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
             print('RETURN', flush=True)
             return
         self.user = JwtUser.objects.get(username=payload['username'])
+        self.user_username = self.user.username
         if self.user is None:
             print('RETURN', flush=True)
             return

@@ -48,7 +48,8 @@ export default class Home extends Component {
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
 					<div class="d-flex gap-4">
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game</button>
 					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
 					</div>
                 </div>
@@ -319,5 +320,8 @@ export default class Home extends Component {
 			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 		});
 
+		this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
+			console.log('Join game button clicked');
+		});
 	}
 }
