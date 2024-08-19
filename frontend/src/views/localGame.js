@@ -53,22 +53,20 @@ export default class LocalGame extends Component {
 				</div> 
 			</div>
 		
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog" role="document">
+			<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
 					<div class="modal-content">
 					<div class="modal-header">
 						<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<p>Modal body text goes here.</p>
+						...
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 						<button type="button" class="btn btn-primary">Save changes</button>
-					</div>	
+					</div>
 					</div>
 				</div>
 			</div>
@@ -103,7 +101,7 @@ export default class LocalGame extends Component {
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 1,
+			ballXSpeed: obj.speed * 6 || 3,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
@@ -162,6 +160,7 @@ export default class LocalGame extends Component {
 
 		class BiggerPad {
 			constructor() {
+				let r = Math.random();
 				this.time_ap = 0
 				this.time_disp = Date.now()
 				this.happened = false
@@ -169,10 +168,10 @@ export default class LocalGame extends Component {
 				this.x = Math.random() * (canvas.width - 200)
 				this.y = Math.random() * (canvas.height - 200)
 				this.size = 50
-				this.effect_time = 5000
-				this.app_time = 14000
-				this.off_time = 14000
-				this.color = "#FFFF00"
+				this.effect_time = 8000
+				this.app_time = 20000//14000
+				this.off_time = 10000
+				this.choosecolor();
 	
 			}	
 			reset = () => {
@@ -191,7 +190,65 @@ export default class LocalGame extends Component {
 					ctx.fillStyle = this.color;
 					ctx.fillRect(bigpad.x, bigpad.y, bigpad.size, bigpad.size);
 					if (Date.now() - bigpad.time_ap > bigpad.app_time)
+					{
+						bigpad.happened = false;
 						bigpad.reset();
+					}
+
+				}
+			}
+			choosecolor = () => {
+				let r = Math.random();
+				if (r > 1/3 && r <= 2/3) {
+					this.color = "#ffc107";  //yellow
+				}
+				else if (r <= 1/3) {
+					this.color = "#198754";  //green
+				}
+				else {
+					this.color = "#0d6efd"; //blue
+				}
+			}
+			ft_effect = () => {
+				console.log("-----", this.color);
+				if (this.color == "#ffc107")
+				{
+					if (ball.dx > 0)
+						paddle1.size = paddle1.size + 30;
+					else
+						paddle2.size = paddle2.size + 30;
+					console.log("yellow");
+				}
+				else if (this.color == "#198754")
+				{
+					console.log("green");
+					ball.r = 2 * ball.r;
+				}
+				else 
+				{
+					console.log("blue");
+					ball.dx = 2 * ball.dx;
+				}
+			}
+			stop = () => {
+				if (this.color == "#ffc107") //yellow
+				{
+					if (paddle1.size > paddle2.size)
+						paddle1.size = paddle1.size - 30;
+					else
+						paddle2.size = paddle2.size - 30;
+					console.log("off_yellow");
+					
+				}
+				else if (this.color == "#198754")
+				{
+					console.log("off_green");
+					ball.r = ball.r / 2;
+				}
+				else 
+				{
+					console.log("off_blue");
+					ball.dx = ball.dx / 2;
 				}
 			}
 		}
@@ -216,10 +273,13 @@ export default class LocalGame extends Component {
 		let looktime = 0
 		// document.getElementById('left-player') = paddle1.name;
 		// document.getElementById('right-player') = paddle2.name;
+		const myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+			keyboard: true
+		});
 
 
 		const startBall = () => {
-			ball.dx = config.ballXSpeed * Math.sign(Math.random() - 1)
+			ball.dx = config.ballXSpeed * Math.sign(Math.random() - .5)
 			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
 		}
 
@@ -255,6 +315,7 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = Date.now() - startTime;
 				stopperTime = true;
+				myModal.show();
 
 			}
 			else {
@@ -443,15 +504,16 @@ export default class LocalGame extends Component {
 
 		const checkbig = () => {
 			if (bigpad.happened == true
-				&& ball.y <= bigpad.y + bigpad.size && ball.y >= bigpad.y 
-				&& ball	.x <= bigpad.x + bigpad.size && ball.x >= bigpad.x ) {
-				paddle1.size = paddle1.size + 20;
-				bigpad.happened = false;
-				bigpad.effect = true;
-				bigpad.reset();
+				&& ball.y + ball.r <= bigpad.y + bigpad.size && ball.y - ball.r >= bigpad.y 
+				&& ball.x  + ball.r <= bigpad.x + bigpad.size && ball.x - ball.r >= bigpad.x ) {
+					bigpad.ft_effect();
+					bigpad.happened = false;
+					bigpad.effect = true;
+					bigpad.reset();
 			}
 			if (Date.now() - bigpad.time_disp > bigpad.effect_time && bigpad.effect == true) {	
-				paddle1.size = paddle1.size - 20;
+				bigpad.stop();
+				bigpad.choosecolor();
 				bigpad.effect = false;
 			}
 			
