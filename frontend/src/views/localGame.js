@@ -3,6 +3,7 @@ import Component from "../library/component.js";
 import state from "../store/state.js";
 import {wsSend} from "../utils/wsUtils.js";
 import * as bootstrap from 'bootstrap';
+import { navigateTo } from "../utils/router.js";
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -54,18 +55,18 @@ export default class LocalGame extends Component {
 			</div>
 		
 			<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog">
+				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+						<h5 class="modal-title" id="exampleModalLabel_winner"></h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						...
+						<div class="mt-4 p-5 bg-primary text-white rounded"><i class="fa-solid fa-dice"></i> 100% wide until small breakpoint</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal">New Game</button>
+						<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
 					</div>
 					</div>
 				</div>
@@ -77,6 +78,13 @@ export default class LocalGame extends Component {
 		/* of course it gives errors because we don't remder the navbar */
 		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
 		this.handleEvent(view);
+
+
+		// document.getElementById('back-to-home').addEventListener('click', () => {
+		// this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
+		// 	event.preventDefault();
+        //     navigateTo("/");
+		// });
 	}
 
 	async handleEvent(view) {
@@ -304,8 +312,9 @@ export default class LocalGame extends Component {
 			ball.y = canvas.height / 2,
 			ball.dx = 0
 			ball.dy = 0
-			if (paddle1.score === 3 || paddle2.score === 3) {
+			if (paddle1.score === 1 || paddle2.score === 1) {
 				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
+				paddle1.score > paddle2.score ? document.getElementById('exampleModalLabel_winner').innerText = `${paddle1.name} wins!` : document.getElementById('exampleModalLabel_winner').innerText = `${paddle2.name} wins!`;
 				
 				// uncomment sendData when the backend is ready
 				//sendData();
@@ -425,6 +434,11 @@ export default class LocalGame extends Component {
 
 		});
 
+		this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
+			event.preventDefault();
+            navigateTo("/");
+		});
+
 		// ready for post request @inaranjo modify route
         const sendData = async () => {
 			try {
@@ -504,8 +518,8 @@ export default class LocalGame extends Component {
 
 		const checkbig = () => {
 			if (bigpad.happened == true
-				&& ball.y + ball.r <= bigpad.y + bigpad.size && ball.y - ball.r >= bigpad.y 
-				&& ball.x  + ball.r <= bigpad.x + bigpad.size && ball.x - ball.r >= bigpad.x ) {
+				&& ball.y - ball.r <= bigpad.y + bigpad.size && ball.y + ball.r >= bigpad.y 
+				&& ball.x  - ball.r <= bigpad.x + bigpad.size && ball.x + ball.r >= bigpad.x ) {
 					bigpad.ft_effect();
 					bigpad.happened = false;
 					bigpad.effect = true;
