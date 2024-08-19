@@ -12,9 +12,6 @@ export default class LocalGame extends Component {
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
 		this.render();
-		this.components = {
-			navBar: new NavBar(),
-		};
 	}
 
 	async render() {
@@ -23,9 +20,6 @@ export default class LocalGame extends Component {
 
 
     	<div class="h-100 d-flex flex-column">
-      		<div class="row chat-rm-margin">
-        		<nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
-      		</div>
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
        			<h1  id=left_player class="display-5">Player 1</h1>

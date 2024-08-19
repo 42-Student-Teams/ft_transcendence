@@ -4,7 +4,9 @@ import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
+import store from "../store/index.js";
 import { navigateTo } from "../utils/router.js";
+import * as bootstrap from 'bootstrap';
 
 export default class Home extends Component {
 	constructor() {
@@ -46,8 +48,14 @@ export default class Home extends Component {
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
 					<div class="d-flex gap-4">
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
+						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online
+						</button>
+					  	<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
+					  		<i class="fa-solid fa-dice"></i> Create Tournament
+						</button>
+						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
+					  		<i class="fa-solid fa-users"></i> Join Tournament
+						</button>
 					</div>
                 </div>
               </div>
@@ -160,6 +168,32 @@ export default class Home extends Component {
 		    </div>
 		  </div>
 		</div>
+
+
+		<!-- Modal Join Tournament -->	
+		<div class="modal" id="tournament-join-game-modal" tabindex="-1">
+		  <div class="modal-dialog modal-dialog-centered">
+		    <div class="modal-content">
+			<form>
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="modalVerticallyCenteredLabel">Settings of the Game</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+					<div class="p-3">
+				    	<label for="input-join-nickname" class="form-label">Nickname</label>
+				    	<input type="text" class="form-control" id="input-join-nickname" aria-describedby="nickName" required>
+				    	<div id="nickNameJoin" class="form-text">Please enter a Nickname for the tournament</div>
+					</div>
+			  </div>
+		      <div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+		    	<button id="btn-join-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">Next</button>
+		      </div>
+			<form>
+		    </div>
+		  </div>
+		</div>
         `;
 		this.element.innerHTML = view;
 		this.handleEvent();
@@ -261,6 +295,28 @@ export default class Home extends Component {
                 if (response.status !== 200) throw new Error("Backend error");
 
                 navigateTo("/tournament-game");
+            } catch (error) {
+                this.showToast("Incorrect input or server error. Please try again.", "danger");
+            }
+        });
+
+		this.element.querySelector("#btn-join-tournament").addEventListener("click", async (event) => {
+			event.preventDefault();
+			const nickname = document.getElementById('input-join-nickname').value;
+
+			// From here added code for the tournament toast
+			if (!nickname) {
+                this.showToast("Invalid input: Nickname can't be empty", "danger");
+                return;
+            }
+			
+			try {
+                // Simulate backend interaction
+                //const response = await this.postTournamentData(game);
+                //if (response.status !== 200) throw new Error("Backend error");
+				store.dispatch("setJoinTournamentNickName", nickname);
+				console.log(store.state.joinNickname);
+                navigateTo("/join-tournament");
             } catch (error) {
                 this.showToast("Incorrect input or server error. Please try again.", "danger");
             }
