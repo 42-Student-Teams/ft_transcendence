@@ -80,7 +80,7 @@ async function checkAuthStatus() {
 // todo somewhere here: openCommWebsocket
 
 function handleDefaultRoute() {
-    if (tokenExpired()) {
+	if (tokenExpired()) {
         navigateTo("/login");
     } else {
         store.dispatch("logIn");

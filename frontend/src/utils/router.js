@@ -1,3 +1,4 @@
+import state from "../store/state.js";
 import store from "../store/index.js";
 import Home from "../views/home.js";
 import Local from "../views/localGame.js";
@@ -47,6 +48,13 @@ const router = async () => {
 	}
 
 	store.dispatch("updateLocation", { location: match.route.path });
+
+	if (!match.route.path.includes('local-game')) {
+		if (state.gameSocket && state.gameSocket.readyState === state.gameSocket.OPEN) {
+			console.log('Closing game socket');
+			state.gameSocket.close();
+		}
+	}
 
 	if (!viewCache[match.route.view]) {
 		console.log("new view created");

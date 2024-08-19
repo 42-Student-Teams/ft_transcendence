@@ -279,18 +279,16 @@ export default class LocalGame extends Component {
 
 
 		const handleKeyDown = (e) => {
-			e.preventDefault();
-			if (!window.gameState.started) {
-				return;
+			if (e.keyCode in controller) {
+				e.preventDefault();
+				if (!window.gameState.started) {
+					return;
+				}
+				controller[e.keyCode].pressed = true;
 			}
-			controller[e.keyCode] && (controller[e.keyCode].pressed = true)
 		}
 
 		const handleKeyUp = (e) => {
-			e.preventDefault();
-			if (!window.gameState.started) {
-				return;
-			}
 			controller[e.keyCode] && (controller[e.keyCode].pressed = false)
 		}
 
