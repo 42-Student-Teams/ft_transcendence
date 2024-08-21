@@ -427,4 +427,6 @@ canvas {
   /* Optionnel : ajustement de la taille des icônes si nécessaire */
   .btn-icon i {
 	font-size: 1.2rem; /* Ajustez selon vos préférences */
+  } .game-history-container{
+	width:200px;
   }

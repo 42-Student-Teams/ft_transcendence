@@ -1,5 +1,6 @@
 import * as bootstrap from 'bootstrap';
 import NavBar from '../components/home/navbar.js';
+import { showToast } from "../utils/toastUtils.js";
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
 
@@ -25,11 +26,9 @@ export default class Profile extends Component {
             </div>
             <div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
                 <div class="col-md-4 d-flex flex-column overflow-auto p-0">
-                    <!-- Ajouter des marges égales autour de ProfileInfo -->
                     <div id="profileInfo" class="m-4"></div>
                 </div>
                 <div class="col-md-8 d-flex flex-column overflow-auto p-0">
-                    <!-- Ajouter des marges en haut, à droite et en bas pour MatchHistory -->
                     <div id="matchHistory" class="flex-grow-1 d-flex flex-column mt-4 me-4 mb-4"></div>
                 </div>
             </div>
@@ -92,8 +91,7 @@ export default class Profile extends Component {
 
             // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
-                // Use a timeout to ensure the modal is closed before showing the toast
-                setTimeout(() => this.showToast(), 100);
+                showToast("Incorrect input, please try again.", "danger");
                 return;
             }
 
@@ -104,14 +102,7 @@ export default class Profile extends Component {
                 lastName,
             };
 
-            // Here you can handle the form submission, like sending the data to the server
             console.log(profileData);
         });
-    }
-
-    showToast() {
-        const toastElement = document.getElementById('errorToast');
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
     }
 }

@@ -10,9 +10,6 @@ export default class LocalGame extends Component {
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
 		this.render();
-		this.components = {
-			navBar: new NavBar(),
-		};
 	}
 
 	async render() {
@@ -21,15 +18,12 @@ export default class LocalGame extends Component {
 
 
     	<div class="h-100 d-flex flex-column">
-      		<div class="row chat-rm-margin">
-        		<nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
-      		</div>
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
-       			<h1  id=left_player class="display-5">Inaranjo</h1>
+       			<h1  id=left_player class="display-5">Player 1</h1>
         		<br/>
         		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">Jackito</h1>
+        		<h1  id=right_player class="display-5">Player 2</h1>
      		 </div>
       		<div class="d-flex justify-content-center align-items-center">
         		<div class="game-container d-flex justify-content-center align-items-center gap-5">
@@ -105,8 +99,9 @@ export default class LocalGame extends Component {
 				this.direction = direction
 				this.y = config.canvasHeight / 2 - config.paddleHeight / 2
 				direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
-				direction === 1 ? this.name = "Jackito" : this.name = "Inaranjo"
+				direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
+				this.aipos_cal = 0
 			}
 
 			render = () => {
@@ -115,7 +110,7 @@ export default class LocalGame extends Component {
 			}
 
 			checkCollision = (ball) => {
-				console.log("checking")
+				// console.log("checking")
 				return !!((this.y <= (ball.y + ball.r)) && (this.y + config.paddleHeight >= (ball.y - ball.r)))
 			}
 
@@ -159,19 +154,22 @@ export default class LocalGame extends Component {
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 3,
-			ballYSpeed: 3,
+			ballXSpeed: obj.speed * 6 || 1,
+			ballYSpeed: 1,
 			ballSlice: 4
 		}
 
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
 
-		let startTime = Date.now() + 3 * 60 * 1000;
+		let startTime = Date.now();
 		let stopperTime = true;
 		const paddle1 = new Paddle(1)
 		const paddle2 = new Paddle(-1)
-		let endTime = startTime - Date.now()
+		let endTime = 0
+		let looktime = 0
+		// document.getElementById('left-player') = paddle1.name;
+		// document.getElementById('right-player') = paddle2.name;
 
 
 		const startBall = () => {
@@ -179,7 +177,7 @@ export default class LocalGame extends Component {
 			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
 		}
 
-		const controller = obj.ai ?{
+		const controller = obj.ai ? {
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
 		} : {
@@ -197,17 +195,20 @@ export default class LocalGame extends Component {
 
 		const resetBall = () => {
 			ball.x = canvas.width / 2,
-			ball.y = canvas.height / 2,
+				ball.y = canvas.height / 2,
 				// let's delay before starting each round
-			ball.dx = 0
+				ball.dx = 0
 			ball.dy = 0
 			if (paddle1.score === 3 || paddle2.score === 3) {
-				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!`: document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
+				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
+				
+				// uncomment sendData when the backend is ready
+				//sendData();
 				paddle1.score = 0;
 				paddle2.score = 0;
 				document.getElementById("start-game").style.display = "block";
 				canvas.style.backgroundColor = '#9c9c9e';
-				endTime = startTime - Date.now();
+				endTime = Date.now() - startTime;
 				stopperTime = true;
 				// if (myModal) {
 				// 	myModal.style.display = "block";
@@ -218,17 +219,17 @@ export default class LocalGame extends Component {
 				// }
 
 			}
-			else{
+			else {
 				canvas.style.backgroundColor = '#EBEBED';
-				setTimeout(() => 	{
+				setTimeout(() => {
 					startBall();
 				}, 1000);
 			}
 		}
 
 		const updateTimer = () => {
-			if (stopperTime == false) {
-				const sparetime = startTime - Date.now();
+			if (stopperTime == false) {
+				const sparetime = Date.now() - startTime;
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
@@ -238,7 +239,7 @@ export default class LocalGame extends Component {
 				const seconds = Math.floor((endTime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 			}
-        };
+		};
 
 
 		const handleKeyDown = (e) => {
@@ -321,19 +322,112 @@ export default class LocalGame extends Component {
 			document.getElementById('Winner-text').innerText = "";
 			resetBall();
 			stopperTime = false;
-			startTime = Date.now() + 3 * 60 * 1000 + 1000;
+			startTime = Date.now();
 
-        });
+		});
+
+		// ready for post request @inaranjo modify route
+        const sendData = async () => {
+			try {
+				// Make the POST request with the login credentials
+				const apiurl = process.env.API_URL;
+
+
+				const data = {
+					date_partie: new Date(),
+					joueur1_username: "jackito",
+					joueur2_username: "naranjito",
+					duree_partie: 0,
+					score_joueur1: paddle1.score,
+					score_joueur2: paddle2.score
+				};
+
+				const jwt = localStorage.getItem('jwt');
+				console.log(jwt);
+
+				const response = await fetch(`${apiurl}/history_postGames`, {
+					method: "POST",
+					headers: {
+						'Authorization': `Bearer ${jwt}`,
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(data)
+				});
+
+				const jsonData = await response.json();
+
+				
+				if (response.ok) {
+
+					console.log("Game result sent");
+				}
+				else {
+					console.log("hello");
+					console.error("Login failed:");		
+					throw new Error("Login failed: Invalid username or password.");
+				}
+			} catch (error) {
+				// Handle network or other errors here
+				console.error("An error occurred:", error);
+			}
+		};
+
+
 
 		const MovePaddleAI = () => {
-			console.log('AI');
-			if (ball.y < paddle1.y && ball.dx < 0) {
+			// let t = canvasWidth
+			// let mod = (t * ball.dx / ball.dy - ball.y) % 2
+			// if ( mod > 1 && mod < -1)
+			// 	  console.log("2");
+			// if ( mod < 1 && mod > -1)
+			// 	  console.log("1");
+
+			if (ball.dx < 0 && (Date.now() - looktime > 1000 || (ball.x - ball.r <= config.paddleWidth && paddle1.checkCollision(ball)))) {
+				let mod = (ball.x * Math.abs(ball.dy / ball.dx)) % (2.00 * config.canvasHeight);
+
+				console.log("mod,", mod);
+				looktime = Date.now();
+				if (mod > config.canvasHeight) {
+					paddle1.aipos_cal = ball.y - Math.sign(ball.dy) * (mod - config.canvasHeight) - config.paddleHeight / 2;
+					if (paddle1.aipos_cal < 0)
+						paddle1.aipos_cal = paddle1.aipos_cal * -1;
+					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
+						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
+				}
+				else {
+					console.log("ball.y", ball.y);
+					console.log("math signe", Math.sign(ball.dy));
+					console.log("mod,", mod);
+					console.log("config.paddleHeight,", config.paddleHeight);
+					paddle1.aipos_cal = ball.y + Math.sign(ball.dy) * mod - config.paddleHeight / 2;
+					console.log("cal++++,", paddle1.aipos_cal);
+					if (paddle1.aipos_cal < 0)
+						paddle1.aipos_cal = paddle1.aipos_cal * -1;
+					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
+						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
+					console.log("cal,", paddle1.aipos_cal);
+					console.log("------------");
+				}
+
+			}
+
+			if (paddle1.aipos_cal < paddle1.y && ball.dx < 0) {
 				paddle1.moveUp();
 			}
 
-				if (ball.y > paddle1.y && ball.dx < 0) {
+			if (paddle1.aipos_cal > paddle1.y && ball.dx < 0) {
 				paddle1.moveDown();
 			}
+
+
+			// let ran = Math.random();
+			// if (ball.y < paddle1.y  && ball.dx < 0 && ran < 0.8) {
+			// 	paddle1.moveUp();
+			// }
+
+			// 	if (ball.y >©paddle1.y  && ball.dx < 0 && ran < 0.8) {
+			// 	paddle1.moveDown();
+			// }
 		}
 
 
