@@ -17,6 +17,7 @@ export default class MatchHistory extends Component {
                 </div>
             </div>
         `;
+		this.element = document.getElementById('matchHistory');
         this.element.innerHTML = view;
 
         // Fetch and display the match history
@@ -86,7 +87,7 @@ export default class MatchHistory extends Component {
             </div>
             <div class="game-history-container d-flex flex-column align-items-center">
                 <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-2">
-                <small class="text-muted text-truncate text-center" ">${match.joueur2_username}</small>
+                <small class="text-muted text-truncate text-center">${match.joueur2_username}</small>
             </div>
         </div>
         `;

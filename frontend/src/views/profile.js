@@ -88,7 +88,7 @@ export default class Profile extends Component {
             const profilePicture = document.getElementById("edit-profile-picture").files[0];
             const firstName = document.getElementById("edit-first-name").value.trim();
             const lastName = document.getElementById("edit-last-name").value.trim();
-
+			
             // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
                 showToast("Incorrect input, please try again.", "danger");
@@ -97,12 +97,41 @@ export default class Profile extends Component {
 
             // Store values here
             const profileData = {
-                profilePicture,
-                firstName,
-                lastName,
+                "nom": lastName,
+                "prenom":firstName,
+                "avatar":profilePicture,
             };
+			console.log(profileData);
 
-            console.log(profileData);
+			const formData  = new FormData();
+			formData.append('nom', lastName);
+			formData.append('prenom', firstName);
+			formData.append('avatar', profilePicture);
+
+			// Send data to API
+			try {
+				const jwt = localStorage.getItem('jwt');
+				const apiurl = process.env.API_URL;
+				const response = await fetch(`${apiurl}/user_update`, {
+					method: 'PUT',
+					headers: {
+						'Authorization': `Bearer ${jwt}`,
+
+					},
+					body: formData,
+				});
+				console.log('Response:', response);
+
+				if (response.ok) {
+					showToast('User profile updated successfully', 'success');
+				}
+			}
+			catch (error) {
+				console.error('Error updating user profile:', error);
+				showToast('Error updating user profile', 'danger');
+			}
+
+            //console.log(profileData);
         });
     }
 }
