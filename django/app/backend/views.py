@@ -385,23 +385,38 @@ class getUserProfileView(APIView):
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
 
 class GameHistoryCreateView(APIView):
-    def post(self, request):
-        username = check_jwt(request)
-        if not username:
-            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        serializer = GameHistoryCreateSerializer(data=request.data)
+    def post(self, request, format=None):
+        serializer = GameHistorySerializer(data=request.data)
         if serializer.is_valid():
-            game_history = serializer.save()
-            return Response({
-                'status': 'success',
-                'message': 'Partie enregistrée avec succès',
-                'game': GameHistorySerializer(game_history).data
-            }, status=status.HTTP_201_CREATED)
-        return Response({
-            'status': 'error',
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            joueur1_username = serializer.validated_data['joueur1_username']
+            joueur2_username = serializer.validated_data.get('joueur2_username')
+            is_ai_opponent = serializer.validated_data.get('is_ai_opponent', False)
+            ai_opponent_name = serializer.validated_data.get('ai_opponent_name')
+
+            try:
+                joueur1 = JwtUser.objects.get(username=joueur1_username)
+            except JwtUser.DoesNotExist:
+                return Response({'error': 'Joueur 1 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            joueur2 = None
+            if not is_ai_opponent:
+                try:
+                    joueur2 = JwtUser.objects.get(username=joueur2_username)
+                except JwtUser.DoesNotExist:
+                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            game_history = GameHistory.enregistrer_partie(
+                joueur1=joueur1,
+                joueur2=joueur2,
+                duree_partie=serializer.validated_data['duree_partie'],
+                score_joueur1=serializer.validated_data['score_joueur1'],
+                score_joueur2=serializer.validated_data['score_joueur2'],
+                is_ai_opponent=is_ai_opponent,
+                ai_opponent_name=ai_opponent_name
+            )
+
+            return Response(GameHistorySerializer(game_history).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GameHistoryListView(APIView):
     def get(self, request):

@@ -46,24 +46,23 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class GameHistorySerializer(serializers.ModelSerializer):
-    joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
-    joueur2_username = serializers.SerializerMethodField()
-    gagnant_username = serializers.SerializerMethodField()
+    joueur1_username = serializers.CharField(write_only=True)
+    joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
+    is_ai_opponent = serializers.BooleanField(default=False)
+    ai_opponent_name = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = GameHistory
-        fields = ('id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie', 
-                  'score_joueur1', 'score_joueur2', 'gagnant_username', 'is_ai_opponent', 'ai_opponent_name')
+        fields = ['joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2', 
+                  'is_ai_opponent', 'ai_opponent_name', 'date_partie', 'gagnant']
+        read_only_fields = ['date_partie', 'gagnant']
 
-    def get_joueur2_username(self, obj):
-        if obj.is_ai_opponent:
-            return obj.ai_opponent_name
-        return obj.joueur2.username if obj.joueur2 else None
-
-    def get_gagnant_username(self, obj):
-        if obj.gagnant:
-            return obj.gagnant.username
-        return None
+    def validate(self, data):
+        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
+            raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
+        if not data.get('is_ai_opponent') and not data.get('joueur2_username'):
+            raise serializers.ValidationError("joueur2_username est requis lorsque is_ai_opponent est False")
+        return data
 
 
 class GameHistoryCreateSerializer(serializers.ModelSerializer):
