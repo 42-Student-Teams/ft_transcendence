@@ -3,6 +3,7 @@
 .idea
 .idea/
 django/app/app/__pycache__/
+django/app/staticfiles/
 
 
 */__pycache__/
