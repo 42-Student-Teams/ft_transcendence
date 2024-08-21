@@ -102,13 +102,13 @@ class UserUpdateView(APIView):
     
     def put(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
+        if not (request.method == 'PUT' and request.FILES.get('avatar')):
+    # Send an error response
+            return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
         avatar = request.FILES['avatar']
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
         # Vérifiez si le fichier est une image valide
-        if 'avatar' not in request.FILES or not request.FILES['avatar']:
-            return Response({'status': 'error', 'message': 'Missing avatar'}, status=status.HTTP_400_BAD_REQUEST)
-
         if not avatar.content_type.startswith('image'):
             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
         # Supprimez l'ancien avatar si il existe
@@ -132,23 +132,8 @@ class UserUpdateView(APIView):
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
-            'avatar_url': user.avatar.url if user.avatar else static('rest_framework/img/default_avatar.png')
+            'avatar_url': user.avatar.url if user.avatar else static('staticfiles/avatars/default_avatar.png')
         }, status=status.HTTP_200_OK)
-    #def post(self, request):
-    #    user = JwtUser.objects.get(username=check_jwt(request))
-    #    avatar = request.FILES.get('avatar')
-    #    if avatar is not None:
-    #        user.avatar = avatar
-    #        user.save()
-    #    first_name = request.data.get('first_name')
-    #    last_name = request.data.get('last_name')
-    #    if first_name is not None:
-    #        user.first_name = first_name
-    #        user.save()
-    #    if last_name is not None:
-    #        user.last_name = last_name
-    #        user.save()
-    #    return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 
 ##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###
@@ -356,7 +341,7 @@ class UpdateProfilePictureView(APIView):
     def put(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
 
-        avatar = request.FILES['avatar']
+        avatar = request.get.FILES['image']
 
         # Vérifiez si le fichier est une image valide
         if not avatar.content_type.startswith('image'):

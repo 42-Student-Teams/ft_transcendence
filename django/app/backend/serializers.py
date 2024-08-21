@@ -78,12 +78,12 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
 
 class ImageModelSerializer(serializers.ModelSerializer):
     avatar = serializers.SerializerMethodField()
+    first_name = serializers.CharField(source='first_name', read_only=True)
+    last_name = serializers.CharField(source='last_name', read_only=True)
 
     class Meta:
         model = JwtUser
-        fields = ['avatar']
+        fields = ['avatar', 'first_name', 'last_name']
 
-    def get_avatar(self, obj):
-        request = self.context.get('request') 
-        print(request.build_absolute_uri(obj.avatar.url))
-        return str(request.build_absolute_uri(obj.avatar.url))
+    def create(self, obj):
+        
