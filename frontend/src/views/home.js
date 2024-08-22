@@ -1,4 +1,5 @@
 import NavBar from '../components/home/navbar.js';
+import { showToast } from "../utils/toastUtils.js";
 import SideBlockedList from '../components/home/side-blocked-list.js';
 import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
@@ -281,7 +282,7 @@ export default class Home extends Component {
 
 			// From here added code for the tournament toast
 			if (!nickname || aiNicknames.has(nickname)) {
-                this.showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+                showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
                 return;
             }
 
@@ -299,7 +300,7 @@ export default class Home extends Component {
 
                 navigateTo("/tournament-game");
             } catch (error) {
-                this.showToast("Incorrect input or server error. Please try again.", "danger");
+                showToast("Incorrect input or server error. Please try again.", "danger");
             }
         });
 
@@ -309,7 +310,7 @@ export default class Home extends Component {
 
 			// From here added code for the tournament toast
 			if (!nickname) {
-                this.showToast("Invalid input: Nickname can't be empty", "danger");
+                showToast("Invalid input: Nickname can't be empty", "danger");
                 return;
             }
 			
@@ -321,7 +322,7 @@ export default class Home extends Component {
 				console.log(store.state.joinNickname);
                 navigateTo("/join-tournament");
             } catch (error) {
-                this.showToast("Incorrect input or server error. Please try again.", "danger");
+            	showToast("Incorrect input or server error. Please try again.", "danger");
             }
         });
 
@@ -330,15 +331,15 @@ export default class Home extends Component {
 		// 		// Make a real API call to post tournament data
 		// 		const response = await this.postTournamentData(game);
 		// 		if (response.ok) {
-		// 			this.showToast("Tournament created successfully!", "success");
+		// 			showToast("Tournament created successfully!", "success");
 		// 			navigateTo("/tournament-game");
 		// 		} else {
 		// 			const errorData = await response.json();
-		// 			this.showToast(errorData.message || "Error creating tournament.", "danger");
+		// 			showToast(errorData.message || "Error creating tournament.", "danger");
 		// 		}
 		// 	} catch (error) {
 		// 		console.error("Error:", error);
-		// 		this.showToast("Server error. Please try again.", "danger");
+		// 		showToast("Server error. Please try again.", "danger");
 		// 	}
 		// });
 
