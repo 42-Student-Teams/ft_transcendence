@@ -22,10 +22,10 @@ export default class LocalGame extends Component {
     	<div class="h-100 d-flex flex-column">
       		<h1 class="pt-5 text-center display-1">Local Game</h1>
      		<div class="d-flex flex-row justify-content-center">
-       			<h1  id=left_player class="display-5">Player 1</h1>
+       			<h1  id=left_player class="display-5">Player 190</h1>	
         		<br/>
         		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">Player 2</h1>
+        		<h1  id=right_player class="display-5">Player 290</h1>
      		 </div>
       		<div class="d-flex justify-content-center align-items-center">
         		<div class="game-container d-flex justify-content-center align-items-center gap-5">
@@ -36,7 +36,6 @@ export default class LocalGame extends Component {
         	    		<div class="game-canva rounded">
         	    			<div class="canvanbutton">
 								<button class="btn btn-primary" id=start-game> New Game</button>
-								<div id="Winner-text" class="position-absolute text-center h1"></div>
 								<div id="Timer" class="position-absolute text-center h1"></div>
 								<canvas id="myCanvas"></canvas>
         	    			</div>
@@ -48,19 +47,29 @@ export default class LocalGame extends Component {
 				</div> 
 			</div>
 		
-			<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal fade" id="exampleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel_winner"></h5>
+						<h5 class= "modal-title w-100 text-center" > Game over </h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<div class="mt-4 p-5 bg-primary text-white rounded"><i class="fa-solid fa-dice"></i> 100% wide until small breakpoint</div>
+						<div class="d-flex flex-row p-2 justify-content-center bg-light rounded w-50 border container-fluid">
+							<i class="fa-solid fa-trophy fa-xl fa-bounce p-1" style="color: #f7d459;"></i> 
+							<br/>
+							<div id= Modal-winner class="display-8 p-1 "></div>
+						</div>
+						<div class="d-flex flex-row p-2 mt-2 justify-content-center bg-light rounded w-50 border container-fluid">
+							<i class="fa-solid fa-stopwatch-20 fa-xl p-1"></i> 
+							<br/>
+							<div id=Time class="display-8 p-1 "></div>
+
+						</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-primary" data-bs-dismiss="modal">New Game</button>
-						<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
+					<button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
+						<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="Modal-New-Game" >New Game</button>
 					</div>
 					</div>
 				</div>
@@ -72,25 +81,27 @@ export default class LocalGame extends Component {
 		/* of course it gives errors because we don't remder the navbar */
 		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
 		this.handleEvent(view);
-
-
+		
+		
 		// document.getElementById('back-to-home').addEventListener('click', () => {
 		// this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
-		// 	event.preventDefault();
-        //     navigateTo("/");
-		// });
-	}
-
-	async handleEvent(view) {
-
-		const gameOptions = localStorage.getItem("local-game");
-
-		const obj = JSON.parse(gameOptions);
-
-		document.getElementById("start-game").addEventListener("click", async (event) => {
-			this.element.innerHTML = view;
-			this.startGame(obj);
-		});
+			// 	event.preventDefault();
+			//     navigateTo("/");
+			// });
+		}
+		
+		async handleEvent(view) {
+			
+			const gameOptions = localStorage.getItem("local-game");
+			
+			const obj = JSON.parse(gameOptions);
+			
+			document.getElementById("start-game").addEventListener("click", async (event) => {
+				this.element.innerHTML = view;	
+				document.getElementById('left_player').innerText = "Jackito";
+				document.getElementById('right_player').innerText = "Inaranjo";
+				this.startGame(obj);
+			});
 
 		wsSend('request_game', {'target_user': null, 'ball_color': obj.color, 'bot': obj.ai});
 	}
@@ -306,9 +317,8 @@ export default class LocalGame extends Component {
 			ball.y = canvas.height / 2,
 			ball.dx = 0
 			ball.dy = 0
-			if (paddle1.score === 1 || paddle2.score === 1) {
-				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
-				paddle1.score > paddle2.score ? document.getElementById('exampleModalLabel_winner').innerText = `${paddle1.name} wins!` : document.getElementById('exampleModalLabel_winner').innerText = `${paddle2.name} wins!`;
+			if (paddle1.score === 3 || paddle2.score === 3) {
+				paddle1.score > paddle2.score ? document.getElementById('Modal-winner').innerText = `${paddle1.name}` : document.getElementById('Modal-winner').innerText = `${paddle2.name}`;
 				
 				// uncomment sendData when the backend is ready
 				//sendData();
@@ -319,6 +329,7 @@ export default class LocalGame extends Component {
 				endTime = Date.now() - startTime;
 				stopperTime = true;
 				myModal.show();
+				document.getElementById("Timer").style.display = "none";
 
 			}
 			else {
@@ -335,11 +346,13 @@ export default class LocalGame extends Component {
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
 				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				document.getElementById('Time').innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 			}
 			else {
 				const minutes = Math.floor(endTime / 60000);
 				const seconds = Math.floor((endTime % 60000) / 1000);
-				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				if (timerElement)
+					timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 			}
 		};
 
@@ -421,7 +434,6 @@ export default class LocalGame extends Component {
 			canvas.style.backgroundColor = '#EBEBED';
 			document.getElementById('score-right').innerText = 0;
 			document.getElementById('score-left').innerText = 0;
-			document.getElementById('Winner-text').innerText = "";
 			resetBall();
 			stopperTime = false;
 			startTime = Date.now();
@@ -431,6 +443,12 @@ export default class LocalGame extends Component {
 		this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
 			event.preventDefault();
             navigateTo("/");
+		});
+
+		this.element.querySelector("#Modal-New-Game").addEventListener("click", (event) => {
+			event.preventDefault();
+            endTime = 0;
+			document.getElementById("Timer").style.display = "block";
 		});
 
 		// ready for post request @inaranjo modify route
