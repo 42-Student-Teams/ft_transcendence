@@ -2,6 +2,8 @@ import NavBar from '../components/home/navbar.js';
 import Component from "../library/component.js";
 import state from "../store/state.js";
 import {wsSend} from "../utils/wsUtils.js";
+import * as bootstrap from 'bootstrap';
+import { navigateTo } from "../utils/router.js";
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -46,21 +48,19 @@ export default class LocalGame extends Component {
 				</div> 
 			</div>
 		
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog" role="document">
+			<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
+						<h5 class="modal-title" id="exampleModalLabel_winner"></h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-						<p>Modal body text goes here.</p>
+						<div class="mt-4 p-5 bg-primary text-white rounded"><i class="fa-solid fa-dice"></i> 100% wide until small breakpoint</div>
 					</div>
 					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Save changes</button>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal">New Game</button>
+						<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
 					</div>
 					</div>
 				</div>
@@ -72,6 +72,13 @@ export default class LocalGame extends Component {
 		/* of course it gives errors because we don't remder the navbar */
 		this.element.innerHTML = /*html*/ `<button class="btn btn-primary" id="start-game">test</button>`;
 		this.handleEvent(view);
+
+
+		// document.getElementById('back-to-home').addEventListener('click', () => {
+		// this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
+		// 	event.preventDefault();
+        //     navigateTo("/");
+		// });
 	}
 
 	async handleEvent(view) {
@@ -89,10 +96,18 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj) {
-		let myModal = document.getElementById('exampleModal');
 
-		//console.log('gameOptions',gameOptions);
-		console.log('obj',obj);
+		const config = {
+			canvasWidth: 900,
+			canvasHeight: 500,
+			paddleWidth: 10,
+			paddleHeight: 80,
+			paddleSpeed: 8,
+			ballXSpeed: obj.speed * 6 || 3,
+			ballYSpeed: 3,
+			ballSlice: 4
+		}
+
 
 		class Paddle {
 			constructor(direction) {
@@ -102,25 +117,27 @@ export default class LocalGame extends Component {
 				direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
 				this.aipos_cal = 0
+				this.size = config.paddleHeight
+				this.speed = config.paddleSpeed
 			}
 
 			render = () => {
 				ctx.fillStyle = "#FF0000";
-				ctx.fillRect(this.x, this.y, config.paddleWidth, config.paddleHeight);
+				ctx.fillRect(this.x, this.y, config.paddleWidth, this.size);
 			}
 
 			checkCollision = (ball) => {
 				// console.log("checking")
-				return !!((this.y <= (ball.y + ball.r)) && (this.y + config.paddleHeight >= (ball.y - ball.r)))
+				return !!((this.y <= (ball.y + ball.r)) && (this.y + this.size >= (ball.y - ball.r)))
 			}
 
 			moveDown = () => {
-				this.y += config.paddleSpeed;
-				(this.y + config.paddleHeight > canvas.height) && (this.y = canvas.height - config.paddleHeight)
+				this.y += this.speed;
+				(this.y + this.size > canvas.height) && (this.y = canvas.height - this.size)
 			}
 
 			moveUp = () => {
-				this.y -= config.paddleSpeed
+				this.y -= this.speed
 				this.y < 0 && (this.y = 0)
 			}
 
@@ -143,21 +160,108 @@ export default class LocalGame extends Component {
 			}
 		}
 
+		class BiggerPad {
+			constructor() {
+				let r = Math.random();
+				this.time_ap = 0
+				this.time_disp = Date.now()
+				this.happened = false
+				this.effect = false
+				this.x = Math.random() * (canvas.width - 200)
+				this.y = Math.random() * (canvas.height - 200)
+				this.size = 50
+				this.effect_time = 8000
+				this.app_time = 20000//14000
+				this.off_time = 10000
+				this.choosecolor();
+	
+			}	
+			reset = () => {
+				this.time_disp = Date.now()
+				this.happened = false
+				this.x = Math.random() * (canvas.width - 200)
+				this.y = Math.random() * (canvas.height - 200)
+			}
+			render = () => {
+				let r = Math.random();
+				if (r < 0.1 &&  bigpad.happened == false && stopperTime == false && Date.now() - bigpad.time_disp > bigpad.off_time ) {
+					bigpad.time_ap = Date.now();
+					bigpad.happened = true;	
+				}
+				if (bigpad.happened == true) {
+					ctx.fillStyle = this.color;
+					ctx.fillRect(bigpad.x, bigpad.y, bigpad.size, bigpad.size);
+					if (Date.now() - bigpad.time_ap > bigpad.app_time)
+					{
+						bigpad.happened = false;
+						bigpad.reset();
+					}
+
+				}
+			}
+			choosecolor = () => {
+				let r = Math.random();
+				if (r > 1/3 && r <= 2/3) {
+					this.color = "#ffc107";  //yellow
+				}
+				else if (r <= 1/3) {
+					this.color = "#198754";  //green
+				}
+				else {
+					this.color = "#0d6efd"; //blue
+				}
+			}
+			ft_effect = () => {
+				console.log("-----", this.color);
+				if (this.color == "#ffc107")
+				{
+					if (ball.dx > 0)
+						paddle1.size = paddle1.size + 30;
+					else
+						paddle2.size = paddle2.size + 30;
+					console.log("yellow");
+				}
+				else if (this.color == "#198754")
+				{
+					console.log("green");
+					ball.r = 2 * ball.r;
+				}
+				else 
+				{
+					console.log("blue");
+					ball.dx = 2 * ball.dx;
+				}
+			}
+			stop = () => {
+				if (this.color == "#ffc107") //yellow
+				{
+					if (paddle1.size > paddle2.size)
+						paddle1.size = paddle1.size - 30;
+					else
+						paddle2.size = paddle2.size - 30;
+					console.log("off_yellow");
+					
+				}
+				else if (this.color == "#198754")
+				{
+					console.log("off_green");
+					ball.r = ball.r / 2;
+				}
+				else 
+				{
+					console.log("off_blue");
+					ball.dx = ball.dx / 2;
+				}
+			}
+		}
+
+				
+
 
 		const canvas = document.getElementById("myCanvas")
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
 
-		const config = {
-			canvasWidth: 900,
-			canvasHeight: 500,
-			paddleWidth: 10,
-			paddleHeight: 80,
-			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 1,
-			ballYSpeed: 1,
-			ballSlice: 4
-		}
 
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
@@ -166,10 +270,14 @@ export default class LocalGame extends Component {
 		let stopperTime = true;
 		const paddle1 = new Paddle(1)
 		const paddle2 = new Paddle(-1)
+		const bigpad = new BiggerPad()
 		let endTime = 0
 		let looktime = 0
 		// document.getElementById('left-player') = paddle1.name;
 		// document.getElementById('right-player') = paddle2.name;
+		const myModal = new bootstrap.Modal(document.getElementById('exampleModal'), {
+			keyboard: true
+		});
 
 
 		const startBall = () => {
@@ -195,12 +303,12 @@ export default class LocalGame extends Component {
 
 		const resetBall = () => {
 			ball.x = canvas.width / 2,
-				ball.y = canvas.height / 2,
-				// let's delay before starting each round
-				ball.dx = 0
+			ball.y = canvas.height / 2,
+			ball.dx = 0
 			ball.dy = 0
-			if (paddle1.score === 3 || paddle2.score === 3) {
+			if (paddle1.score === 1 || paddle2.score === 1) {
 				paddle1.score > paddle2.score ? document.getElementById('Winner-text').innerText = `${paddle1.name} wins!` : document.getElementById('Winner-text').innerText = `${paddle2.name} wins!`;
+				paddle1.score > paddle2.score ? document.getElementById('exampleModalLabel_winner').innerText = `${paddle1.name} wins!` : document.getElementById('exampleModalLabel_winner').innerText = `${paddle2.name} wins!`;
 				
 				// uncomment sendData when the backend is ready
 				//sendData();
@@ -210,13 +318,7 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				endTime = Date.now() - startTime;
 				stopperTime = true;
-				// if (myModal) {
-				// 	myModal.style.display = "block";
-				// 	// $('#myModal').modal('show')
-				// 	console.log('myModal exists');
-				// } else {
-				// 	console.log('myModal not found');
-				// }
+				myModal.show();
 
 			}
 			else {
@@ -270,7 +372,7 @@ export default class LocalGame extends Component {
 			// added this after lecture to make sure that if you clipped it while the ball was several pixels past the border, it wouldn't reverse direction twice.
 			ball.x += Math.sign(ball.dx) * 8
 			// added this after lecture to add a slice to the hit.
-			ball.dy = (ball.y - (paddle.y + (config.paddleHeight / 2))) / config.ballSlice
+			ball.dy = (ball.y - (paddle.y + (paddle.size / 2))) / config.ballSlice
 
 		}
 
@@ -299,17 +401,17 @@ export default class LocalGame extends Component {
 			ctx.arc(ball.x, ball.y, ball.r, 0, 2 * Math.PI, false);
 			ctx.fillStyle = ball.color;
 			ctx.fill();
-			// ctx.lineWidth = 5;
-			// ctx.strokeStyle = '#003300';
-			// ctx.stroke();
 		}
 
 		const render = () => {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			bigpad.render()
 			paddle1.render()
 			paddle2.render()
 			paintBall()
 		}
+
+		
 
 		document.addEventListener("keydown", handleKeyDown)
 		document.addEventListener("keyup", handleKeyUp)
@@ -326,12 +428,16 @@ export default class LocalGame extends Component {
 
 		});
 
+		this.element.querySelector("#back-to-home").addEventListener("click", (event) => {
+			event.preventDefault();
+            navigateTo("/");
+		});
+
 		// ready for post request @inaranjo modify route
         const sendData = async () => {
 			try {
 				// Make the POST request with the login credentials
 				const apiurl = process.env.API_URL;
-
 
 				const data = {
 					date_partie: new Date(),
@@ -375,59 +481,50 @@ export default class LocalGame extends Component {
 
 
 		const MovePaddleAI = () => {
-			// let t = canvasWidth
-			// let mod = (t * ball.dx / ball.dy - ball.y) % 2
-			// if ( mod > 1 && mod < -1)
-			// 	  console.log("2");
-			// if ( mod < 1 && mod > -1)
-			// 	  console.log("1");
 
 			if (ball.dx < 0 && (Date.now() - looktime > 1000 || (ball.x - ball.r <= config.paddleWidth && paddle1.checkCollision(ball)))) {
-				let mod = (ball.x * Math.abs(ball.dy / ball.dx)) % (2.00 * config.canvasHeight);
-
-				console.log("mod,", mod);
+				
+				let b = ((ball.x - config.paddleWidth - ball.r) * Math.abs(ball.dy / ball.dx));
 				looktime = Date.now();
-				if (mod > config.canvasHeight) {
-					paddle1.aipos_cal = ball.y - Math.sign(ball.dy) * (mod - config.canvasHeight) - config.paddleHeight / 2;
-					if (paddle1.aipos_cal < 0)
-						paddle1.aipos_cal = paddle1.aipos_cal * -1;
-					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
-						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
+				let mod = ball.y + Math.sign(ball.dy) * b;
+				mod = mod % (2 * (config.canvasHeight - 2 * ball.r));
+				while (mod > config.canvasHeight - ball.r || mod < ball.r) {
+					if (mod > config.canvasHeight - ball.r) {
+						mod = 2 * (config.canvasHeight - ball.r) - mod;
+					}
+					else {
+						mod = ball.r + Math.abs(mod - ball.r);
+					}
 				}
-				else {
-					console.log("ball.y", ball.y);
-					console.log("math signe", Math.sign(ball.dy));
-					console.log("mod,", mod);
-					console.log("config.paddleHeight,", config.paddleHeight);
-					paddle1.aipos_cal = ball.y + Math.sign(ball.dy) * mod - config.paddleHeight / 2;
-					console.log("cal++++,", paddle1.aipos_cal);
-					if (paddle1.aipos_cal < 0)
-						paddle1.aipos_cal = paddle1.aipos_cal * -1;
-					else if (paddle1.aipos_cal > canvas.height - config.paddleHeight)
-						paddle1.aipos_cal = config.canvasHeight - (paddle1.aipos_cal - config.canvasHeight);
-					console.log("cal,", paddle1.aipos_cal);
-					console.log("------------");
-				}
-
+				paddle1.aipos_cal = mod - paddle1.size / 2;
 			}
-
-			if (paddle1.aipos_cal < paddle1.y && ball.dx < 0) {
+			
+			if (paddle1.aipos_cal - paddle1.y <= - paddle1.speed && ball.dx < 0) {
 				paddle1.moveUp();
 			}
-
-			if (paddle1.aipos_cal > paddle1.y && ball.dx < 0) {
+			
+			if (paddle1.aipos_cal - paddle1.y >= paddle1.speed && ball.dx < 0) {
 				paddle1.moveDown();
 			}
+			
 
+		}
 
-			// let ran = Math.random();
-			// if (ball.y < paddle1.y  && ball.dx < 0 && ran < 0.8) {
-			// 	paddle1.moveUp();
-			// }
-
-			// 	if (ball.y >©paddle1.y  && ball.dx < 0 && ran < 0.8) {
-			// 	paddle1.moveDown();
-			// }
+		const checkbig = () => {
+			if (bigpad.happened == true
+				&& ball.y - ball.r <= bigpad.y + bigpad.size && ball.y + ball.r >= bigpad.y 
+				&& ball.x  - ball.r <= bigpad.x + bigpad.size && ball.x + ball.r >= bigpad.x ) {
+					bigpad.ft_effect();
+					bigpad.happened = false;
+					bigpad.effect = true;
+					bigpad.reset();
+			}
+			if (Date.now() - bigpad.time_disp > bigpad.effect_time && bigpad.effect == true) {	
+				bigpad.stop();
+				bigpad.choosecolor();
+				bigpad.effect = false;
+			}
+			
 		}
 
 
@@ -440,6 +537,7 @@ export default class LocalGame extends Component {
 			if (obj.ai)
 				MovePaddleAI()
 			checkWin()
+			checkbig()
 			updateTimer()
 			window.requestAnimationFrame(animate)
 		}
