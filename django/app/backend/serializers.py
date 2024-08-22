@@ -76,14 +76,14 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
 
 #-----------------------------------------img--------------------------------------#
 
-class ImageModelSerializer(serializers.ModelSerializer):
-    avatar = serializers.SerializerMethodField()
-    first_name = serializers.CharField(source='first_name', read_only=True)
-    last_name = serializers.CharField(source='last_name', read_only=True)
+# class ImageModelSerializer(serializers.ModelSerializer):
+#     avatar = serializers.SerializerMethodField()
+#     first_name = serializers.CharField(source='first_name', read_only=True)
+#     last_name = serializers.CharField(source='last_name', read_only=True)
 
-    class Meta:
-        model = JwtUser
-        fields = ['avatar', 'first_name', 'last_name']
+#     class Meta:
+#         model = JwtUser
+#         fields = ['avatar', 'first_name', 'last_name']
 
-    def create(self, obj):
+#     def create(self, obj):
         

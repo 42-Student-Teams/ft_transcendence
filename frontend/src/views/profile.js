@@ -1,8 +1,7 @@
-import * as bootstrap from 'bootstrap';
 import NavBar from '../components/home/navbar.js';
-import { showToast } from "../utils/toastUtils.js";
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
+import { showToast } from "../utils/toastUtils.js";
 
 import Component from "../library/component.js";
 
@@ -95,14 +94,6 @@ export default class Profile extends Component {
                 return;
             }
 
-            // Store values here
-            const profileData = {
-                "nom": lastName,
-                "prenom":firstName,
-                "avatar":profilePicture,
-            };
-			console.log(profileData);
-
 			const formData  = new FormData();
 			formData.append('nom', lastName);
 			formData.append('prenom', firstName);
@@ -113,7 +104,7 @@ export default class Profile extends Component {
 				const jwt = localStorage.getItem('jwt');
 				const apiurl = process.env.API_URL;
 				const response = await fetch(`${apiurl}/user_update`, {
-					method: 'PUT',
+					method: 'POST',
 					headers: {
 						'Authorization': `Bearer ${jwt}`,
 

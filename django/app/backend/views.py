@@ -19,7 +19,7 @@ from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, ImageModelSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
 
 from .util import get_user_info
 
@@ -100,14 +100,15 @@ class UserListView(APIView):
 class UserUpdateView(APIView):
     parser_classes = (MultiPartParser, FormParser)
     
-    def put(self, request):
+    def post(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
-        if not (request.method == 'PUT' and request.FILES.get('avatar')):
+        if not (request.method == 'POST' and request.FILES.get('avatar')):
     # Send an error response
             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
         avatar = request.FILES['avatar']
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
+        first_name = request.data.get('nom')
+        last_name = request.data.get('prenom')
+        print(f"data: {request.data}")
         # Vérifiez si le fichier est une image valide
         if not avatar.content_type.startswith('image'):
             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
