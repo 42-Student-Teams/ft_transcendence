@@ -461,6 +461,7 @@ export default class LocalGame extends Component {
 					date_partie: new Date(),
 					joueur1_username: "jackito",
 					joueur2_username: "naranjito",
+					is_ai_opponent: obj.ai,
 					duree_partie: 0,
 					score_joueur1: paddle1.score,
 					score_joueur2: paddle2.score
