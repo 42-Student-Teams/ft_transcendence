@@ -1,5 +1,3 @@
-import * as bootstrap from 'bootstrap';
-
 export function showToast(message, type) {
     // Bootstrap toast centered in the page
     const toastHTML = `

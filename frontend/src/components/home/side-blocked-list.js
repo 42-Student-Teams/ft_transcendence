@@ -3,28 +3,15 @@ import { showToast } from "../../utils/toastUtils.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
-import { home } from "../../utils/langPack.js";
-import store from "../../store/index.js";
 
 export default class SideBlockedList extends Component {
     constructor() {
         super({ element: document.getElementById("side-blocked-list") });
-        this.blocked = [];
-        this.currentLang = store.state.language;
+        this.blocked = []; // Initialize blocked users as an empty array
         this.render();
-        
-        // S'abonner aux changements d'état
-        store.events.subscribe('stateChange', () => {
-            if (this.currentLang !== store.state.language) {
-                this.currentLang = store.state.language;
-                this.render();
-            }
-        });
     }
 
     async render() {
-        const langPack = home[this.currentLang]; // Utilisation du pack de langue
-
         const view = /*html*/ `
             <div id="block-display" class="blocked-list flex-grow-1 overflow-auto">
             </div>
@@ -66,13 +53,12 @@ export default class SideBlockedList extends Component {
 		}
 	  }
 
-      renderBlockedList() {
-        const langPack = home[this.currentLang];
+    renderBlockedList() {
         const blockDisplayElement = document.getElementById("block-display");
-        blockDisplayElement.innerHTML = '';
+        blockDisplayElement.innerHTML = ''; // Clear any existing content
         if (this.blocked.blocked_users.length > 0) {
             this.blocked.blocked_users.forEach((user, index) => {
-                const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3];
+                const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
                 const userHtml = /*html*/ `
                     <div class="friend container py-3" data-username="${user.username}">
                         <div class="row mr-4">
@@ -83,7 +69,7 @@ export default class SideBlockedList extends Component {
                                     </div>
                                     <div class="col friend-info">
                                         <span>${user.username}</span>
-                                        <span class="friend-status">${langPack.blocked}</span>
+                                        <span class="friend-status">Blocked</span>
                                     </div>
                                 </div>
                             </div>
@@ -96,25 +82,27 @@ export default class SideBlockedList extends Component {
                 blockDisplayElement.insertAdjacentHTML('beforeend', userHtml);
             });
 
+            // Add event listeners to the buttons after rendering
             this.element.querySelectorAll('.btn-unblock').forEach(button => {
                 button.addEventListener('click', (event) => this.handleUnblockUser(event));
             });
         } else {
-            blockDisplayElement.innerHTML = `<p>${langPack.noBlockedUsersFound}</p>`;
+            blockDisplayElement.innerHTML = '<p>No blocked users found.</p>';
         }
     }
 
     async handleUnblockUser(event) {
-        const langPack = home[this.currentLang];
         const button = event.currentTarget;
         const username = button.getAttribute('data-username');
-        const userContainer = button.closest('.friend');
+        const userContainer = button.closest('.friend'); // Get the parent container of the user
+
+        console.log(`ici je bloque: ${username}`);
 
         try {
             const jwt = localStorage.getItem('jwt');
-            const apiurl = process.env.API_URL;
+            const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
 
-            const response = await fetch(`${apiurl}/unblock_user`, {
+            const response = await fetch(`${apiurl}/unblock_user`, { // block endpoints
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${jwt}`,
@@ -124,15 +112,16 @@ export default class SideBlockedList extends Component {
             });
 
             if (response.ok) {
-                userContainer.remove();
-                showToast(langPack.userUnblockedSuccess.replace('{username}', username), "success");
+                // DIRECTLY HANDLE UNBLOCK OPERATION
+                userContainer.remove(); // REMOVE THE USER FROM THE DISPLAY
+                showToast(`User ${username} unblocked successfully.`, "success");
             } else {
                 console.error(`Failed to unblock user ${username}`);
-                showToast(langPack.userUnblockFailed.replace('{username}', username), "danger");
+                showToast(`Failed to unblock user ${username}.`, "danger");
             }
         } catch (error) {
             console.error(`Error unblocking user ${username}:`, error);
-            showToast(langPack.userUnblockError.replace('{username}', username), "danger");
+            showToast(`Error unblocking user ${username}.`, "danger");
         }
     }
 }
