@@ -270,7 +270,18 @@ export const home = {
 	  noMatchesPlayed: "The court is empty... for now. How about playing your first game?",
 	  victory: "Victory",
 	  defeat: "Defeat",
-	  profilePicture: "Profile Picture"
+	  profilePicture: "Profile Picture",
+	  status: "Status",
+	  connected: "Connected",
+	  offline: "Offline",
+	  totalGames: "Total Games",
+	  errorLoadingFriendProfile: "Error loading friend profile",
+	  errorLoadingFriendMatchHistory: "Error loading friend match history",
+	  victory: "Victory",
+	  defeat: "Defeat",
+	  profilePicture: "Profile Picture",
+	  friendUsernameNotSet: "Friend username not set",
+	
 	},
 	fr: {
 	  editProfile: "Modifier le profil",
@@ -294,7 +305,17 @@ export const home = {
 	  noMatchesPlayed: "Le terrain est vide... pour l'instant. Que diriez-vous de jouer votre première partie ?",
 	  victory: "Victoire",
 	  defeat: "Défaite",
-	  profilePicture: "Photo de profil"
+	  profilePicture: "Photo de profil",
+	  status: "Statut",
+	  connected: "Connecté",
+	  offline: "Hors ligne",
+	  totalGames: "Total des parties",
+	  errorLoadingFriendProfile: "Erreur lors du chargement du profil de l'ami",
+	  errorLoadingFriendMatchHistory: "Erreur lors du chargement de l'historique des matchs de l'ami",
+	  victory: "Victoire",
+	  defeat: "Défaite",
+	  profilePicture: "Photo de profil",
+	  friendUsernameNotSet: "Nom d'utilisateur de l'ami non défini"
 	},
 	es: {
 	  editProfile: "Editar perfil",
@@ -318,6 +339,16 @@ export const home = {
 	  noMatchesPlayed: "La cancha está vacía... por ahora. ¿Qué tal si juegas tu primer partido?",
 	  victory: "Victoria",
 	  defeat: "Derrota",
-	  profilePicture: "Foto de perfil"
+	  profilePicture: "Foto de perfil",
+	  status: "Estado",
+	  connected: "Conectado",
+	  offline: "Desconectado",
+	  totalGames: "Total de partidos",
+	  errorLoadingFriendProfile: "Error al cargar el perfil del amigo",
+	  errorLoadingFriendMatchHistory: "Error al cargar el historial de partidos del amigo",
+	  victory: "Victoria",
+	  defeat: "Derrota",
+	  profilePicture: "Foto de perfil",
+	  friendUsernameNotSet: "Nombre de usuario del amigo no establecido"
 	}
   };
