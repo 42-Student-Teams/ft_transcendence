@@ -2,12 +2,14 @@ import NavBar from '../components/home/navbar.js';
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
 import { showToast } from "../utils/toastUtils.js";
-
 import Component from "../library/component.js";
+import { profile } from "../utils/langPack.js";
+import store from "../store/index.js";
 
 export default class Profile extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
+        this.currentLang = store.state.language;
         this.render();
 
         this.components = {
@@ -15,9 +17,17 @@ export default class Profile extends Component {
             profileInfo: new ProfileInfo(),
             matchHistory: new MatchHistory(),
         };
+
+        store.events.subscribe('stateChange', () => {
+            if (this.currentLang !== store.state.language) {
+                this.currentLang = store.state.language;
+                this.render();
+            }
+        });
     }
 
     async render() {
+        const langPack = profile[this.currentLang];
         const view = /*html*/ `
         <div class="h-100 d-flex flex-column bg-custom vh-100">
             <div class="row m-0">
@@ -38,26 +48,26 @@ export default class Profile extends Component {
                 <div class="modal-content">
                     <form id="edit-profile-form" novalidate>
                         <div class="modal-header">
-                            <h5 class="modal-title">Edit Profile</h5>
+                            <h5 class="modal-title">${langPack.editProfile}</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
                             <div class="p-3">
-                                <label for="edit-profile-picture" class="form-label">Profile Picture</label>
+                                <label for="edit-profile-picture" class="form-label">${langPack.profilePicture}</label>
                                 <input type="file" class="form-control" id="edit-profile-picture">
                             </div>
                             <div class="p-3">
-                                <label for="edit-first-name" class="form-label">First Name</label>
+                                <label for="edit-first-name" class="form-label">${langPack.firstName}</label>
                                 <input type="text" class="form-control" id="edit-first-name">
                             </div>
                             <div class="p-3">
-                                <label for="edit-last-name" class="form-label">Last Name</label>
+                                <label for="edit-last-name" class="form-label">${langPack.lastName}</label>
                                 <input type="text" class="form-control" id="edit-last-name">
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">Save changes</button>
+                            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">${langPack.cancel}</button>
+                            <button type="submit" class="btn btn-success" data-bs-dismiss="modal">${langPack.saveChanges}</button>
                         </div>
                     </form>
                 </div>
@@ -69,7 +79,7 @@ export default class Profile extends Component {
             <div id="errorToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        Please fill in all fields correctly
+                        ${langPack.fillAllFields}
                     </div>
                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                 </div>
@@ -81,6 +91,7 @@ export default class Profile extends Component {
     }
 
     async handleEvent() {
+        const langPack = profile[this.currentLang];
         document.getElementById("edit-profile-form").addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -88,9 +99,8 @@ export default class Profile extends Component {
             const firstName = document.getElementById("edit-first-name").value.trim();
             const lastName = document.getElementById("edit-last-name").value.trim();
 			
-            // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
-                showToast("Incorrect input, please try again.", "danger");
+                showToast(langPack.incorrectInput, "danger");
                 return;
             }
 
@@ -99,7 +109,6 @@ export default class Profile extends Component {
 			formData.append('prenom', firstName);
 			formData.append('avatar', profilePicture);
 
-			// Send data to API
 			try {
 				const jwt = localStorage.getItem('jwt');
 				const apiurl = process.env.API_URL;
@@ -107,22 +116,19 @@ export default class Profile extends Component {
 					method: 'POST',
 					headers: {
 						'Authorization': `Bearer ${jwt}`,
-
 					},
 					body: formData,
 				});
 				console.log('Response:', response);
 
 				if (response.ok) {
-					showToast('User profile updated successfully', 'success');
+					showToast(langPack.profileUpdateSuccess, 'success');
 				}
 			}
 			catch (error) {
 				console.error('Error updating user profile:', error);
-				showToast('Error updating user profile', 'danger');
+				showToast(langPack.profileUpdateError, 'danger');
 			}
-
-            //console.log(profileData);
         });
     }
 }
