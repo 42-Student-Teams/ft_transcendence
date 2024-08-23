@@ -19,7 +19,7 @@ from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer
 
 from .util import get_user_info
 
@@ -518,7 +518,7 @@ class GameHistoryListView(APIView):
             (Q(joueur1=user) & Q(is_ai_opponent=True))
         ).order_by('-date_partie')
         
-        serializer = GameHistorySerializer(parties, many=True)
+        serializer = GameHistoryWithAvatarSerializer(parties, many=True, context={'request': request})
         return Response({
             'status': 'success',
             'historique': serializer.data
