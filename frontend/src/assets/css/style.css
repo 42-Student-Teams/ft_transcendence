@@ -430,3 +430,14 @@ canvas {
   } .game-history-container{
 	width:200px;
   }
+
+
+  .img-match-history{
+	width:60px;
+	height:60px;
+  }
+
+  .img-profile-avatar{
+	width:100px;
+	height:100px;
+  }

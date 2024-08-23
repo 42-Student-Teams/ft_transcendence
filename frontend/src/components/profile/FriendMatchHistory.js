@@ -64,7 +64,7 @@ export default class FriendMatchHistory extends Component {
 
 			if (response.ok) {
 				const data = await response.json();
-				console.log("Friend Profile data:", data);
+				console.log("Friend history data:", data);
 				this.matchHistory = data.historique.slice(0, 5);
 				this.renderMatchHistory();
 			}
@@ -106,7 +106,7 @@ export default class FriendMatchHistory extends Component {
 		return `
         <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <img src="${match.joueur1_avatar}" alt="" class=" rounded-circle mb-2 img-match-history">
                 <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
             </div>
             <div class="text-center">
@@ -115,7 +115,7 @@ export default class FriendMatchHistory extends Component {
                 <small class="text-muted">${date}</small>
             </div>
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <img src="${match.joueur2_avatar}" alt="" class="rounded-circle mb-2 img-match-history">
                 <small class="text-muted text-truncate text-center">${match.joueur2_username}</small>
             </div>
         </div>

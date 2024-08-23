@@ -90,7 +90,7 @@ export default class MatchHistory extends Component {
         return `
         <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <img src="${match.joueur2_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
                 <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
             </div>
             <div class="text-center">
@@ -99,7 +99,7 @@ export default class MatchHistory extends Component {
                 <small class="text-muted">${date}</small>
             </div>
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <img src="${match.joueur2_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
                 <small class="text-muted text-truncate text-center">${match.joueur2_username}</small>
             </div>
         </div>

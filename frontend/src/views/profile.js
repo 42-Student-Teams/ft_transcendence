@@ -124,6 +124,10 @@ export default class Profile extends Component {
 				if (response.ok) {
 					showToast(langPack.profileUpdateSuccess, 'success');
 				}
+				if (!response.ok){
+					console.error('Error updating user profile:', response.statusText);
+					showToast(langPack.profileUpdateError, 'danger');
+				}
 			}
 			catch (error) {
 				console.error('Error updating user profile:', error);

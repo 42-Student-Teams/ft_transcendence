@@ -45,18 +45,19 @@ export default class FriendProfileInfo extends Component {
             }
 
             const data = await response.json();
-            console.log("Profile data:", data);
+            console.log("Friend Profile info data:", data);
 
             const view = /*html*/ `
                 <div class="card shadow-sm rounded mb-4">
                     <div class="d-flex flex-column align-items-center p-4">
-                        <img src="${data.avatar || 'https://via.placeholder.com/80'}" alt="${data.username}" class="img-fluid rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <img src="${data.avatar || 'https://via.placeholder.com/80'}" alt="${data.username}" class="img-profile-avatar rounded-circle mb-3">
                         <h5 class="mb-1">${data.prenom} ${data.nom}</h5>
                         <p class="text-muted mb-2">@${data.username}</p>
                         <p class="text-muted mb-2">${langPack.status}: ${langPack[data.status.toLowerCase()]}</p>
                         <div class="w-100 border-top mt-3 pt-3">
                             <div class="text-center">
                                 <h6 class="mb-0">${langPack.wins}: ${data.parties_gagnees}</h6>
+								<h6 class="mb-0">${langPack.losses}: ${data.parties_perdues}</h6>
                                 <h6 class="text-muted mb-0">${langPack.totalGames}: ${data.parties_jouees}</h6>
                             </div>
                         </div>

@@ -1,6 +1,5 @@
 import Component from "../../library/component.js";
 import { navigateTo } from "../../utils/router.js";
-import store from "../../store/index.js";
 
 export default class BtnRegisterInLogin extends Component {
     constructor() {
@@ -10,8 +9,8 @@ export default class BtnRegisterInLogin extends Component {
 
     async render() {
         const view = /*html*/ `
-            <small>${noAccount}
-                <a href="">${signUp}</a>
+            <small>Don't have account ?
+                <a href="">Sign up</a>
             </small>
         `;
 
@@ -25,12 +24,5 @@ export default class BtnRegisterInLogin extends Component {
             event.preventDefault();
             navigateTo("/register");
         });
-    }
-
-    onStateChange() {
-        if (this.currentLang !== store.state.language) {
-            this.currentLang = store.state.language;
-            this.render();
-        }
     }
 }

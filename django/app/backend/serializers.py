@@ -64,8 +64,7 @@ class GameHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['date_partie', 'gagnant']
 
     def validate(self, data):
-        if data.get('is_ai_opponent') 
-        and not data.get('ai_opponent_name'):
+        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
             raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
         if not data.get('is_ai_opponent') and not data.get('joueur2_username'):
             raise serializers.ValidationError("joueur2_username est requis lorsque is_ai_opponent est False")
@@ -139,6 +138,10 @@ class PlayerStatsSerializer(serializers.Serializer):
 class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
     joueur1_avatar = serializers.SerializerMethodField()
     joueur2_avatar = serializers.SerializerMethodField()
+    joueur1 = serializers.CharField(write_only=True)
+    joueur2 = serializers.CharField(write_only=True, required=False, allow_null=True)
+    is_ai_opponent = serializers.BooleanField(required=False, default=False)
+    ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     
     class Meta:
         model = GameHistory
@@ -155,3 +158,24 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
         elif obj.joueur2:
             return obj.joueur2.avatar.url
         return None
+
+    def validate(self, data):
+        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
+            raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
+        if not data.get('is_ai_opponent') and not data.get('joueur2'):
+            raise serializers.ValidationError("joueur2 est requis lorsque is_ai_opponent est False")
+        return data
+
+    def get_gagnant_username(self, obj):
+        if obj.gagnant:
+            return obj.gagnant.username
+        elif obj.is_ai_opponent and obj.score_joueur2 > obj.score_joueur1:
+            return obj.ai_opponent_name
+        return None
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['joueur1_username'] = instance.joueur1.username
+        if instance.joueur2:
+            ret['joueur2_username'] = instance.joueur2.username
+        return ret
