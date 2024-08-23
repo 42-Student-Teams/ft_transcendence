@@ -19,11 +19,9 @@ from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer
 
 from .util import get_user_info
-
-
 
 def index(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
@@ -31,6 +29,8 @@ def index(request):
 def create_user(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
 
+
+##--------------------------------------USER DATA - POST METHODE-----------------------------------------###
 class UserCreateView(APIView):
     def post(self, request):
         print('--------------------')
@@ -41,7 +41,7 @@ class UserCreateView(APIView):
         user = serializer.save()
         print(f"got username: {user.username}", flush=True)
         return jwt_response(user.username)
-
+    
 class UserOauthLoginView(APIView):
     def post(self, request):
         oauth_token = None
@@ -64,7 +64,7 @@ class UserOauthLoginView(APIView):
             new_user = JwtUser.objects.create()
             new_user.username = username
             new_user.set_unusable_password()
-            new_user.isoauth = True
+            new_user.isoauth = True 
             new_user.save()
             return res
         else:
@@ -80,8 +80,6 @@ class UserLoginView(APIView):
             username = request.data['username']
         if 'password' in request.data:
             password = request.data['password']
-
-
         try:
             user: JwtUser = JwtUser.objects.get(username=username)
         except JwtUser.DoesNotExist:
@@ -90,6 +88,7 @@ class UserLoginView(APIView):
             raise AuthenticationFailed('Incorrect username or password')
         return jwt_response(username)
 
+##--------------------------------------USER DATA - GET METHODE-----------------------------------------###
 class UserListView(APIView):
     def get(self, request):
         if check_jwt(request):
@@ -97,56 +96,122 @@ class UserListView(APIView):
         else:
             raise AuthenticationFailed()
 
-class UserUpdateView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-    
-    def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
-        if not (request.method == 'POST' and request.FILES.get('avatar')):
-    # Send an error response
-            return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
-        avatar = request.FILES['avatar']
-        # do a print of avatar
-        print(f"avatar: {avatar}")
-        first_name = request.data.get('nom')
-        last_name = request.data.get('prenom')
-        print(f"data: {request.data}")
-        # Vérifiez si le fichier est une image valide
-        if not avatar.content_type.startswith('image'):
-            return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-        # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
-        if user.avatar != 'staticfiles/avatars/default_avatar.png':
-            user.avatar.delete(save=False)
-        user.avatar = avatar
-        
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        print(f"first_name: {first_name}, last_name: {last_name}")
-        
-        if first_name is not None:
-            user.first_name = first_name
+class getUserProfileView(APIView):
+    def get(self, request):
+        requesting_user = check_jwt(request)
+        if not requesting_user:
+            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        if last_name is not None:
-            user.last_name = last_name
+        try:
+            user = JwtUser.objects.get(username=requesting_user)
+            user.refresh_from_db() # Rafraîchit les données de l'utilisateur pour obtenir les champs mis à jour
+            parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+            parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+            
+            profile_data = {
+            	'nom': user.last_name,
+            	'prenom': user.first_name,
+            	'username': user.username,
+            	'avatar': user.avatar.url,
+            	'parties_jouees': parties_jouees,
+            	'parties_gagnees': parties_gagnees
+            }
+            
+            return Response(profile_data, status=status.HTTP_200_OK)
+        except JwtUser.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+##--------------------------------------USER DATA - PUT METHODE-----------------------------------------###
+class ImprovedUpdateUserView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def put(self, request):
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+        except JwtUser.DoesNotExist:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if 'first_name' in request.data:
+            user.first_name = request.data['first_name']
+        if 'last_name' in request.data:
+            user.last_name = request.data['last_name']
+        
+        if 'avatar' in request.FILES:
+            new_avatar = request.FILES['avatar']
+            if not new_avatar.content_type.startswith('image'):
+                return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Check if current avatar is not the default one
+            default_avatar_path = os.path.join(settings.STATIC_ROOT, 'avatars', 'default_avatar.png')
+            if user.avatar and user.avatar.path != default_avatar_path:
+                # Delete the old avatar file
+                if os.path.isfile(user.avatar.path):
+                    os.remove(user.avatar.path)
+            
+            # Update with new avatar
+            user.avatar = new_avatar
+
         try:
             user.save()
         except ValidationError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
-            'avatar_url': user.avatar.url
+            'user': {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'avatar_url': user.avatar.url,
+            }
         }, status=status.HTTP_200_OK)
+    
 
 
-##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###
+# class UserUpdateView(APIView):
+#     parser_classes = (MultiPartParser, FormParser)
+    
+#     def post(self, request):
+#         user = JwtUser.objects.get(username=check_jwt(request))
+#         if not (request.method == 'POST' and request.FILES.get('avatar')):
+#     # Send an error response
+#             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
+#         avatar = request.FILES['avatar']
+#         # do a print of avatar
+#         print(f"avatar: {avatar}")
+#         first_name = request.data.get('nom')
+#         last_name = request.data.get('prenom')
+#         print(f"data: {request.data}")
+#         # Vérifiez si le fichier est une image valide
+#         if not avatar.content_type.startswith('image'):
+#             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
+#         # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
+#         if user.avatar != 'staticfiles/avatars/default_avatar.png':
+#             user.avatar.delete(save=False)
+#         user.avatar = avatar
+        
+#         first_name = request.data.get('first_name')
+#         last_name = request.data.get('last_name')
+#         print(f"first_name: {first_name}, last_name: {last_name}")
+        
+#         if first_name is not None:
+#             user.first_name = first_name
+
+#         if last_name is not None:
+#             user.last_name = last_name
+#         try:
+#             user.save()
+#         except ValidationError as e:
+#             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         return Response({
+#             'status': 'success',
+#             'message': 'Profile updated successfully',
+#             'avatar_url': user.avatar.url
+#         }, status=status.HTTP_200_OK)
 
 ##--------------------------------------FRIEND-REQUEST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Validation du nom d'utilisateur de l'ami : Vérifie la présence du nom d'utilisateur de l'ami dans la requête.
-# 4.Ajout de l'ami : Vérifie que l'utilisateur n'ajoute pas lui-même et qu'ils ne sont pas déjà amis, puis ajoute l'ami.
-# 5.Retour de la réponse : Retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
+
 class FriendView(APIView):
     def post(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
@@ -235,11 +300,6 @@ class UnblockUserView(APIView):
 
 
 ##--------------------------------------BLOCK-FRIEND-REQUEST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Validation du nom d'utilisateur à bloquer : Vérifie la présence du nom d'utilisateur à bloquer dans la requête.
-# 4.Vérification des conditions de blocage : Vérifie que l'utilisateur à bloquer existe, qu'il n'est pas l'utilisateur lui-même, et qu'il est dans la liste d'amis de l'utilisateur.
-# 5.Blocage de l'utilisateur : Ajoute l'utilisateur à bloquer à la liste des utilisateurs bloqués, le retire de la liste d'amis, et retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
 class BlockUserView(APIView):
     def post(self, request):
         user = JwtUser.objects.get(username=check_jwt(request))
@@ -331,37 +391,7 @@ class BlockedListView(APIView):
 
 
 
-###-------------------------------------------------------------------------------------###
-# class DefaultAvatarView(APIView):
-#     def get(self, request):
-#         image_path = os.path.join(settings.BASE_DIR, 'files', 'default_avatar.png')
-#         return FileResponse(open(image_path, 'rb'), content_type='image/png')
-
-class UpdateProfilePictureView(APIView):
-
-    parser_classes = (MultiPartParser, FormParser)
-
-    def put(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
-
-        avatar = request.get.FILES['image']
-
-        # Vérifiez si le fichier est une image valide
-        if not avatar.content_type.startswith('image'):
-            return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Supprimez l'ancien avatar si il existe
-        if user.avatar:
-            user.avatar.delete(save=False)
-
-        user.avatar = avatar
-        user.save()
-
-        return Response({
-            'status': 'success',
-            'message': 'Avatar updated successfully',
-            'avatar_url': user.avatar.url if user.avatar else static('rest_framework/img/default_avatar.png')
-        }, status=status.HTTP_200_OK)
+###-----------------------------------MESSAGE API--------------------------------------------------###
 
 class ChatGetMessagesView(APIView):
     def post(self, request):
@@ -399,30 +429,6 @@ class ChatGetMessagesView(APIView):
         }, status=status.HTTP_200_OK)
 
 ###-----------------------------GET PROFILE--------------------------------------------------------###
-
-class getUserProfileView(APIView):
-    def get(self, request):
-        requesting_user = check_jwt(request)
-        if not requesting_user:
-            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            user = JwtUser.objects.get(username=requesting_user)
-            parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
-            parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
-            
-            profile_data = {
-            	'nom': user.last_name,
-            	'prenom': user.first_name,
-            	'username': user.username,
-            	'avatar': user.avatar.url,
-            	'parties_jouees': parties_jouees,
-            	'parties_gagnees': parties_gagnees
-            }
-            
-            return Response(profile_data, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
-            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class getFriendProfileView(APIView):
@@ -463,46 +469,75 @@ class getFriendProfileView(APIView):
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
 
 class GameHistoryCreateView(APIView):
-    def post(self, request):
-        username = check_jwt(request)
-        if not username:
-            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        serializer = GameHistoryCreateSerializer(data=request.data)
+    def post(self, request, format=None):
+        serializer = GameHistorySerializer(data=request.data)
         if serializer.is_valid():
-            game_history = serializer.save()
-            return Response({
-                'status': 'success',
-                'message': 'Partie enregistrée avec succès',
-                'game': GameHistorySerializer(game_history).data
-            }, status=status.HTTP_201_CREATED)
-        return Response({
-            'status': 'error',
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            joueur1_username = serializer.validated_data['joueur1_username']
+            joueur2_username = serializer.validated_data.get('joueur2_username')
+            is_ai_opponent = serializer.validated_data.get('is_ai_opponent', False)
+            ai_opponent_name = serializer.validated_data.get('ai_opponent_name')
 
+            try:
+                joueur1 = JwtUser.objects.get(username=joueur1_username)
+            except JwtUser.DoesNotExist:
+                return Response({'error': 'Joueur 1 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            joueur2 = None
+            if not is_ai_opponent:
+                try:
+                    joueur2 = JwtUser.objects.get(username=joueur2_username)
+                except JwtUser.DoesNotExist:
+                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            game_history = GameHistory.enregistrer_partie(
+                joueur1=joueur1,
+                joueur2=joueur2,
+                duree_partie=serializer.validated_data['duree_partie'],
+                score_joueur1=serializer.validated_data['score_joueur1'],
+                score_joueur2=serializer.validated_data['score_joueur2'],
+                is_ai_opponent=is_ai_opponent,
+                ai_opponent_name=ai_opponent_name
+            )
+
+            return Response(GameHistorySerializer(game_history).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GameHistoryListView(APIView):
     def get(self, request):
         username = check_jwt(request)
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
         user = JwtUser.objects.get(username=username)
-        parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
+        parties = GameHistory.objects.filter(
+            Q(joueur1=user) | 
+            (Q(joueur2=user) & Q(is_ai_opponent=False)) |
+            (Q(joueur1=user) & Q(is_ai_opponent=True))
+        ).order_by('-date_partie')
+        
         serializer = GameHistorySerializer(parties, many=True)
-
         return Response({
             'status': 'success',
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
 
-# Returns the avatar 
-#class ImageView(APIView):
-#    def get(self, request, *args, **kwargs):
-#        try:
-#            user = JwtUser.objects.get(username=check_jwt(request))
-#            serializer = ImageModelSerializer(user, context={'request': request})
-#            return Response(serializer.data, status=status.HTTP_200_OK)
-#        except JwtUser.DoesNotExist:
-#            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+class PlayerStatsView(APIView):
+    def get(self, request):
+        username = check_jwt(request)
+        if not username:
+            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        user = JwtUser.objects.get(username=username)
+        
+        total_games = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+        victories = GameHistory.objects.filter(gagnant=user).count()
+        defeats = total_games - victories
+        
+        stats = {
+            'total_games': total_games,
+            'victories': victories,
+            'defeats': defeats
+        }
+        
+        serializer = PlayerStatsSerializer(stats)
+        return Response(serializer.data, status=status.HTTP_200_OK)
