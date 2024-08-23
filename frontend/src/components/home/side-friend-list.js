@@ -65,10 +65,14 @@ export default class SideFriendList extends Component {
   }
 
   async handleEvent() {
-    document.getElementById("btn-toggle-friends").addEventListener("click", async (event) => {
-      event.preventDefault();
-      await this.getFriendList();
-    });
+	const btnToggleFriends = document.getElementById("btn-toggle-friends");
+
+    if (btnToggleFriends) {
+        btnToggleFriends.addEventListener("click", async (event) => {
+            event.preventDefault();
+            await this.getFriendList();
+        });
+	}
 
     this.element.querySelector("#btn-add-friend").addEventListener("click", async (event) => {
       event.preventDefault();
@@ -128,7 +132,9 @@ export default class SideFriendList extends Component {
   renderFriendList() {
     const langPack = home[this.currentLang];
     const friendDisplayElement = document.getElementById("friend-list-display");
-    friendDisplayElement.innerHTML = "";
+	if (!friendDisplayElement)
+		return ;
+	friendDisplayElement.innerHTML = "";
   
     if (this.friends.length > 0) {
       this.friends.forEach((friend) => {

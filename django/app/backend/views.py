@@ -444,6 +444,8 @@ class getFriendProfileView(APIView):
 
             parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
             parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+            parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
+            serializer = GameHistorySerializer(parties, many=True)
 
             profile_data = {
                 'nom': user.last_name,
@@ -452,7 +454,8 @@ class getFriendProfileView(APIView):
                 'status': user.status,
                 'avatar': user.avatar.url if user.avatar else None,
                 'parties_jouees': parties_jouees,
-                'parties_gagnees': parties_gagnees
+                'parties_gagnees': parties_gagnees,
+                'historique': serializer.data
             }
 
             return Response(profile_data, status=status.HTTP_200_OK)

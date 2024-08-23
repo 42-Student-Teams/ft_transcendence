@@ -3,90 +3,122 @@ import { profile } from "../../utils/langPack.js";
 import store from "../../store/index.js";
 
 export default class FriendMatchHistory extends Component {
-    constructor() {
-        super({ element: document.getElementById("friendMatchHistory") });
-        this.friendUsername = null;
-        this.currentLang = store.state.language;
+	constructor() {
+		super({ element: document.getElementById("friendMatchHistory") });
+		this.friendUsername = null;
+		this.matchHistory = [];
+		this.currentLang = store.state.language;
 
-        store.events.subscribe('stateChange', () => {
-            if (this.currentLang !== store.state.language) {
-                this.currentLang = store.state.language;
-                this.render();
-            }
-        });
-    }
+		store.events.subscribe('stateChange', () => {
+			if (this.currentLang !== store.state.language) {
+				this.currentLang = store.state.language;
+				this.render();
+			}
+		});
+	}
 
-    setFriendUsername(username) {
-        this.friendUsername = username;
-        this.render();
-    }
+	setFriendUsername(username) {
+		this.friendUsername = username;
+		this.render();
+	}
 
-    async render() {
-        const langPack = profile[this.currentLang];
+	async render() {
+		const langPack = profile[this.currentLang];
 
-        if (!this.friendUsername) {
-            console.error("Friend username not set");
-            return;
-        }
 
-        try {
-            const jwt = localStorage.getItem("jwt");
-            const apiurl = process.env.API_URL;
-            const response = await fetch(`${apiurl}/history_getGames`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                    "Content-Type": "application/json",
-                },
-            });
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch game history');
-            }
-
-            const data = await response.json();
-            const friendGames = data.historique.filter(game =>
-                game.joueur1_username === this.friendUsername || game.joueur2_username === this.friendUsername
-            );
-
-            const gamesHtml = friendGames.map(game => this.createMatch(game)).join('');
-
-            const view = /*html*/ `
-                <div class="card p-3 flex-grow-1 d-flex flex-column">
-                    <div class="card-content flex-grow-1 d-flex flex-column">
-                        <div class="card-body p-0 flex-grow-1 d-flex flex-column justify-content-between">
-                            <div class="my-1"></div>
-                            ${gamesHtml}
-                            <div class="my-1"></div>
-                        </div>
-                    </div>
+		const view = /*html*/ `
+            <div class="card p-2 m-0">
+                <div class="card-body p-2 m-0">
+                    <h5 class="card-title text-center mt-3 mb-4">${langPack.matchHistory}</h5>
+                    <div id="match-list-display" class="mt-3"></div>
                 </div>
-            `;
-            this.element.innerHTML = view;
-        } catch (error) {
-            console.error("Error fetching friend match history:", error);
-            this.element.innerHTML = `<p>${langPack.errorLoadingFriendMatchHistory}</p>`;
-        }
-    }
-
-    createMatch(game) {
-        const langPack = profile[this.currentLang];
-        const isFriendWinner = game.gagnant_username === this.friendUsername;
-        const result = isFriendWinner ? langPack.victory : langPack.defeat;
-        const score = `${game.score_joueur1}-${game.score_joueur2}`;
-        return `
-            <div class="d-flex justify-content-between align-items-center my-3">
-                <div class="d-flex flex-column align-items-center">
-                    <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-1">
-                </div>
-                <div class="text-center">
-                    <h6 class="mb-0">${result}</h6>
-                    <p class="mb-0">${score}</p>
-                    <small class="text-muted">${new Date(game.date_partie).toLocaleString(this.currentLang)}</small>
-                </div>
-                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle">
             </div>
-            <div class="border-top my-3"></div>
+            `;
+		this.element = document.getElementById('friendMatchHistory');
+		this.element.innerHTML = view;
+		await this.handleEvent();
+
+
+	}
+
+
+	async handleEvent() {
+
+		const langPack = profile[this.currentLang];
+		if (!this.friendUsername) {
+			console.error("Friend username not set");
+			return;
+		}
+
+		try {
+			const jwt = localStorage.getItem("jwt");
+			const apiurl = process.env.API_URL;
+			const response = await fetch(`${apiurl}/get_friend_profile?username=${this.friendUsername}`, {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${jwt}`,
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				console.log("Friend Profile data:", data);
+				this.matchHistory = data.historique.slice(0, 5);
+				this.renderMatchHistory();
+			}
+			else {
+				console.error('Failed to fetch match history');
+				showToast(langPack.fetchMatchHistoryFailed, 'danger');
+			}
+
+		} catch (error) {
+			console.error('Error fetching friends match history:', error);
+			showToast(langPack.fetchMatchHistoryError, 'danger');
+		}
+	}
+
+	async renderMatchHistory() {
+		const langPack = profile[this.currentLang];
+		const matchDisplayElement = document.getElementById("match-list-display");
+		matchDisplayElement.innerHTML = '';
+
+		if (this.matchHistory.length > 0) {
+			this.matchHistory.forEach((match, index) => {
+				const isLastMatch = index === this.matchHistory.length - 1;
+				const matchHtml = this.createMatch(match, isLastMatch);
+				matchDisplayElement.insertAdjacentHTML('beforeend', matchHtml);
+			});
+		} else {
+			matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
+		}
+	}
+
+
+	createMatch(match, isLastMatch) {
+		const langPack = profile[this.currentLang];
+		const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
+		const resultClass = result === langPack.victory ? "text-success" : "text-danger";
+		const score = `${match.score_joueur1} - ${match.score_joueur2}`;
+		const date = new Date(match.date_partie).toLocaleString(this.currentLang);
+
+		return `
+        <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
+            </div>
+            <div class="text-center">
+                <span class="${resultClass} d-block mb-1">${result}</span>
+                <p class="mb-1">${score}</p>
+                <small class="text-muted">${date}</small>
+            </div>
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-2">
+                <small class="text-muted text-truncate text-center">${match.joueur2_username}</small>
+            </div>
+        </div>
         `;
-    }
+	}
 }
