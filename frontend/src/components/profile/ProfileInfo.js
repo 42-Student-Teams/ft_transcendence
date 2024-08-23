@@ -4,22 +4,22 @@ import store from "../../store/index.js";
 import { showToast } from "../../utils/toastUtils.js";
 
 export default class ProfileInfo extends Component {
-    constructor() {
-        super({ element: document.getElementById("profileInfo") });
-        this.currentLang = store.state.language;
-        this.render();
+	constructor() {
+		super({ element: document.getElementById("profileInfo") });
+		this.currentLang = store.state.language;
+		this.render();
 
-        store.events.subscribe('stateChange', () => {
-            if (this.currentLang !== store.state.language) {
-                this.currentLang = store.state.language;
-                this.render();
-            }
-        });
-    }
+		store.events.subscribe('stateChange', () => {
+			if (this.currentLang !== store.state.language) {
+				this.currentLang = store.state.language;
+				this.render();
+			}
+		});
+	}
 
-    async render() {
-        const langPack = profile[this.currentLang];
-        const view = /*html*/ `
+	async render() {
+		const langPack = profile[this.currentLang];
+		const view = /*html*/ `
             <div class="card shadow-sm rounded mb-4">
                 <div class="d-flex flex-column align-items-center p-4">
                     <img id="profile-picture" alt="${langPack.profilePicture}" class="img-fluid w-25 h-25 rounded-circle mb-3" >
@@ -39,39 +39,47 @@ export default class ProfileInfo extends Component {
                 </div>
             </div>
         `;
-        this.element = document.getElementById("profileInfo");
-        this.element.innerHTML = view;
-        await this.handleEvent();
-    }
+		this.element = document.getElementById("profileInfo");
+		this.element.innerHTML = view;
+		await this.handleEvent();
+	}
 
-    async handleEvent() {
-        const langPack = profile[this.currentLang];
-        try {
-            const jwt = localStorage.getItem('jwt');
-            const apiurl = process.env.API_URL;
-            const response = await fetch(`${apiurl}/get_user_profile`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${jwt}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            if (response.ok) {
-                const profile = await response.json();
-                console.log('Received profile data:', profile);
-                document.getElementById("profile-username").innerText = profile.username;
-                document.getElementById("profile-name").innerText = `${profile.prenom} ${profile.nom}`;
-                document.getElementById("profile-wins").innerText = `${langPack.wins}: ${profile.parties_gagnees}`;
-                document.getElementById("profile-picture").src = profile.avatar;
-                // TODO : Get Losses from the API
-                document.getElementById("profile-losses").innerText = `${langPack.losses}: ${profile.parties_jouees}`;
-            } else {
-                console.error('Failed to fetch match history');
-                showToast(langPack.fetchProfileFailed, 'danger');
-            }
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-            showToast(langPack.fetchProfileError, 'danger');
-        }
-    }
+	async handleEvent() {
+		const langPack = profile[this.currentLang];
+		try {
+			const jwt = localStorage.getItem('jwt');
+			const apiurl = process.env.API_URL;
+			const response = await fetch(`${apiurl}/get_user_profile`, {
+				method: 'GET',
+				headers: {
+					'Authorization': `Bearer ${jwt}`,
+					'Content-Type': 'application/json'
+				}
+			});
+			if (response.ok) {
+				const profile = await response.json();
+				console.log('Received profile data:', profile);
+				const profileUsernameElem = document.getElementById("profile-username");
+				const profileNameElem = document.getElementById("profile-name");
+				const profileWinsElem = document.getElementById("profile-wins");
+				const profileLossesElem = document.getElementById("profile-losses");
+				const profilePictureElem = document.getElementById("profile-picture");
+
+				if (profileUsernameElem && profileNameElem && profileWinsElem && profileLossesElem && profilePictureElem) {
+					profileUsernameElem.innerText = profile.username;
+					profileNameElem.innerText = `${profile.prenom} ${profile.nom}`;
+					profileWinsElem.innerText = `${langPack.wins}: ${profile.parties_gagnees}`;
+					profilePictureElem.src = profile.avatar;
+					// TODO: Get Losses from the API
+					profileLossesElem.innerText = `${langPack.losses}: ${profile.parties_jouees}`;
+				}
+			} else {
+				console.error('Failed to fetch match history');
+				showToast(langPack.fetchProfileFailed, 'danger');
+			}
+		} catch (error) {
+			console.error('Error fetching user profile:', error);
+			showToast(langPack.fetchProfileError, 'danger');
+		}
+	}
 }

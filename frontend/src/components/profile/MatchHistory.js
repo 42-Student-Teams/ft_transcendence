@@ -53,7 +53,7 @@ export default class MatchHistory extends Component {
                 
                 this.matchHistory = data.historique.slice(0, 5);
 
-                this.renderMatchHistory();
+                await this.renderMatchHistory();
             } else {
                 console.error('Failed to fetch match history');
                 showToast(langPack.fetchMatchHistoryFailed, 'danger');

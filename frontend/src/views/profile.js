@@ -113,7 +113,7 @@ export default class Profile extends Component {
 				const jwt = localStorage.getItem('jwt');
 				const apiurl = process.env.API_URL;
 				const response = await fetch(`${apiurl}/user_update`, {
-					method: 'POST',
+					method: 'PUT',
 					headers: {
 						'Authorization': `Bearer ${jwt}`,
 					},
