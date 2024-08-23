@@ -106,14 +106,16 @@ class UserUpdateView(APIView):
     # Send an error response
             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
         avatar = request.FILES['avatar']
+        # do a print of avatar
+        print(f"avatar: {avatar}")
         first_name = request.data.get('nom')
         last_name = request.data.get('prenom')
         print(f"data: {request.data}")
         # Vérifiez si le fichier est une image valide
         if not avatar.content_type.startswith('image'):
             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-        # Supprimez l'ancien avatar si il existe
-        if user.avatar:
+        # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
+        if user.avatar != 'staticfiles/avatars/default_avatar.png':
             user.avatar.delete(save=False)
         user.avatar = avatar
         
@@ -133,7 +135,7 @@ class UserUpdateView(APIView):
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
-            'avatar_url': user.avatar.url if user.avatar else static('staticfiles/avatars/default_avatar.png')
+            'avatar_url': user.avatar.url
         }, status=status.HTTP_200_OK)
 
 
@@ -419,43 +421,41 @@ class getUserProfileView(APIView):
             }
             
             return Response(profile_data, status=status.HTTP_200_OK)
-		
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
 
 class getFriendProfileView(APIView):
     def get(self, request):
         requesting_user = check_jwt(request)
         if not requesting_user:
             return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-        
-        friend_username = request.data.get('username')
+
+        friend_username = request.GET.get('username')
         if not friend_username:
             return Response({'status': 'error', 'message': 'Username parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         try:
             user = JwtUser.objects.get(username=friend_username)
-            
-            # Vérifiez si l'utilisateur demandé est un ami de l'utilisateur connecté
             requesting_user_obj = JwtUser.objects.get(username=requesting_user)
+
             if user not in requesting_user_obj.friends.all():
                 return Response({'status': 'error', 'message': 'You can only view profiles of your friends'}, status=status.HTTP_403_FORBIDDEN)
-            
+
             parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
             parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
-            
+
             profile_data = {
                 'nom': user.last_name,
                 'prenom': user.first_name,
                 'username': user.username,
                 'status': user.status,
-                'avatar': user.avatar.url,
+                'avatar': user.avatar.url if user.avatar else None,
                 'parties_jouees': parties_jouees,
                 'parties_gagnees': parties_gagnees
             }
-            
+
             return Response(profile_data, status=status.HTTP_200_OK)
-        
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 

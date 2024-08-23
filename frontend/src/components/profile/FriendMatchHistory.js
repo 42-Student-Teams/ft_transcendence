@@ -1,9 +1,19 @@
 import Component from "../../library/component.js";
+import { profile } from "../../utils/langPack.js";
+import store from "../../store/index.js";
 
 export default class FriendMatchHistory extends Component {
     constructor() {
         super({ element: document.getElementById("friendMatchHistory") });
         this.friendUsername = null;
+        this.currentLang = store.state.language;
+
+        store.events.subscribe('stateChange', () => {
+            if (this.currentLang !== store.state.language) {
+                this.currentLang = store.state.language;
+                this.render();
+            }
+        });
     }
 
     setFriendUsername(username) {
@@ -12,6 +22,8 @@ export default class FriendMatchHistory extends Component {
     }
 
     async render() {
+        const langPack = profile[this.currentLang];
+
         if (!this.friendUsername) {
             console.error("Friend username not set");
             return;
@@ -33,49 +45,48 @@ export default class FriendMatchHistory extends Component {
             }
 
             const data = await response.json();
-
-            const friendGames = data.historique.filter(game => 
+            const friendGames = data.historique.filter(game =>
                 game.joueur1_username === this.friendUsername || game.joueur2_username === this.friendUsername
             );
 
             const gamesHtml = friendGames.map(game => this.createMatch(game)).join('');
 
             const view = /*html*/ `
-            <div class="card p-3 flex-grow-1 d-flex flex-column">
-                <div class="card-content flex-grow-1 d-flex flex-column">
-                    <div class="card-body p-0 flex-grow-1 d-flex flex-column justify-content-between">
-                        <div class="my-1"></div>
-                        ${gamesHtml}
-                        <div class="my-1"></div>
+                <div class="card p-3 flex-grow-1 d-flex flex-column">
+                    <div class="card-content flex-grow-1 d-flex flex-column">
+                        <div class="card-body p-0 flex-grow-1 d-flex flex-column justify-content-between">
+                            <div class="my-1"></div>
+                            ${gamesHtml}
+                            <div class="my-1"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
             `;
-
             this.element.innerHTML = view;
         } catch (error) {
             console.error("Error fetching friend match history:", error);
-            this.element.innerHTML = "<p>Error loading friend match history</p>";
+            this.element.innerHTML = `<p>${langPack.errorLoadingFriendMatchHistory}</p>`;
         }
     }
 
     createMatch(game) {
+        const langPack = profile[this.currentLang];
         const isFriendWinner = game.gagnant_username === this.friendUsername;
-        const result = isFriendWinner ? "Victory" : "Defeat";
+        const result = isFriendWinner ? langPack.victory : langPack.defeat;
         const score = `${game.score_joueur1}-${game.score_joueur2}`;
         return `
-        <div class="d-flex justify-content-between align-items-center my-3">
-            <div class="d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-1">
+            <div class="d-flex justify-content-between align-items-center my-3">
+                <div class="d-flex flex-column align-items-center">
+                    <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle mb-1">
+                </div>
+                <div class="text-center">
+                    <h6 class="mb-0">${result}</h6>
+                    <p class="mb-0">${score}</p>
+                    <small class="text-muted">${new Date(game.date_partie).toLocaleString(this.currentLang)}</small>
+                </div>
+                <img src="https://via.placeholder.com/60" alt="${langPack.profilePicture}" class="img-fluid rounded-circle">
             </div>
-            <div class="text-center">
-                <h6 class="mb-0">${result}</h6>
-                <p class="mb-0">${score}</p>
-                <small class="text-muted">${new Date(game.date_partie).toLocaleString()}</small>
-            </div>
-            <img src="https://via.placeholder.com/60" alt="Second Image" class="img-fluid rounded-circle">
-        </div>
-        <div class="border-top my-3"></div>
+            <div class="border-top my-3"></div>
         `;
     }
 }
