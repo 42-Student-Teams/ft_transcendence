@@ -99,34 +99,40 @@ class Message(models.Model):
 # Ajout du modèle GameHistory
 class GameHistory(models.Model):
     date_partie = models.DateTimeField(default=timezone.now)
-    joueur1 = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_joueur1')
-    joueur2 = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_joueur2')
+    joueur1 = models.ForeignKey('JwtUser', on_delete=models.CASCADE, related_name='parties_joueur1')
+    joueur2 = models.ForeignKey('JwtUser', on_delete=models.CASCADE, related_name='parties_joueur2', null=True, blank=True)
     duree_partie = models.IntegerField()
     score_joueur1 = models.IntegerField()
     score_joueur2 = models.IntegerField()
-    gagnant = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='parties_gagnees', null=True, blank=True)
+    gagnant = models.ForeignKey('JwtUser', on_delete=models.CASCADE, related_name='parties_gagnees', null=True, blank=True)
+    is_ai_opponent = models.BooleanField(default=False)
+    ai_opponent_name = models.CharField(max_length=100, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # Détermination du gagnant avant la sauvegarde
         if self.score_joueur1 > self.score_joueur2:
             self.gagnant = self.joueur1
         elif self.score_joueur2 > self.score_joueur1:
-            self.gagnant = self.joueur2
+            self.gagnant = self.joueur2 if not self.is_ai_opponent else None
         super().save(*args, **kwargs)
 
     @classmethod
-    def enregistrer_partie(cls, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2):
+    def enregistrer_partie(cls, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2, is_ai_opponent=False, ai_opponent_name=None):
         partie = cls(
             joueur1=joueur1,
             joueur2=joueur2,
             duree_partie=duree_partie,
             score_joueur1=score_joueur1,
-            score_joueur2=score_joueur2
+            score_joueur2=score_joueur2,
+            is_ai_opponent=is_ai_opponent,
+            ai_opponent_name=ai_opponent_name
         )
         partie.save()
         return partie
 
     def __str__(self):
+        if self.is_ai_opponent:
+            return f"Partie entre {self.joueur1.username} et IA ({self.ai_opponent_name}) le {self.date_partie}"
         return f"Partie entre {self.joueur1.username} et {self.joueur2.username} le {self.date_partie}"
 
 
