@@ -1,7 +1,7 @@
 from rest_framework import serializers, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
-
+from django.conf import settings
 
 from .models import User, JwtUser, Message, GameHistory
 from .util import get_user_info
@@ -64,7 +64,8 @@ class GameHistorySerializer(serializers.ModelSerializer):
         read_only_fields = ['date_partie', 'gagnant']
 
     def validate(self, data):
-        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
+        if data.get('is_ai_opponent') 
+        and not data.get('ai_opponent_name'):
             raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
         if not data.get('is_ai_opponent') and not data.get('joueur2_username'):
             raise serializers.ValidationError("joueur2_username est requis lorsque is_ai_opponent est False")
@@ -134,3 +135,23 @@ class PlayerStatsSerializer(serializers.Serializer):
     total_games = serializers.IntegerField()
     victories = serializers.IntegerField()
     defeats = serializers.IntegerField()
+
+class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
+    joueur1_avatar = serializers.SerializerMethodField()
+    joueur2_avatar = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = GameHistory
+        fields = ['id', 'date_partie', 'joueur1', 'joueur2', 'duree_partie', 'score_joueur1', 'score_joueur2', 'gagnant', 'is_ai_opponent', 'ai_opponent_name', 'joueur1_avatar', 'joueur2_avatar']
+
+    def get_joueur1_avatar(self, obj):
+        if obj.joueur1:
+            return obj.joueur1.avatar.url
+        return None
+
+    def get_joueur2_avatar(self, obj):
+        if obj.is_ai_opponent:
+            return settings.STATIC_URL + 'avatars/default_avatar.png'
+        elif obj.joueur2:
+            return obj.joueur2.avatar.url
+        return None
