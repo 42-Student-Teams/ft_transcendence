@@ -160,7 +160,7 @@ export default class Profile extends Component {
 
 		const editProfileModal = document.getElementById("edit-profile-modal");
 		// wait for the dom to load 
-		editProfileModal.addEventListener("show.bs.modal", async (event) => {
+		if (editProfileModal) {
 			editProfileModal.addEventListener("submit", async (event) => {
 				event.preventDefault();
 
@@ -200,7 +200,7 @@ export default class Profile extends Component {
 							lastname: data.user.last_name,
 							avatar: data.user.avatar_url,
 						};
-						
+
 						console.log('user', profile);
 						await updateProfile(profile);
 						console.log('profile', getProfile());
@@ -215,7 +215,7 @@ export default class Profile extends Component {
 					showToast(langPack.profileUpdateError, 'danger');
 				}
 			});
-		});
+		}
 	}
 
 	async fetchMatchHistory() {
@@ -238,9 +238,9 @@ export default class Profile extends Component {
 			/*if (response.ok) {
 				const data = await response.json();
 				console.log('Received match history data:', data);
-
+	
 				this.matchHistory = data.historique.slice(0, 5);
-
+	
 				await this.renderMatchHistory();
 				console.log('1 Match history rendered');
 			} else {
@@ -256,7 +256,8 @@ export default class Profile extends Component {
 	async renderMatchHistory() {
 		const langPack = profile[this.currentLang];
 		const matchDisplayElement = document.getElementById("match-list-display");
-		matchDisplayElement.innerHTML = '';
+		if (matchDisplayElement)
+			matchDisplayElement.innerHTML = '';
 
 		console.log('2 Match history rendered');
 		if (this.matchHistory.length > 0) {
@@ -266,7 +267,8 @@ export default class Profile extends Component {
 				matchDisplayElement.insertAdjacentHTML('beforeend', matchHtml);
 			});
 		} else {
-			matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
+			if (matchDisplayElement)
+				matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
 		}
 	}
 

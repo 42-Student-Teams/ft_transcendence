@@ -275,7 +275,7 @@ export default class Home extends Component {
 		});
 
 		updateNoAiPlayersMessage();
-		if (this.element.querySelector("#btn-play-local")){
+		if (this.element.querySelector("#btn-play-local")) {
 
 			this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
 				event.preventDefault();
@@ -293,58 +293,63 @@ export default class Home extends Component {
 			});
 		}
 
-		this.element.querySelector("#btn-play-tournament").addEventListener("click", async (event) => {
-			event.preventDefault();
-			const nickname = document.getElementById('input-nickname').value;
-			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
-			const speed = document.getElementById('formSwitchCheckTournament').checked;
-			const aiPlayers = Array.from(aiNicknames);
+		if (this.element.querySelector("#btn-play-tournament")) {
+			this.element.querySelector("#btn-play-tournament").addEventListener("click", async (event) => {
+				event.preventDefault();
+				const nickname = document.getElementById('input-nickname').value;
+				const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
+				const speed = document.getElementById('formSwitchCheckTournament').checked;
+				const aiPlayers = Array.from(aiNicknames);
 
-			// From here added code for the tournament toast
-			if (!nickname || aiNicknames.has(nickname)) {
-				showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
-				return;
-			}
+				// From here added code for the tournament toast
+				if (!nickname || aiNicknames.has(nickname)) {
+					showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+					return;
+				}
 
-			const game = {
-				Nickname: nickname,
-				Color: colorRadio.value,
-				Speed: speed,
-				AiPlayers: aiPlayers
-			};
+				const game = {
+					Nickname: nickname,
+					Color: colorRadio.value,
+					Speed: speed,
+					AiPlayers: aiPlayers
+				};
 
-			try {
-				// Simulate backend interaction
-				const response = await this.postTournamentData(game);
-				if (response.status !== 200) throw new Error("Backend error");
+				try {
+					// Simulate backend interaction
+					const response = await this.postTournamentData(game);
+					if (response.status !== 200) throw new Error("Backend error");
 
-				navigateTo("/tournament-game");
-			} catch (error) {
-				showToast("Incorrect input or server error. Please try again.", "danger");
-			}
-		});
+					navigateTo("/tournament-game");
+				} catch (error) {
+					showToast("Incorrect input or server error. Please try again.", "danger");
+				}
+			});
+		}
 
-		this.element.querySelector("#btn-join-tournament").addEventListener("click", async (event) => {
-			event.preventDefault();
-			const nickname = document.getElementById('input-join-nickname').value;
+		if (this.element.querySelector("#btn-join-tournament")) {
 
-			// From here added code for the tournament toast
-			if (!nickname) {
-				showToast("Invalid input: Nickname can't be empty", "danger");
-				return;
-			}
+			this.element.querySelector("#btn-join-tournament").addEventListener("click", async (event) => {
+				event.preventDefault();
+				const nickname = document.getElementById('input-join-nickname').value;
 
-			try {
-				// Simulate backend interaction
-				//const response = await this.postTournamentData(game);
-				//if (response.status !== 200) throw new Error("Backend error");
-				store.dispatch("setJoinTournamentNickName", nickname);
-				console.log(store.state.joinNickname);
-				navigateTo("/join-tournament");
-			} catch (error) {
-				showToast("Incorrect input or server error. Please try again.", "danger");
-			}
-		});
+				// From here added code for the tournament toast
+				if (!nickname) {
+					showToast("Invalid input: Nickname can't be empty", "danger");
+					return;
+				}
+
+				try {
+					// Simulate backend interaction
+					//const response = await this.postTournamentData(game);
+					//if (response.status !== 200) throw new Error("Backend error");
+					store.dispatch("setJoinTournamentNickName", nickname);
+					console.log(store.state.joinNickname);
+					navigateTo("/join-tournament");
+				} catch (error) {
+					showToast("Incorrect input or server error. Please try again.", "danger");
+				}
+			});
+		}
 
 		// backend interaction, essaie
 		// 	try {
@@ -386,47 +391,50 @@ export default class Home extends Component {
 
 
 
+		if (this.element.querySelector("#btn-toggle-blocked")) {
+			this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
+				event.preventDefault();
 
+				var sideChat = document.getElementById('side-chat');
+				var pendingList = document.getElementById('side-pending-list');
+				var blockedList = document.getElementById('side-blocked-list');
+				var friendlist = document.getElementById('side-friend-list');
+				var btnBlocked = document.getElementById('btn-toggle-blocked');
+				var btnFriends = document.getElementById('btn-toggle-friends');
+				var btnPending = document.getElementById('btn-toggle-pending');
+				toggleVisibility(blockedList, btnBlocked, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
+			});
+		}
 
-		this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
-			event.preventDefault();
+		if (this.element.querySelector("#btn-toggle-friends")) {
+			this.element.querySelector("#btn-toggle-friends").addEventListener("click", async (event) => {
+				event.preventDefault();
 
-			var sideChat = document.getElementById('side-chat');
-			var pendingList = document.getElementById('side-pending-list');
-			var blockedList = document.getElementById('side-blocked-list');
-			var friendlist = document.getElementById('side-friend-list');
-			var btnBlocked = document.getElementById('btn-toggle-blocked');
-			var btnFriends = document.getElementById('btn-toggle-friends');
-			var btnPending = document.getElementById('btn-toggle-pending');
-			toggleVisibility(blockedList, btnBlocked, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-		});
+				var sideChat = document.getElementById('side-chat');
+				var pendingList = document.getElementById('side-pending-list');
+				var blockedList = document.getElementById('side-blocked-list');
+				var friendlist = document.getElementById('side-friend-list');
+				var btnBlocked = document.getElementById('btn-toggle-blocked');
+				var btnFriends = document.getElementById('btn-toggle-friends');
+				var btnPending = document.getElementById('btn-toggle-pending');
+				toggleVisibility(friendlist, btnFriends, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
+			});
+		}
 
-		this.element.querySelector("#btn-toggle-friends").addEventListener("click", async (event) => {
-			event.preventDefault();
+		if (this.element.querySelector("#btn-toggle-pending")) {
+			this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
+				event.preventDefault();
 
-			var sideChat = document.getElementById('side-chat');
-			var pendingList = document.getElementById('side-pending-list');
-			var blockedList = document.getElementById('side-blocked-list');
-			var friendlist = document.getElementById('side-friend-list');
-			var btnBlocked = document.getElementById('btn-toggle-blocked');
-			var btnFriends = document.getElementById('btn-toggle-friends');
-			var btnPending = document.getElementById('btn-toggle-pending');
-			toggleVisibility(friendlist, btnFriends, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-		});
-
-		this.element.querySelector("#btn-toggle-pending").addEventListener("click", async (event) => {
-			event.preventDefault();
-
-			var sideChat = document.getElementById('side-chat');
-			var pendingList = document.getElementById('side-pending-list');
-			var blockedList = document.getElementById('side-blocked-list');
-			var friendlist = document.getElementById('side-friend-list');
-			var btnBlocked = document.getElementById('btn-toggle-blocked');
-			var btnFriends = document.getElementById('btn-toggle-friends');
-			var btnPending = document.getElementById('btn-toggle-pending');
-			toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
-		});
-
+				var sideChat = document.getElementById('side-chat');
+				var pendingList = document.getElementById('side-pending-list');
+				var blockedList = document.getElementById('side-blocked-list');
+				var friendlist = document.getElementById('side-friend-list');
+				var btnBlocked = document.getElementById('btn-toggle-blocked');
+				var btnFriends = document.getElementById('btn-toggle-friends');
+				var btnPending = document.getElementById('btn-toggle-pending');
+				toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
+			});
+		}
 	}
 
 
