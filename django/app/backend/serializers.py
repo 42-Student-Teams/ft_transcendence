@@ -171,3 +171,8 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
         elif obj.is_ai_opponent and obj.score_joueur2 > obj.score_joueur1:
             return obj.ai_opponent_name
         return None
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JwtUser
+        fields = ('first_name', 'last_name', 'avatar')

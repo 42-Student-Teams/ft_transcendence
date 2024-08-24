@@ -2,6 +2,7 @@ import NavBar from '../components/home/navbar.js';
 import { showToast } from "../utils/toastUtils.js";
 import Component from "../library/component.js";
 import { profile } from "../utils/langPack.js";
+import { getProfile, updateProfile } from "../utils/profileUtils.js";
 import store from "../store/index.js";
 
 export default class Profile extends Component {
@@ -26,18 +27,18 @@ export default class Profile extends Component {
             <div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
                 <div class="col-md-4 d-flex flex-column overflow-auto p-0">
                     <div id="profileInfo" class="m-4">
-						<div class="card shadow-sm rounded mb-4">
+						<div class="card shadow-sm rounded mb-4 ">
             			    <div class="d-flex flex-column align-items-center p-4">
             			        <img id="profile-picture" alt="${langPack.profilePicture}" class="img-profile-avatar rounded-circle mb-3" >
             			        <div class="text-center">
-            			            <h5 id="profile-name" class="mb-1 font-weight-bold"></h5>
-            			            <p id="profile-username" class="text-muted mb-2"></p>
+            			            <h5 id="profile-name" class="mb-1 fs-4"></h5>
+            			            <p id="profile-username" class="text-muted mb-2 fs-6"></p>
             			            <button class="btn btn-outline-secondary btn-sm mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">
             			                <i class="fa-solid fa-pen"></i> ${langPack.editProfile}
             			            </button>
             			        </div>
-            			        <div class="w-100 border-top mt-2 pt-3">
-            			            <div class="text-center">
+            			        <div class="w-100 border-top mt-2 pt-3 ">
+            			            <div class="text-center ">
             			                <h6 id="profile-wins" class="text-muted mb-0"></h6>
             			                <h6 id="profile-losses" class="text-muted mb-0"></h6>
 										<h6 id="profile-total" class="text-muted mb-0"></h6>
@@ -126,8 +127,13 @@ export default class Profile extends Component {
 
 			this.fetchMatchHistory();
 			if (response.ok) {
+
+				const test = await getProfile();
+				console.log('test', test);
+
+
 				const profile = await response.json();
-				console.log('Received profile data:', profile);
+				console.log('Received user profile data:', profile);
 				const profileUsernameElem = document.getElementById("profile-username");
 				const profileNameElem = document.getElementById("profile-name");
 				const profileWinsElem = document.getElementById("profile-wins");
@@ -168,14 +174,14 @@ export default class Profile extends Component {
 				}
 
 				const formData = new FormData();
-				formData.append('nom', lastName);
-				formData.append('prenom', firstName);
+				formData.append('last_name', lastName);
+				formData.append('first_name', firstName);
 				formData.append('avatar', profilePicture);
 
 				try {
 					const jwt = localStorage.getItem('jwt');
 					const apiurl = process.env.API_URL;
-					const response = await fetch(`${apiurl}/user_update`, {
+					const response = await fetch(`${apiurl}/update_user`, {
 						method: 'PUT',
 						headers: {
 							'Authorization': `Bearer ${jwt}`,
@@ -184,7 +190,20 @@ export default class Profile extends Component {
 					});
 
 					if (response.ok) {
+
 						showToast(langPack.profileUpdateSuccess, 'success');
+
+						const data = await response.json();
+						console.log('Received updated profile data:', data.user);
+						const profile = {
+							firstname: data.user.first_name,
+							lastname: data.user.last_name,
+							avatar: data.user.avatar_url,
+						};
+						
+						console.log('user', profile);
+						await updateProfile(profile);
+						console.log('profile', getProfile());
 					}
 					if (!response.ok) {
 						console.error('Error updating user profile:', response.statusText);
@@ -204,15 +223,19 @@ export default class Profile extends Component {
 		try {
 			const jwt = localStorage.getItem('jwt');
 			const apiurl = process.env.API_URL;
-			const response = await fetch(`${apiurl}/history_getGames`, {
+			await fetch(`${apiurl}/history_getGames`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${jwt}`,
 					'Content-Type': 'application/json'
 				}
-			});
+			}).then((response) => response.json())
+				.then((data) => {
+					this.matchHistory = data.historique.slice(0, 5);
+					this.renderMatchHistory();
+				});
 
-			if (response.ok) {
+			/*if (response.ok) {
 				const data = await response.json();
 				console.log('Received match history data:', data);
 
@@ -223,7 +246,7 @@ export default class Profile extends Component {
 			} else {
 				console.error('Failed to fetch match history');
 				showToast(langPack.fetchMatchHistoryFailed, 'danger');
-			}
+			}*/
 		} catch (error) {
 			console.error('Error fetching match history:', error);
 			showToast(langPack.fetchMatchHistoryError, 'danger');
@@ -248,7 +271,6 @@ export default class Profile extends Component {
 	}
 
 	createMatch(match, isLastMatch) {
-		console.log('3 Match history rendered');
 		const langPack = profile[this.currentLang];
 		const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
 		const resultClass = result === langPack.victory ? "text-success" : "text-danger";
@@ -275,9 +297,9 @@ export default class Profile extends Component {
 	}
 
 	onStateChange() {
-        if (this.currentLang !== store.state.language) {
-            this.currentLang = store.state.language;
-            this.render();
-        }
-    }
+		if (this.currentLang !== store.state.language) {
+			this.currentLang = store.state.language;
+			this.render();
+		}
+	}
 }

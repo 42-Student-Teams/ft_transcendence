@@ -9,12 +9,13 @@ import store from "../store/index.js";
 import { navigateTo } from "../utils/router.js";
 import * as bootstrap from 'bootstrap';
 import { home } from "/src/utils/langPack.js";
+import { getProfile, setProfile } from "/src/utils/profileUtils.js";
 
 export default class Home extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
 		this.currentLang = store.state.language; // Ajout de la langue courante
-        store.events.subscribe("stateChange", () => this.onStateChange()); // Abonnement aux changements d'état
+		store.events.subscribe("stateChange", () => this.onStateChange()); // Abonnement aux changements d'état
 		this.render();
 
 		this.components = {
@@ -24,13 +25,12 @@ export default class Home extends Component {
 			sidePendingList: new SidePendingList(),
 			sideBlockedList: new SideBlockedList(),
 		};
-
 	}
 
 	async render() {
-        const langPack = home[this.currentLang]; // Utilisation du pack de langue pour la page d'accueil
+		const langPack = home[this.currentLang]; // Utilisation du pack de langue pour la page d'accueil
 
-        const view = /*html*/ `
+		const view = /*html*/ `
           <div class="h-100 d-flex flex-column">
             <div class="row chat-rm-margin ">
               <nav class="navbar navbar-expand pl-4 bg-white shadow-sm" id="navBar"></nav>
@@ -203,12 +203,30 @@ export default class Home extends Component {
 		this.handleEvent();
 	}
 
+
+	async setUserProfile() {
+		const jwt = localStorage.getItem('jwt');
+		const apiurl = process.env.API_URL;
+		const response = await fetch(`${apiurl}/get_user_profile`, {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${jwt}`,
+				'Content-Type': 'application/json'
+			}
+		});
+		const data = await response.json();
+		setProfile(data);
+	}
+
+
+
 	async handleEvent() {
 		const iaPlayersContainer = this.element.querySelector("#ia-players");
 		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");
 		const noAiPlayersMessage = this.element.querySelector("#no-ai-players");
 		const aiNicknames = new Set();
 
+		await this.setUserProfile();
 		const updateNoAiPlayersMessage = () => {
 			if (iaPlayersContainer.children.length === 2) { // Only the "No AI players" message
 				noAiPlayersMessage.style.display = 'block';
@@ -229,7 +247,7 @@ export default class Home extends Component {
 
 			if (aiNicknames.has(nickname)) {
 				console.log("This AI nickname is already used. Please choose another one.");
-				return ;
+				return;
 			}
 
 			const aiPlayerDiv = document.createElement("div");
@@ -266,7 +284,7 @@ export default class Home extends Component {
 			const game = {
 				color: colorRadio.value,
 				speed: speed,
-				ai : ai
+				ai: ai
 			};
 			//console.log(game);
 			localStorage.setItem('local-game', JSON.stringify(game));
@@ -282,9 +300,9 @@ export default class Home extends Component {
 
 			// From here added code for the tournament toast
 			if (!nickname || aiNicknames.has(nickname)) {
-                showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
-                return;
-            }
+				showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+				return;
+			}
 
 			const game = {
 				Nickname: nickname,
@@ -292,17 +310,17 @@ export default class Home extends Component {
 				Speed: speed,
 				AiPlayers: aiPlayers
 			};
-			
-			try {
-                // Simulate backend interaction
-                const response = await this.postTournamentData(game);
-                if (response.status !== 200) throw new Error("Backend error");
 
-                navigateTo("/tournament-game");
-            } catch (error) {
-                showToast("Incorrect input or server error. Please try again.", "danger");
-            }
-        });
+			try {
+				// Simulate backend interaction
+				const response = await this.postTournamentData(game);
+				if (response.status !== 200) throw new Error("Backend error");
+
+				navigateTo("/tournament-game");
+			} catch (error) {
+				showToast("Incorrect input or server error. Please try again.", "danger");
+			}
+		});
 
 		this.element.querySelector("#btn-join-tournament").addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -310,21 +328,21 @@ export default class Home extends Component {
 
 			// From here added code for the tournament toast
 			if (!nickname) {
-                showToast("Invalid input: Nickname can't be empty", "danger");
-                return;
-            }
-			
+				showToast("Invalid input: Nickname can't be empty", "danger");
+				return;
+			}
+
 			try {
-                // Simulate backend interaction
-                //const response = await this.postTournamentData(game);
-                //if (response.status !== 200) throw new Error("Backend error");
+				// Simulate backend interaction
+				//const response = await this.postTournamentData(game);
+				//if (response.status !== 200) throw new Error("Backend error");
 				store.dispatch("setJoinTournamentNickName", nickname);
 				console.log(store.state.joinNickname);
-                navigateTo("/join-tournament");
-            } catch (error) {
-            	showToast("Incorrect input or server error. Please try again.", "danger");
-            }
-        });
+				navigateTo("/join-tournament");
+			} catch (error) {
+				showToast("Incorrect input or server error. Please try again.", "danger");
+			}
+		});
 
 		// backend interaction, essaie
 		// 	try {
@@ -363,6 +381,10 @@ export default class Home extends Component {
 				}
 			});
 		}
+
+
+
+
 
 		this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -404,35 +426,37 @@ export default class Home extends Component {
 		});
 
 	}
+
+
 	async postTournamentData(gameData) {
-        // Simulated function for posting data to the server
-        // remplacer ca avec un vrai call API voir avec leo comment faire 
-        return { status: 200 }; // Assume success
-    }
+		// Simulated function for posting data to the server
+		// remplacer ca avec un vrai call API voir avec leo comment faire 
+		return { status: 200 }; // Assume success
+	}
 
 	// // posting data tournament pour de vrai, esssaie
-    // async postTournamentData(gameData) {
-    //     const apiurl = 'https://localhost/backend'; // base URL for API
-    //     const jwt = localStorage.getItem('jwt');
+	// async postTournamentData(gameData) {
+	//     const apiurl = 'https://localhost/backend'; // base URL for API
+	//     const jwt = localStorage.getItem('jwt');
 
-    //     try {
-    //         const response = await fetch(`${apiurl}/tournament`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Authorization': `Bearer ${jwt}`,
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             body: JSON.stringify(gameData)
-    //         });
+	//     try {
+	//         const response = await fetch(`${apiurl}/tournament`, {
+	//             method: 'POST',
+	//             headers: {
+	//                 'Authorization': `Bearer ${jwt}`,
+	//                 'Content-Type': 'application/json'
+	//             },
+	//             body: JSON.stringify(gameData)
+	//         });
 
-    //         return response;
-    //     } catch (error) {
-    //         console.error("Error posting tournament data:", error);
-    //         throw error;
-    //     }
-    // }
+	//         return response;
+	//     } catch (error) {
+	//         console.error("Error posting tournament data:", error);
+	//         throw error;
+	//     }
+	// }
 
-    showToast(message, type) {
+	showToast(message, type) {
 		// Bootstrap toast centered in the page
 		const toastHTML = `
 			<div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
@@ -449,19 +473,19 @@ export default class Home extends Component {
 		const toastContainer = document.createElement('div');
 		toastContainer.innerHTML = toastHTML;
 		document.body.appendChild(toastContainer);
-	
+
 		const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
 		toastElement.show();
-	
+
 		setTimeout(() => {
 			document.body.removeChild(toastContainer);
 		}, 5000);
 	}
 
-	onStateChange() {
-        if (this.currentLang !== store.state.language) {
-            this.currentLang = store.state.language;
-            this.render();
-        }
-    }
+	async onStateChange() {
+		if (this.currentLang !== store.state.language) {
+			this.currentLang = store.state.language;
+			this.render();
+		}
+	}
 }

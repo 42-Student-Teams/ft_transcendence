@@ -82,8 +82,7 @@ export default class Navbar extends Component {
         store.dispatch("setLanguage", lang);
     }
 
-    async onStateChange() {
-		console.log('navbar onStateChange');
+    onStateChange() {
         if (this.currentLang !== store.state.language) {
             this.currentLang = store.state.language;
             this.render();

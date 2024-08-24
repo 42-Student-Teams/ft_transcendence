@@ -22,7 +22,6 @@ export default class ProfileInfo extends Component {
 		const view = /*html*/ `
             
 
-
 		
         `;
 		this.element = document.getElementById("profileInfo");

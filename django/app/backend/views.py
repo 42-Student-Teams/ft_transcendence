@@ -19,7 +19,7 @@ from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer
 
 from .util import get_user_info
 
@@ -131,32 +131,18 @@ class ImprovedUpdateUserView(APIView):
             user = JwtUser.objects.get(username=check_jwt(request))
         except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        if 'first_name' in request.data:
-            user.first_name = request.data['first_name']
-        if 'last_name' in request.data:
-            user.last_name = request.data['last_name']
         
-        if 'avatar' in request.FILES:
-            new_avatar = request.FILES['avatar']
-            if not new_avatar.content_type.startswith('image'):
-                return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-            
-            # Check if current avatar is not the default one
-            default_avatar_path = os.path.join(settings.STATIC_ROOT, 'avatars', 'default_avatar.png')
-            if user.avatar and user.avatar.path != default_avatar_path:
-                # Delete the old avatar file
-                if os.path.isfile(user.avatar.path):
-                    os.remove(user.avatar.path)
-            
-            # Update with new avatar
-            user.avatar = new_avatar
-
-        try:
-            user.save()
-        except ValidationError as e:
-            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
+        serializer = UserProfileSerializer(user, data=request.data)
+        if (not serializer.is_valid()):
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        max_avatar_size = 1024 * 1024  # 1MB       
+        
+        if 'avatar' in request.data:
+            if (request.data['avatar'].size > max_avatar_size):
+                return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
+            user.avatar.delete()
+            user.avatar = request.data['avatar']
+            serializer.save()
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
