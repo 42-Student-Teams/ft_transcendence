@@ -98,12 +98,8 @@ class UserListView(APIView):
 
 class getUserProfileView(APIView):
     def get(self, request):
-        requesting_user = check_jwt(request)
-        if not requesting_user:
-            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-
         try:
-            user = JwtUser.objects.get(username=requesting_user)
+            user = JwtUser.objects.get(username=check_jwt(request))
             user.refresh_from_db() # Rafraîchit les données de l'utilisateur pour obtenir les champs mis à jour
             parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
             parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
