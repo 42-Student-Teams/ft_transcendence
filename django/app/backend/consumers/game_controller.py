@@ -9,6 +9,8 @@ from channels.layers import get_channel_layer
 from backend.models import JwtUser, AcknowledgedMatchRequest
 
 
+#import inspect
+
 def sign(n):
     if n < 0:
         return -1
@@ -97,8 +99,10 @@ def move_paddle_ai(ball: Ball, paddle: Paddle):
     if ball.y > paddle.y and ball.dx > 0:
         paddle.move_down()
 
+
 class GameController():
     def __init__(self, acknowledgement: AcknowledgedMatchRequest):
+        print(f'%%%%%%%%%%%%%%%%%%%%%%%%%\nINITTING CONTROLLER ID [{id(self)}]!\n%%%%%%%%%%%%%%%%%%%%%%%%%%\n', flush=True)
         self.acknowledgement = acknowledgement
         self.channel_layer = get_channel_layer()
         self.controller_channel = f'controller_{acknowledgement.match_key}'
@@ -136,6 +140,7 @@ class GameController():
         if self.game_thread:
             self.game_thread.join()
 
+
     async def game_loop(self):
         print(f'Initial ballpos: {self.ball.x}, {self.ball.y}', flush=True)
         while self.running:
@@ -158,15 +163,17 @@ class GameController():
                     self.start_ball()
                 continue
 
-            timestamp = None
+            author_timestamp = None
+            opponent_timestamp = None
+            event = None
             # Process all events in the queue
-            while self.event_queue:
-                async with self.queue_lock:
+            async with self.queue_lock:
+                while self.event_queue:
                     event = self.event_queue.pop(0)
                     # TODO: check for bounds
                     if 'pad' in event and event['pad'] is not None:
-                        timestamp = event['timestamp']
                         if event['username'] == self.acknowledgement.request_author.username:
+                            author_timestamp = event['timestamp']
                             move_delta = event['pad'] - self.author_paddle.y
                             if move_delta < 0:
                                 move_delta = - self.config.paddleSpeed
@@ -174,6 +181,7 @@ class GameController():
                                 move_delta = self.config.paddleSpeed
                             self.author_paddle.y += move_delta
                         else:
+                            opponent_timestamp = event['timestamp']
                             if self.acknowledgement.target_user is not None:
                                 move_delta = event['pad'] - self.opponent_paddle.y
                                 if move_delta < 0:
@@ -207,8 +215,18 @@ class GameController():
                 "opponent_paddle_pos": {'x': self.opponent_paddle.x, 'y': self.opponent_paddle.y},
                 "ball_pos": {'x': self.ball.x, 'y': self.ball.y},
             }
-            if timestamp is not None:
-                update['timestamp'] = timestamp
+            update['paddle_moved'] = False
+            if author_timestamp is not None:
+                update['author_timestamp'] = author_timestamp
+                update['paddle_moved'] = True
+            else:
+                update['author_timestamp'] = 1
+
+            if opponent_timestamp is not None:
+                update['opponent_timestamp'] = opponent_timestamp
+                update['paddle_moved'] = True
+            else:
+                update['opponent_timestamp'] = 1
             await self.send_game_update(update)
 
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)
@@ -218,10 +236,11 @@ class GameController():
 
     async def send_game_update(self, update):
         update['type'] = 'relay_from_controller'
+        update['controller_id'] = id(self)
         await self.send_channel(self.controller_channel, 'relay_from_controller', update)
 
     async def send_channel(self, channel, msgtype, content):
-        await (self.channel_layer.group_send)(
+        await self.channel_layer.group_send(
             channel, {"type": msgtype, "msg_obj": content}
         )
 
@@ -230,6 +249,8 @@ class GameController():
             pass
         else:
             async with self.queue_lock:
+                #print(f'CONTROLLER GOT EVENT: {msg_obj} ({inspect.stack()[1][3]})')
+                print(f'CONTROLLER [{id(self)}] GOT EVENT: {msg_obj}')
                 self.event_queue.append(msg_obj)
 
     # Ported funcs

@@ -21,7 +21,7 @@ class JwtUserSerializer(serializers.ModelSerializer):
                 raise PermissionDenied
             instance.username = user_info['login']
             if JwtUser.objects.filter(username=instance.username).exists():
-                return JwtUser.objects.get(username=instance.username)
+                return JwtUser.objects.filter(username=instance.username).first()
             instance.set_unusable_password()
             instance.isoauth = True
         else:
@@ -57,6 +57,8 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
         fields = ('joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2')
 
     def create(self, validated_data):
-        joueur1 = JwtUser.objects.get(username=validated_data.pop('joueur1_username'))
-        joueur2 = JwtUser.objects.get(username=validated_data.pop('joueur2_username'))
+        joueur1 = JwtUser.objects.filter(username=validated_data.pop('joueur1_username')).first()
+        joueur2 = JwtUser.objects.filter(username=validated_data.pop('joueur2_username')).first()
+        if joueur1 is None or joueur2 is None:
+            return
         return GameHistory.objects.create(joueur1=joueur1, joueur2=joueur2, **validated_data)

@@ -70,7 +70,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         if 'username' not in payload:
             print('RETURN', flush=True)
             return
-        self.user = JwtUser.objects.get(username=payload['username'])
+        self.user = JwtUser.objects.filter(username=payload['username']).first()
         self.user_username = self.user.username
         if self.user is None:
             print('RETURN', flush=True)
@@ -109,6 +109,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps(content))
 
     async def send_channel(self, channel, msgtype, content):
+        print(f'SEND TO CHANNEL {channel} ({type(channel)})', flush=True)
         await self.channel_layer.group_send(
             channel, {"type": msgtype, "msg_obj": content}
         )

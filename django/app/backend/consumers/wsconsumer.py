@@ -1,5 +1,5 @@
-from backend.models import JwtUser, Message, MatchRequest, AcknowledgedMatchRequest
-from backend.util import timestamp_now
+from backend.models import JwtUser, Message, MatchRequest, AcknowledgedMatchRequest, GameSearchQueue
+from backend.util import timestamp_now, random_alphanum, AnonClass
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
 from asgiref.sync import async_to_sync, sync_to_async
@@ -10,8 +10,16 @@ class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def clean_db_entries(self):
+        MatchRequest.objects.filter(request_author=self.user).delete()
+        AcknowledgedMatchRequest.objects.filter(request_author=self.user).delete()
+        GameSearchQueue.objects.filter(user=self.user).delete()
+
     async def on_auth(self, msg_obj):
         await self.subscribe_to_groups()
+
+    async def on_disconnect(self):
+        await database_sync_to_async(self.clean_db_entries)()
 
     def get_friends(self):
         friends = self.user.friends.all()
@@ -37,11 +45,14 @@ class WsConsumer(WsConsumerCommon):
         self.send_json({'pong': 'pong'})
 
     @staticmethod
-    def get_friend_by_username(friend_username):
-        return JwtUser.objects.get(username=friend_username)
+    def get_user_by_username(friend_username):
+        return JwtUser.objects.filter(username=friend_username).first()
 
     def username_is_blocked(self, username):
         return len(self.user.blocked_users.filter(username=username)) > 0
+
+    def user_is_blocked(self, user: JwtUser):
+        return len(self.user.blocked_users.filter(username=user.username)) > 0
 
     def create_message(self, recipient, content):
         Message.objects.create(author=self.user, recipient=recipient, content=content,
@@ -54,7 +65,7 @@ class WsConsumer(WsConsumerCommon):
         if friend_username is None or msg_obj.get('message') is None:
             return
         try:
-            friend = await database_sync_to_async(self.get_friend_by_username)(friend_username)
+            friend = await database_sync_to_async(self.get_user_by_username)(friend_username)
         except JwtUser.DoesNotExist:
             return
         blocked = await database_sync_to_async(self.username_is_blocked)(friend_username)
@@ -72,19 +83,119 @@ class WsConsumer(WsConsumerCommon):
         acknowledgement = AcknowledgedMatchRequest.acknowledge_bot_request(
             self.user, None, msg_obj.get('ball_color'),
             msg_obj.get('fast'))
-        return acknowledgement
+        return acknowledgement.match_key
 
-    def request_match(self, msg_obj):
+    @staticmethod
+    def acknowledge_request(request_id):
+        acknowledgement = AcknowledgedMatchRequest.acknowledge_request(MatchRequest.objects.filter(match_key=request_id).first())
+        return acknowledgement.match_key
+
+    @staticmethod
+    def acknowledge_request_waiting(author, target_username, ball_color, fast):
+        try:
+            target_user = JwtUser.objects.filter(username=target_username).first()
+        except JwtUser.DoesNotExist:
+            return None
+        acknowledgement = AcknowledgedMatchRequest(
+            request_author=author,
+            target_user=target_user,
+            ball_color=ball_color,
+            fast=fast,
+            is_bot=False,
+            match_key=random_alphanum(10)
+        )
+        acknowledgement.save()
+        return acknowledgement.match_key
+
+    def request_match(self, msg_obj, friend):
         match = MatchRequest.request_match(request_author=self.user, target_user=friend,
                                    ball_color=msg_obj.get('ball_color'),
                                    fast=msg_obj.get('fast'))
         return match.id
+
+    @staticmethod
+    def get_waiting_username():
+        user = GameSearchQueue.get_first_user()
+        if user is None:
+            return None
+        else:
+            GameSearchQueue.remove_user_from_queue(user)
+            return user.username
+
+    @staticmethod
+    def add_user_to_queue(user):
+        GameSearchQueue.add_user_to_queue(user)
+
+    @staticmethod
+    def get_oldest_open_request():
+        # Query for the oldest MatchRequest where target_user is None and fast is False
+        oldest_request: MatchRequest = MatchRequest.objects.filter(target_user__isnull=True, fast=False).order_by(
+            'created_at').first()
+        print("Got oldest request", flush=True)
+        if oldest_request:
+            req_copy = AnonClass(
+                request_author=AnonClass(username=oldest_request.request_author.username),
+                target_user=AnonClass(username=oldest_request.target_user.username)
+                                if oldest_request.target_user is not None else None,
+                ball_color=oldest_request.ball_color,
+                fast=oldest_request.fast,
+                created_at=oldest_request.created_at,
+                match_key=oldest_request.match_key
+            )
+
+
+
+            MatchRequest.objects.filter(request_author=oldest_request.request_author).delete()
+            return req_copy
+        return None
+
+    def acknowledge_request_join_from_search(self, request, target):
+        author = JwtUser.objects.filter(username=request.request_author.username).first()
+        if author is None:
+            return None
+        acknowledgement = AcknowledgedMatchRequest(
+            request_author=author,
+            target_user=target,
+            ball_color=request.ball_color,
+            fast=request.fast,
+            is_bot=False,
+            match_key=random_alphanum(10)
+        )
+        acknowledgement.save()
+        return acknowledgement.match_key
+
+    @staticmethod
+    def user_exists(username):
+        return JwtUser.objects.filter(username=username).exists()
+
+    def get_friend_by_username(self, friend_username):
+        return self.user.friend.filter(username=friend_username).first()
 
     # 2) server gets game request and replies to it with either a match_request_id
     #    or an acknowledgement (game start), in the case of game against AI
     @register_ws_func
     async def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
+        if msg_obj.get('search_for_game') is not None and msg_obj.get('search_for_game') == True:
+            request = await database_sync_to_async(self.get_oldest_open_request)()
+            if request is not None:
+                print('Someone is proposing a match, joining', flush=True)
+                # if someone is already proposing a match we join it
+                acknowledgement_key = await database_sync_to_async(self.acknowledge_request_join_from_search)(request,
+                                                                                                              self.user)
+                if acknowledgement_key is None:
+                    return
+                # TODO: see if we can share an acknowledgement. I guess yeah? the opponent doesn't need the acknowledgement
+                await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
+                print(f'Sending acknowledgement to author ({request.request_author}, (we are {self.user_username} (his opponent))', flush=True)
+                # We need to specify the target_user because we ourselves are also subscribed to the group
+                await self.send_channel(request.request_author.username, 'relay_game_acknowledgement',
+                                        {'match_key': acknowledgement_key, 'target_user': request.request_author.username})
+            else:
+                # otherwise we add ourselves to the match search queue
+                print('Adding ourselves to wait queue', flush=True)
+                await database_sync_to_async(self.add_user_to_queue)(self.user)
+            return
         if msg_obj.get('ball_color') is None or msg_obj.get('ball_color') not in ['black', 'blue', 'red']:
             msg_obj['ball_color'] = 'black'
         if msg_obj.get('fast') is None:
@@ -98,30 +209,55 @@ class WsConsumer(WsConsumerCommon):
             print("err2", flush=True)
             return
         if msg_obj.get('target_user') is not None:
-            if not JwtUser.objects.filter(username=msg_obj.get('target_user')).exists():
+            if not await database_sync_to_async(self.user_exists)(msg_obj.get('target_user')):
                 await self.send_json(errormsg)
                 print("err3", flush=True)
                 return
-            try:
-                friend = self.user.friends.get(username=msg_obj.get('target_user'))
-            except JwtUser.DoesNotExist:
+
+            friend = await database_sync_to_async(self.get_friend_by_username)(msg_obj.get('target_user'))
+            if friend is None:
                 await self.send_json(errormsg)
                 print("err4", flush=True)
                 return
-            blocked = self.user.blocked_users.filter(username=friend.username)
-            if len(blocked) > 0:
+            blocked = await database_sync_to_async(self.user_is_blocked)(friend)
+            if blocked:
                 await self.send_json(errormsg)
-                print("err5", flush=True)
+                print("err5 (blocked)", flush=True)
                 return
-            match_request_id = await database_sync_to_async(self.request_match)(msg_obj)
+            match_request_id = await database_sync_to_async(self.request_match)(msg_obj, friend)
             await self.send_json({'type': 'match_request_id', 'id': match_request_id})
         elif msg_obj.get('ai'):
-            acknowledgement = await database_sync_to_async(self.acknowledge_bot_request)(msg_obj)
-            await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement.match_key})
+            acknowledgement_key = await database_sync_to_async(self.acknowledge_bot_request)(msg_obj)
+            await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
             return
         else:
-            match_request_id = await database_sync_to_async(self.request_match)(msg_obj)
-            await self.send_json({'type': 'match_request_id', 'id': match_request_id})
+
+            # Ok so here basically we should check if there are any looking players in the queue.
+            # otherwise we create a match request
+            waiting_username = await database_sync_to_async(self.get_waiting_username)()
+            if waiting_username is None:
+                match_request_id = await database_sync_to_async(self.request_match)(msg_obj, None)
+                await self.send_json({'type': 'match_request_id', 'id': match_request_id})
+            else:
+                acknowledgement_key = await (database_sync_to_async(self.acknowledge_request_waiting)
+                                             (self.user, waiting_username, msg_obj.get('ball_color'),
+                                              msg_obj.get('fast')))
+                if acknowledgement_key is None:
+                    return
+                # TODO: see if we can share an acknowledgement. I guess yeah? the opponent doesn't need the acknowledgement
+                await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
+                await self.send_channel(waiting_username, 'relay_game_acknowledgement',
+                                        {'match_key': acknowledgement_key,
+                                         'target_user': waiting_username})
+
+    @register_ws_func
+    async def navigating_to(self, msg_obj):
+        print(f'navigating_to: {msg_obj}', flush=True)
+        if msg_obj.get('url') is None:
+            return
+        if 'local-game' not in msg_obj.get('url'):
+            print('Clearing db because we opened a non local game page', flush=True)
+            await database_sync_to_async(self.clean_db_entries)()
 
     # CHANNEL RECEIVERS
     async def channel_dm(self, event):
@@ -136,3 +272,11 @@ class WsConsumer(WsConsumerCommon):
             }
             print(f'Sending the json from channel_dm ({self.user_username})', flush=True)
             await self.send_json(sanitized_msg_obj)
+
+    async def relay_game_acknowledgement(self, event):
+        msg_obj = event["msg_obj"]
+        if msg_obj.get('target_user') is None or msg_obj.get('match_key') is None:
+            return
+        if msg_obj.get('target_user') != self.user_username:
+            return
+        await self.send_json({'type': 'game_acknowledgement', 'match_key': msg_obj.get('match_key')})

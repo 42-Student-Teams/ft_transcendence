@@ -55,3 +55,8 @@ def random_bot_name():
 
 def random_alphanum(size):
     return ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(size))
+
+
+class AnonClass(object):
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)

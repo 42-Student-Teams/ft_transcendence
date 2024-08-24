@@ -231,7 +231,8 @@ export default class Home extends Component {
 			const game = {
 				color: colorRadio.value,
 				speed: speed,
-				ai : ai
+				ai : ai,
+				search_for_game: false,
 			};
 			if (state.currentGameData && 'opponent_username' in state.currentGameData) {
 				game['opponent_username'] = state.currentGameData['opponent_username'];
@@ -322,6 +323,14 @@ export default class Home extends Component {
 
 		this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
 			console.log('Join game button clicked');
+			const game = {
+				color: null,
+				speed: null,
+				ai : false,
+				search_for_game: true,
+			};
+			store.dispatch("setCurrentGameData", game);
+			navigateTo("/local-game");
 		});
 	}
 }

@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import Q
 
-from .util import timestamp_now, random_alphanum
+from .util import timestamp_now, random_alphanum, AnonClass
 
 
 class JwtUser(AbstractUser):
@@ -134,7 +134,8 @@ class AcknowledgedMatchRequest(models.Model):
             target_user=request.target_user,
             ball_color=request.ball_color,
             fast=request.fast,
-            is_bot=False
+            is_bot=False,
+            match_key=random_alphanum(10)
         )
         acknowledgement.save()
         return acknowledgement
@@ -152,3 +153,41 @@ class AcknowledgedMatchRequest(models.Model):
         )
         acknowledgement.save()
         return acknowledgement
+
+    @staticmethod
+    def create_safe_copy(acknowledgement):
+        return AnonClass(
+            request_author=AnonClass(username=acknowledgement.request_author.username),
+            target_user=AnonClass(username=acknowledgement.target_user.username),
+            ball_color=acknowledgement.ball_color,
+            fast=acknowledgement.fast,
+            is_bot=acknowledgement.is_bot,
+            match_key=acknowledgement.match_key
+        )
+
+
+class GameSearchQueue(models.Model):
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='search_queue')
+
+    @classmethod
+    def add_user_to_queue(cls, user):
+        # Add the user to the queue if not already in it
+        if not cls.objects.filter(user=user).exists():
+            cls.objects.create(user=user)
+
+    @classmethod
+    def remove_user_from_queue(cls, user):
+        # Remove the user from the queue if they are in it
+        cls.objects.filter(user=user).delete()
+
+    @classmethod
+    def is_user_in_queue(cls, user):
+        # Check if the user is already in the queue
+        return cls.objects.filter(user=user).exists()
+
+    @classmethod
+    def get_first_user(cls):
+        first_entry = cls.objects.first()
+        if first_entry is not None:
+            return first_entry.user
+        return None

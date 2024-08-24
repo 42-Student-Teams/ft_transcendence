@@ -54,7 +54,7 @@ class UserOauthLoginView(APIView):
 
         res = jwt_response(username)
 
-        user: JwtUser = JwtUser.objects.get(username=username)
+        user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
             new_user = JwtUser.objects.create()
             new_user.username = username
@@ -76,10 +76,8 @@ class UserLoginView(APIView):
         if 'password' in request.data:
             password = request.data['password']
 
-
-        try:
-            user: JwtUser = JwtUser.objects.get(username=username)
-        except JwtUser.DoesNotExist:
+        user: JwtUser = JwtUser.objects.filter(username=username).first()
+        if user is None:
             raise AuthenticationFailed('Incorrect username or password')
         if not user.check_password(password):
             raise AuthenticationFailed('Incorrect username or password')
@@ -94,7 +92,7 @@ class UserListView(APIView):
 
 class UserUpdateView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
         avatar = request.FILES.get('avatar')
         if avatar is not None:
             user.avatar = avatar
@@ -120,89 +118,86 @@ class UserUpdateView(APIView):
 # 5.Retour de la réponse : Retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
 class FriendView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
 
         friend_username = request.data.get('friend_username')
         if not friend_username:
             return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            friend = JwtUser.objects.get(username=friend_username)
-            if user == friend:
-                return Response({'status': 'error', 'message': 'Cannot send friend request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if friend in user.friends.all():
-                return Response({'status': 'error', 'message': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if friend in user.friend_requests.all():
-                return Response({'status': 'error', 'message': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
-
-            if user in friend.friend_requests.all():
-                return Response({'status': 'error', 'message': 'This user has already sent you a friend request'}, status=status.HTTP_400_BAD_REQUEST)
-
-            friend.friend_requests.add(user)  # L'utilisateur actuel envoie une demande d'ami à l'ami
-
-            return Response({
-                'status': 'success',
-                'message': f'Friend request sent to {friend_username}',
-                'friend': {
-                    'username': friend.username,
-                    'status': 'Pending',
-                    'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
-                }
-            }, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if friend is None:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        if user == friend:
+            return Response({'status': 'error', 'message': 'Cannot send friend request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if friend in user.friends.all():
+            return Response({'status': 'error', 'message': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if friend in user.friend_requests.all():
+            return Response({'status': 'error', 'message': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if user in friend.friend_requests.all():
+            return Response({'status': 'error', 'message': 'This user has already sent you a friend request'}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend.friend_requests.add(user)  # L'utilisateur actuel envoie une demande d'ami à l'ami
+
+        return Response({
+            'status': 'success',
+            'message': f'Friend request sent to {friend_username}',
+            'friend': {
+                'username': friend.username,
+                'status': 'Pending',
+                'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
+            }
+        }, status=status.HTTP_200_OK)
 
 
 class AcceptFriendRequestView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
 
         friend_username = request.data.get('friend_username')
         if not friend_username:
             return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            friend = JwtUser.objects.get(username=friend_username)
-            if friend not in user.friend_requests.all():  # Changement ici
-                return Response({'status': 'error', 'message': 'No friend request from this user'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user.friend_requests.remove(friend)  # L'utilisateur actuel retire la demande d'ami
-            user.friends.add(friend)
-            friend.friends.add(user)
-
-            return Response({
-                'status': 'success',
-                'message': f'Friend request from {friend_username} accepted'
-            }, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if friend is None:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        if friend not in user.friend_requests.all():  # Changement ici
+            return Response({'status': 'error', 'message': 'No friend request from this user'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.friend_requests.remove(friend)  # L'utilisateur actuel retire la demande d'ami
+        user.friends.add(friend)
+        friend.friends.add(user)
+
+        return Response({
+            'status': 'success',
+            'message': f'Friend request from {friend_username} accepted'
+        }, status=status.HTTP_200_OK)
 
 
 class UnblockUserView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
 
         username_to_unblock = request.data.get('username')
         if not username_to_unblock:
             return Response({'status': 'error', 'message': 'Missing username to unblock'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user_to_unblock = JwtUser.objects.get(username=username_to_unblock)
-            if user_to_unblock not in user.blocked_users.all():
-                return Response({'status': 'error', 'message': 'This user is not blocked'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user.blocked_users.remove(user_to_unblock)
-            user.friends.add(user_to_unblock)
-            user_to_unblock.friends.add(user)
-
-            return Response({
-                'status': 'success',
-                'message': f'User {username_to_unblock} has been unblocked'
-            }, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
+        user_to_unblock = JwtUser.objects.filter(username=username_to_unblock).first()
+        if user_to_unblock is None:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        if user_to_unblock not in user.blocked_users.all():
+            return Response({'status': 'error', 'message': 'This user is not blocked'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.blocked_users.remove(user_to_unblock)
+        user.friends.add(user_to_unblock)
+        user_to_unblock.friends.add(user)
+
+        return Response({
+            'status': 'success',
+            'message': f'User {username_to_unblock} has been unblocked'
+        }, status=status.HTTP_200_OK)
 
 
 ##--------------------------------------BLOCK-FRIEND-REQUEST-----------------------------------------###
@@ -213,32 +208,30 @@ class UnblockUserView(APIView):
 # 5.Blocage de l'utilisateur : Ajoute l'utilisateur à bloquer à la liste des utilisateurs bloqués, le retire de la liste d'amis, et retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
 class BlockUserView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
 
         user_to_block_username = request.data.get('username')
         if not user_to_block_username:
             return Response({'status': 'error', 'message': 'Missing username to block'}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user_to_block = JwtUser.objects.get(username=user_to_block_username)
-
-            if user_to_block == user:
-                return Response({'status': 'error', 'message': 'Cannot block yourself'}, status=status.HTTP_400_BAD_REQUEST)
-
-            # Nouvelle condition : vérifier si l'utilisateurs est dans la liste d'amis
-            if user_to_block not in user.friends.all():
-                return Response({'status': 'error', 'message': 'Can only block users from your friend list'}, status=status.HTTP_400_BAD_REQUEST)
-
-            user.blocked_users.add(user_to_block)
-            user.friends.remove(user_to_block)
-            user_to_block.friends.remove(user)
-
-            return Response({
-                'status': 'success',
-                'message': f'User {user_to_block_username} has been blocked and removed from friends'
-            }, status=status.HTTP_200_OK)
-        except JwtUser.DoesNotExist:
+        user_to_block = JwtUser.objects.filter(username=user_to_block_username).first()
+        if user_to_block is None:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        if user_to_block == user:
+            return Response({'status': 'error', 'message': 'Cannot block yourself'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Nouvelle condition : vérifier si l'utilisateurs est dans la liste d'amis
+        if user_to_block not in user.friends.all():
+            return Response({'status': 'error', 'message': 'Can only block users from your friend list'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.blocked_users.add(user_to_block)
+        user.friends.remove(user_to_block)
+        user_to_block.friends.remove(user)
+
+        return Response({
+            'status': 'success',
+            'message': f'User {user_to_block_username} has been blocked and removed from friends'
+        }, status=status.HTTP_200_OK)
 
 
 ##--------------------------------------GET-FRIEND-LIST-----------------------------------------###
@@ -249,7 +242,9 @@ class BlockUserView(APIView):
 # 5.Retour de la réponse : Retourne une réponse de succès avec la liste des amis de l'utilisateur.
 class FriendListView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
         print(f'Serving friends list to user `{user.username}`', flush=True)
 
         friends = user.friends.all()
@@ -263,7 +258,9 @@ class FriendListView(APIView):
 
 class PendingListView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
 
         friend_requests = user.friend_requests.all()
         friend_list = [{'username': friend.username} for friend in friend_requests]
@@ -275,7 +272,9 @@ class PendingListView(APIView):
 
 class BlockedListView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
 
         blocked_users = user.blocked_users.all()
         blocked_list = [{'username': blocked_user.username} for blocked_user in blocked_users]
@@ -294,7 +293,9 @@ class UpdateProfilePictureView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def put(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
 
         avatar = request.FILES['avatar']
 
@@ -317,7 +318,9 @@ class UpdateProfilePictureView(APIView):
 
 class ChatGetMessagesView(APIView):
     def post(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
         print(f'Serving messages to user `{user.username}`', flush=True)
 
         message_amount = 10
@@ -333,7 +336,7 @@ class ChatGetMessagesView(APIView):
             return Response({
                 'status': 'Param friend_username missing',
             }, status=status.HTTP_400_BAD_REQUEST)
-        friend = JwtUser.objects.get(username=request.data.get('friend_username'))
+        friend = JwtUser.objects.filter(username=request.data.get('friend_username')).first()
         if friend is None:
             return Response({
                 'status': 'Friend not found',
@@ -354,7 +357,7 @@ class ChatGetMessagesView(APIView):
 
 class getUserProfileView(APIView):
     def get(self, request):
-        user = JwtUser.objects.get(username=check_jwt(request))
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
         
         # Vérification de l'existence de l'utilisateur
         if not user:
@@ -399,7 +402,9 @@ class GameHistoryListView(APIView):
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = JwtUser.objects.get(username=username)
+        user = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
         serializer = GameHistorySerializer(parties, many=True)
 

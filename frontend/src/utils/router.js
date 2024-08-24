@@ -8,6 +8,7 @@ import Tournament from "../views/tournament.js";
 import Profile from "../views/profile.js";
 import Settings from "../views/settings.js";
 import OauthCallback from "../views/oauthcallback.js";
+import {wsSend} from "./wsUtils.js";
 
 const routes = [
 	{ path: "/", view: Home },
@@ -49,11 +50,23 @@ const router = async () => {
 
 	store.dispatch("updateLocation", { location: match.route.path });
 
+	if (state.socket && state.socket.readyState === state.socket.OPEN) {
+		wsSend('navigating_to', {
+			'url': match.route.path
+		});
+	}
+
 	if (!match.route.path.includes('local-game')) {
 		if (state.gameSocket && state.gameSocket.readyState === state.gameSocket.OPEN) {
 			console.log('Closing game socket');
 			state.gameSocket.close();
 		}
+		console.log('Cleaning all game data');
+		store.dispatch("setCurrentGameData", null);
+		window.gameState = null;
+		window.gameHtml = null;
+		document.removeEventListener("keydown", document.handleKeyDown);
+		document.removeEventListener("keyup", document.handleKeyUp);
 	}
 
 	if (!viewCache[match.route.view]) {

@@ -29,14 +29,14 @@ def check_jwt(request, skip_user_exists_check=False):
 
     # je crois que l'exception n'est pas raised avec un simple objects.get
     '''try:
-        user = JwtUser.objects.get(username=payload['username'])
+        user = JwtUser.objects.filter(username=payload['username']).first()
     except JwtUser.DoesNotExist:
         raise AuthenticationFailed('User not found')'''
 
     if not skip_user_exists_check:
         if 'username' not in payload:
             raise AuthenticationFailed('Missing username')
-        if JwtUser.objects.get(username=payload.get('username')) is None:
+        if JwtUser.objects.filter(username=payload.get('username')).first() is None:
             raise AuthenticationFailed('User not found')
     return payload.get('username')
 
