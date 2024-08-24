@@ -59,7 +59,7 @@ class JwtUser(AbstractUser):
     friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
     blocked_users = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='blocked_by')
-    avatar = models.ImageField(max_length=200, default="default_avatar.png", upload_to='avatars')
+    avatar = models.ImageField(max_length=200, default="staticfiles/avatars/default_avatar.png", upload_to='staticfiles/avatars/')
     status = models.CharField(max_length=20, default='Offline')
 
     USERNAME_FIELD = 'username'

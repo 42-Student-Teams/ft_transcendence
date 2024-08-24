@@ -1,7 +1,7 @@
-import * as bootstrap from 'bootstrap';
 import NavBar from '../components/home/navbar.js';
 import MatchHistory from "../components/profile/MatchHistory.js";
 import ProfileInfo from "../components/profile/ProfileInfo.js";
+import { showToast } from "../utils/toastUtils.js";
 
 import Component from "../library/component.js";
 
@@ -25,11 +25,9 @@ export default class Profile extends Component {
             </div>
             <div class="container-fluid p-0 row flex-fill overflow-hidden m-0">
                 <div class="col-md-4 d-flex flex-column overflow-auto p-0">
-                    <!-- Ajouter des marges égales autour de ProfileInfo -->
                     <div id="profileInfo" class="m-4"></div>
                 </div>
                 <div class="col-md-8 d-flex flex-column overflow-auto p-0">
-                    <!-- Ajouter des marges en haut, à droite et en bas pour MatchHistory -->
                     <div id="matchHistory" class="flex-grow-1 d-flex flex-column mt-4 me-4 mb-4"></div>
                 </div>
             </div>
@@ -89,29 +87,42 @@ export default class Profile extends Component {
             const profilePicture = document.getElementById("edit-profile-picture").files[0];
             const firstName = document.getElementById("edit-first-name").value.trim();
             const lastName = document.getElementById("edit-last-name").value.trim();
-
+			
             // After closing the modal, show toast if fields are empty
             if (!firstName || !lastName) {
-                // Use a timeout to ensure the modal is closed before showing the toast
-                setTimeout(() => this.showToast(), 100);
+                showToast("Incorrect input, please try again.", "danger");
                 return;
             }
 
-            // Store values here
-            const profileData = {
-                profilePicture,
-                firstName,
-                lastName,
-            };
+			const formData  = new FormData();
+			formData.append('nom', lastName);
+			formData.append('prenom', firstName);
+			formData.append('avatar', profilePicture);
 
-            // Here you can handle the form submission, like sending the data to the server
-            console.log(profileData);
+			// Send data to API
+			try {
+				const jwt = localStorage.getItem('jwt');
+				const apiurl = process.env.API_URL;
+				const response = await fetch(`${apiurl}/user_update`, {
+					method: 'POST',
+					headers: {
+						'Authorization': `Bearer ${jwt}`,
+
+					},
+					body: formData,
+				});
+				console.log('Response:', response);
+
+				if (response.ok) {
+					showToast('User profile updated successfully', 'success');
+				}
+			}
+			catch (error) {
+				console.error('Error updating user profile:', error);
+				showToast('Error updating user profile', 'danger');
+			}
+
+            //console.log(profileData);
         });
-    }
-
-    showToast() {
-        const toastElement = document.getElementById('errorToast');
-        const toast = new bootstrap.Toast(toastElement);
-        toast.show();
     }
 }
