@@ -114,6 +114,7 @@ class getUserProfileView(APIView):
             	'username': user.username,
             	'avatar': user.avatar.url,
             	'parties_jouees': parties_jouees,
+                'parties_perdues': parties_jouees - parties_gagnees,
             	'parties_gagnees': parties_gagnees
             }
             
@@ -458,9 +459,9 @@ class getFriendProfileView(APIView):
                 'username': user.username,
                 'status': user.status,
                 'avatar': user.avatar.url if user.avatar else None,
+                'parties_perdues': parties_jouees - parties_gagnees,
                 'parties_jouees': parties_jouees,
                 'parties_gagnees': parties_gagnees,
-                'parties_perdues': parties_jouees - parties_gagnees,
                 'historique': serializer.data
             }
 
