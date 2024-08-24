@@ -275,21 +275,23 @@ export default class Home extends Component {
 		});
 
 		updateNoAiPlayersMessage();
+		if (this.element.querySelector("#btn-play-local")){
 
-		this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
-			event.preventDefault();
-			const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
-			const speed = document.getElementById('formSwitchCheckLocal').checked;
-			const ai = document.getElementById('formAiCheckLocal').checked;
-			const game = {
-				color: colorRadio.value,
-				speed: speed,
-				ai: ai
-			};
-			//console.log(game);
-			localStorage.setItem('local-game', JSON.stringify(game));
-			navigateTo("/local-game");
-		});
+			this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
+				event.preventDefault();
+				const colorRadio = document.querySelector('input[name="radioColorOptions"]:checked');
+				const speed = document.getElementById('formSwitchCheckLocal').checked;
+				const ai = document.getElementById('formAiCheckLocal').checked;
+				const game = {
+					color: colorRadio.value,
+					speed: speed,
+					ai: ai
+				};
+				//console.log(game);
+				localStorage.setItem('local-game', JSON.stringify(game));
+				navigateTo("/local-game");
+			});
+		}
 
 		this.element.querySelector("#btn-play-tournament").addEventListener("click", async (event) => {
 			event.preventDefault();

@@ -137,8 +137,10 @@ class ImprovedUpdateUserView(APIView):
             if (request.data['avatar'].size > max_avatar_size):
                 return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
             if user.avatar != 'staticfiles/avatars/default_avatar.png':
+                print(f"Deleting avatar: {user.avatar}")
                 user.avatar.delete()
                 user.avatar = request.data['avatar']
+                print(f"New avatar: {user.avatar}")
                 serializer.save()
         return Response({
             'status': 'success',

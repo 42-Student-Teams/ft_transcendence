@@ -177,7 +177,7 @@ export default class Profile extends Component {
 				formData.append('last_name', lastName);
 				formData.append('first_name', firstName);
 				formData.append('avatar', profilePicture);
-
+				console.log('formData', formData.get('avatar'));
 				try {
 					const jwt = localStorage.getItem('jwt');
 					const apiurl = process.env.API_URL;
