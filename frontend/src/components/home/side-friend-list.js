@@ -21,7 +21,7 @@ export default class SideFriendList extends Component {
     });
 
     document.addEventListener('friendStatusUpdate', (event) => {
-      console.log('Received friendStatusUpdate event', event.detail);
+      //console.log('Received friendStatusUpdate event', event.detail);
       this.updateFriendStatus(event.detail.username, event.detail.status);
     });
   }
@@ -116,7 +116,6 @@ export default class SideFriendList extends Component {
         const data = await response.json();
         if (data.status === 'success') {
           this.friends = data.friends || [];
-          console.log("Friends data:", this.friends)
           await this.renderFriendList();
         } else {
           console.error("Failed to fetch friend list:", data.message);
@@ -252,7 +251,6 @@ export default class SideFriendList extends Component {
 
       if (response.ok) {
         showToast(langPack.userBlockedSuccess.replace('{username}', username), "success");
-        console.log(`Successfully blocked friend ${username}`);
         friendContainer.remove();
       } else {
         showToast(langPack.userBlockFailed.replace('{username}', username), "danger");
@@ -293,7 +291,6 @@ export default class SideFriendList extends Component {
   }
 
   async handleViewProfile(username) {
-    console.log("Handling view profile for:", username);
     const { default: FriendProfile } = await import('/src/views/friendProfile.js');
     
     const friendProfileView = new FriendProfile();

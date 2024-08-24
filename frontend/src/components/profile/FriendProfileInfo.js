@@ -45,7 +45,7 @@ export default class FriendProfileInfo extends Component {
             }
 
             const data = await response.json();
-            console.log("Friend Profile info data:", data);
+            //console.log("Friend Profile info data:", data);
 
             const view = /*html*/ `
                 <div class="card shadow-sm rounded mb-4">

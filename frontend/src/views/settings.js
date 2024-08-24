@@ -125,7 +125,6 @@ export default class Login extends Component {
 			
 			
             // Log or submit the payload
-			console.log(inputPassword.value);
 			inputPassword.value = '';
         });
     }

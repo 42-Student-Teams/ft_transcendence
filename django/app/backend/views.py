@@ -344,8 +344,6 @@ class FriendListView(APIView):
                 'avatar': friend.avatar.url
                 # 'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png')
             } for friend in friends]
-            for friend in friend_list:
-                print("\n Ici la haut " + friend['avatar'])
             
             
             return Response({

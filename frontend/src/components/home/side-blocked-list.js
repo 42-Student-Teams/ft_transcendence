@@ -107,8 +107,6 @@ export default class SideBlockedList extends Component {
         const username = button.getAttribute('data-username');
         const userContainer = button.closest('.friend');
 
-        console.log(`Unblocking: ${username}`);
-
         try {
             const jwt = localStorage.getItem('jwt');
             const apiurl = process.env.API_URL;
