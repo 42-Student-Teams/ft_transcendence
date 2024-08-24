@@ -138,33 +138,32 @@ class PlayerStatsSerializer(serializers.Serializer):
 class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
     joueur1_avatar = serializers.SerializerMethodField()
     joueur2_avatar = serializers.SerializerMethodField()
-    joueur1 = serializers.CharField(write_only=True)
-    joueur2 = serializers.CharField(write_only=True, required=False, allow_null=True)
-    is_ai_opponent = serializers.BooleanField(required=False, default=False)
-    ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
+    joueur2_username = serializers.SerializerMethodField()
+    gagnant_username = serializers.SerializerMethodField()
     
     class Meta:
         model = GameHistory
-        fields = ['id', 'date_partie', 'joueur1', 'joueur2', 'duree_partie', 'score_joueur1', 'score_joueur2', 'gagnant', 'is_ai_opponent', 'ai_opponent_name', 'joueur1_avatar', 'joueur2_avatar']
+        fields = ['id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie', 
+                  'score_joueur1', 'score_joueur2', 'gagnant_username', 'is_ai_opponent', 
+                  'ai_opponent_name', 'joueur1_avatar', 'joueur2_avatar']
 
     def get_joueur1_avatar(self, obj):
-        if obj.joueur1:
+        if obj.joueur1 and obj.joueur1.avatar:
             return obj.joueur1.avatar.url
-        return None
+        return settings.STATIC_URL + 'avatars/default_avatar.png'
 
     def get_joueur2_avatar(self, obj):
         if obj.is_ai_opponent:
             return settings.STATIC_URL + 'avatars/default_avatar.png'
-        elif obj.joueur2:
+        elif obj.joueur2 and obj.joueur2.avatar:
             return obj.joueur2.avatar.url
-        return None
+        return settings.STATIC_URL + 'avatars/default_avatar.png'
 
-    def validate(self, data):
-        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
-            raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
-        if not data.get('is_ai_opponent') and not data.get('joueur2'):
-            raise serializers.ValidationError("joueur2 est requis lorsque is_ai_opponent est False")
-        return data
+    def get_joueur2_username(self, obj):
+        if obj.is_ai_opponent:
+            return obj.ai_opponent_name
+        return obj.joueur2.username if obj.joueur2 else None
 
     def get_gagnant_username(self, obj):
         if obj.gagnant:
@@ -172,10 +171,3 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
         elif obj.is_ai_opponent and obj.score_joueur2 > obj.score_joueur1:
             return obj.ai_opponent_name
         return None
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        ret['joueur1_username'] = instance.joueur1.username
-        if instance.joueur2:
-            ret['joueur2_username'] = instance.joueur2.username
-        return ret

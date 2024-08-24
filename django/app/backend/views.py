@@ -114,7 +114,6 @@ class getUserProfileView(APIView):
             	'username': user.username,
             	'avatar': user.avatar.url,
             	'parties_jouees': parties_jouees,
-                'parties_perdues': parties_jouees - parties_gagnees,
             	'parties_gagnees': parties_gagnees
             }
             
@@ -430,7 +429,6 @@ class ChatGetMessagesView(APIView):
         }, status=status.HTTP_200_OK)
 
 ###-----------------------------GET PROFILE--------------------------------------------------------###
-
 
 class getFriendProfileView(APIView):
     def get(self, request):

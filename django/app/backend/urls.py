@@ -24,6 +24,6 @@ urlpatterns=[
     path('get_user_profile', views.getUserProfileView.as_view(), name='get_user_profile'),
     path('update_user', views.ImprovedUpdateUserView.as_view(), name='update_user'),
     path('get_game_stats', views.PlayerStatsView.as_view(), name='get_game_stats'),
-    path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGames'),
+    path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGame s'),
     path('history_postGames', views.GameHistoryCreateView.as_view(), name='history_postGames'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
