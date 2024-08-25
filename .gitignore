@@ -1,5 +1,7 @@
 .env
 
+**/.DS_Store
+
 .idea
 .idea/
 django/app/app/__pycache__/

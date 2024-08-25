@@ -2,14 +2,13 @@ import Component from "../library/component.js";
 import state from "../store/state.js";
 import { usernameFromToken } from "../utils/jwtUtils.js";
 import { wsSend } from "../utils/wsUtils.js";
-
-function onViewQuit() {
-
-}
+import NavBar from '../components/home/navbar.js';
+import * as bootstrap from 'bootstrap';
+import { navigateTo } from "../utils/router.js";
 
 function updateFromSocket(msg_obj) {
-	if (msg_obj['paddle_moved']) {
-		console.log(msg_obj);
+	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
+		//console.log(msg_obj);
 	}
 	if (!Object.hasOwn(window, 'gameState')) {
 		return;
@@ -20,7 +19,11 @@ function updateFromSocket(msg_obj) {
 			return;
 		}
 		if (msg_obj['waiting_between_points']) {
+			/* equivalent of resetBall */
 			cnv.style.backgroundColor = '#9c9c9e';
+			//window.gameState.stopperTime = true;
+			//window.gameState.endTime = Date.now() - window.gameState.startTime;
+
 		} else {
 			cnv.style.backgroundColor = '#EBEBED';
 		}
@@ -56,18 +59,28 @@ function updateFromSocket(msg_obj) {
 				window.gameState.youPaddle.x = msg_obj['opponent_paddle_pos']['x'];
 				window.gameState.youPaddle.y = msg_obj['opponent_paddle_pos']['y'];
 			}
+			window.gameState.youPaddle.size = msg_obj['opponent_paddle_pos']['size'];
 			window.gameState.opponentPaddle.x = msg_obj['author_paddle_pos']['x'];
 			window.gameState.opponentPaddle.y = msg_obj['author_paddle_pos']['y'];
+			window.gameState.opponentPaddle.size = msg_obj['author_paddle_pos']['size'];
 		} else {
 			if (ourTimestamp >= window.gameState.lastTimestamp) {
 				window.gameState.youPaddle.x = msg_obj['author_paddle_pos']['x'];
 				window.gameState.youPaddle.y = msg_obj['author_paddle_pos']['y'];
 			}
+			window.gameState.youPaddle.size = msg_obj['author_paddle_pos']['size'];
 			window.gameState.opponentPaddle.x = msg_obj['opponent_paddle_pos']['x'];
 			window.gameState.opponentPaddle.y = msg_obj['opponent_paddle_pos']['y'];
+			window.gameState.opponentPaddle.size = msg_obj['opponent_paddle_pos']['size'];
 		}
 		window.gameState.ball.x = msg_obj['ball_pos']['x'];
 		window.gameState.ball.y = msg_obj['ball_pos']['y'];
+		window.gameState.ball.r = msg_obj['ball_pos']['r'];
+
+		window.gameState.bigpad.active = msg_obj['bigpad']['active'];
+		window.gameState.bigpad.x = msg_obj['bigpad']['x'];
+		window.gameState.bigpad.y = msg_obj['bigpad']['y'];
+		window.gameState.bigpad.color = msg_obj['bigpad']['color'];
 	}
 }
 
@@ -84,58 +97,61 @@ export default class LocalGame extends Component {
 
 		const view = /*html*/ `
     	<div class="h-100 d-flex flex-column">
-      		<h1 class="pt-5 text-center display-1">Local Game</h1>
-     		<div class="d-flex flex-row justify-content-center">
-       			<h1  id=left_player class="display-5">...</h1>
-        		<br/>
-        		<h1 class="display-5 mx-3"> x </h1>
-        		<h1  id=right_player class="display-5">...</h1>
-     		 </div>
-      		<div class="d-flex justify-content-center align-items-center">
-        		<div class="game-container d-flex justify-content-center align-items-center gap-5">
-        	  		<div class="score-display">
-        	    		<h1 id="score-left" class="display-1">0</h1>
-        	  		</div>
-        			<div class="col text-center">
-        	    		<div class="game-canva rounded">
-        	    			<div class="canvanbutton">
-								<button class="btn btn-primary" id=start-game>New Game</button>
-								<div id="Winner-text" class="position-absolute text-center h1"></div>
+			<h1 class="pt-5 text-center display-1">Local Game</h1>
+			<div class="d-flex flex-row justify-content-center">
+				<h1  id=left_player class="display-5">Player 190</h1>
+				<br/>
+				<h1 class="display-5 mx-3"> x </h1>
+				<h1  id=right_player class="display-5">Player 290</h1>
+			</div>
+			<div class="d-flex justify-content-center align-items-center">
+				<div class="game-container d-flex justify-content-center align-items-center gap-5">
+					<div class="score-display">
+						<h1 id="score-left" class="display-1">0</h1>
+					</div>
+					<div class="col text-center">
+						<div class="game-canva rounded">
+							<div class="canvanbutton">
+								<button class="btn btn-primary" id=start-game> New Game</button>
 								<div id="Timer" class="position-absolute text-center h1"></div>
 								<canvas id="myCanvas"></canvas>
-        	    			</div>
-        	    		</div>
+							</div>
+						</div>
 					</div>
 					<div class="score-display">
-        	    		<h1 id="score-right" class="display-1">0</h1>
+						<h1 id="score-right" class="display-1">0</h1>
 					</div>
-				</div> 
+				</div>
 			</div>
-		
-			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-				<div class="modal-dialog" role="document">
+			<div class="modal fade" id="exampleModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-						</button>
-					</div>
-					<div class="modal-body">
-						<p>Modal body text goes here.</p>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-						<button type="button" class="btn btn-primary">Save changes</button>
-					</div>
+						<div class="modal-header">
+							<h5 class= "modal-title w-100 text-center" > Game over </h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<div class="d-flex flex-row p-2 justify-content-center bg-light rounded w-50 border container-fluid">
+								<i class="fa-solid fa-trophy fa-xl fa-bounce p-1" style="color: #f7d459;"></i> 
+								<br/>
+								<div id= Modal-winner class="display-8 p-1 "></div>
+							</div>
+							<div class="d-flex flex-row p-2 mt-2 justify-content-center bg-light rounded w-50 border container-fluid">
+								<i class="fa-solid fa-stopwatch-20 fa-xl p-1"></i> 
+								<br/>
+								<div id=Time class="display-8 p-1 "></div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
+							<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="Modal-New-Game" >New Game</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 			`;
 
-		//this.element.innerHTML = view;
-		/* of course it gives errors because we don't render the navbar */
 		this.element.innerHTML = /*html*/ `
 		<button class="btn btn-primary" type="button" id="start-game">
 			<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
@@ -161,8 +177,25 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
+		console.log(`Starting game with obj_:`);
+		console.log(obj_);
 		wsSend('client_update', { 'update': 'lol' }, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
+
+		if (document.getElementById("back-to-home")) {
+			document.getElementById("back-to-home").addEventListener("click", (event) => {
+				event.preventDefault();
+				navigateTo("/");
+			});
+		}
+
+		if (document.getElementById("Modal-New-Game")) {
+			document.getElementById("Modal-New-Game").addEventListener("click", (event) => {
+				event.preventDefault();
+				window.gameState.endTime = 0;
+				document.getElementById("Timer").style.display = "block";
+			});
+		}
 
 		window.gameState = {
 			color: obj_.ball_color,
@@ -170,12 +203,18 @@ export default class LocalGame extends Component {
 			ai: obj_.is_bot,
 			youPaddle: null,
 			opponentPaddle: null,
-			ball: null,
+			ball: { r: 8, color: obj_.ball_color },
 			currentUsername: usernameFromToken(),
 			opponent_username: obj_.opponent_username,
 			author_username: obj_.author_username,
 			lastTimestamp: 0,
 			started: false,
+			stopperTime: false,
+			startTime: Date.now(),
+			endTime: 0,
+			lookTime: 0,
+			myModal: new bootstrap.Modal(document.getElementById('exampleModal'), {keyboard: true}),
+			bigpad: null,
 		};
 
 		let pressedKeys = new Set();
@@ -189,14 +228,11 @@ export default class LocalGame extends Component {
 			document.getElementById('right_player').innerText = 'You';
 		}
 
-		let myModal = document.getElementById('exampleModal');
-
 		console.log('Gameoptions', obj_);
 
 		document.getElementById("start-game").style.display = "none";
 		document.getElementById('score-right').innerText = "0";
 		document.getElementById('score-left').innerText = "0";
-		document.getElementById('Winner-text').innerText = "";
 
 		function alphanum(len) {
 			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -209,12 +245,14 @@ export default class LocalGame extends Component {
 
 		class Paddle {
 			constructor() {
-				this.id = alphanum(10);
+				this.aipos_cal = 0
+				this.size = config.paddleHeight
+				this.speed = config.paddleSpeed
 			}
 
 			render = () => {
 				ctx.fillStyle = "#FF0000";
-				ctx.fillRect(this.x, this.y, config.paddleWidth, config.paddleHeight);
+				ctx.fillRect(this.x, this.y, config.paddleWidth, this.size);
 			}
 
 			moveDown = () => {
@@ -230,6 +268,23 @@ export default class LocalGame extends Component {
 				window.gameState.lastTimestamp = Math.trunc(Date.now());
 				console.log(`[${this.id}] Sending client update ${this.y}, ${window.gameState.lastTimestamp}`)
 				wsSend('client_update', { 'pad': this.y, 'timestamp': window.gameState.lastTimestamp }, state.gameSocket);
+			}
+		}
+
+		class BiggerPad {
+			constructor() {
+				this.active = false;
+				this.x = 0;
+				this.y = 0;
+				this.size = 50;
+				this.color = "#000000";
+			}
+
+			render() {
+				if (this.active) {
+					ctx.fillStyle = this.color;
+					ctx.fillRect(this.x, this.y, this.size, this.size);
+				}
 			}
 		}
 
@@ -253,17 +308,10 @@ export default class LocalGame extends Component {
 		canvas.width = config.canvasWidth
 		canvas.height = config.canvasHeight
 
-		let startTime = Date.now() + 3 * 60 * 1000;
-		let stopperTime = true;
 		window.gameState.youPaddle = new Paddle(); //paddle1
 		window.gameState.opponentPaddle = new Paddle(); //paddle2
-		let endTime = startTime - Date.now();
-
-		window.gameState.ball = {
-			r: 8,
-			color: obj_.color,
-		}
-
+		window.gameState.bigpad = new BiggerPad();
+		window.gameState.endTime = window.gameState.startTime - Date.now();
 
 		function resetBall() {
 			if (paddle1.score === 3 || paddle2.score === 3) {
@@ -272,8 +320,8 @@ export default class LocalGame extends Component {
 				paddle2.score = 0;
 				document.getElementById("start-game").style.display = "block";
 				canvas.style.backgroundColor = '#9c9c9e';
-				endTime = startTime - Date.now();
-				stopperTime = true;
+				window.gameState.endTime = window.gameState.startTime - Date.now();
+				window.gameState.stopperTime = true;
 			}
 			else {
 				canvas.style.backgroundColor = '#EBEBED';
@@ -283,18 +331,27 @@ export default class LocalGame extends Component {
 			}
 		}
 
-		const updateTimer = () => {
-			if (stopperTime == false) {
-				const sparetime = startTime - Date.now();
+		function updateTimer() {
+			if (window.gameState && !window.gameState.stopperTime) {
+				const sparetime = Date.now() - window.gameState.startTime;
 				const minutes = Math.floor(sparetime / 60000);
 				const seconds = Math.floor((sparetime % 60000) / 1000);
-				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-			} else {
-				const minutes = Math.floor(endTime / 60000);
-				const seconds = Math.floor((endTime % 60000) / 1000);
-				timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				if (timerElement) {
+					timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				}
+				if (document.getElementById('Time')) {
+					document.getElementById('Time').innerText =
+					`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				}
 			}
-		};
+			else {
+				const minutes = Math.floor(window.gameState.endTime / 60000);
+				const seconds = Math.floor((window.gameState.endTime % 60000) / 1000);
+				if (timerElement) {
+					timerElement.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+				}
+			}
+		}
 
 
 		document.handleKeyDown = function (e) {
@@ -328,6 +385,7 @@ export default class LocalGame extends Component {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			window.gameState.youPaddle.render();
 			window.gameState.opponentPaddle.render();
+			window.gameState.bigpad.render();
 			paintBall();
 		}
 
@@ -366,7 +424,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
-			//updateTimer();
+			updateTimer();
 			window.requestAnimationFrame(animate);
 		}
 
@@ -374,10 +432,8 @@ export default class LocalGame extends Component {
 
 		canvas.style.backgroundColor = '#EBEBED';
 		//resetBall();
-		stopperTime = false;
-		startTime = Date.now() + 3 * 60 * 1000 + 1000;
+
 	}
 }
 
 export { updateFromSocket };
-export { onViewQuit };
