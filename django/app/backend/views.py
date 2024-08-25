@@ -325,34 +325,28 @@ class BlockUserView(APIView):
 
 class FriendListView(APIView):
     def get(self, request):
-        try:
-            user = JwtUser.objects.filter(username=check_jwt(request)).first()
-            if user is None:
-                return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
-            friends = user.friends.all()
-            friend_list = [{
-                'username': friend.username,
-                'status': friend.status,
-                'avatar': friend.avatar.url
-                # 'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png')
-            } for friend in friends]
+        #try:
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
+        friends = user.friends.all()
+        friend_list = [{
+            'username': friend.username,
+            'status': friend.status,
+            'avatar': friend.avatar.url
+            # 'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png')
+        } for friend in friends]
 
-            return Response({
-                'status': 'success',
-                'friends': friend_list
-            }, status=status.HTTP_200_OK)
+        return Response({
+            'status': 'success',
+            'friends': friend_list
+        }, status=status.HTTP_200_OK)
 
-        except JwtUser.DoesNotExist:
-            return Response({
-                'status': 'error',
-                'message': 'Utilisateur non trouvé'
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        except Exception as e:
+        '''except Exception as e:
             return Response({
                 'status': 'error',
                 'message': str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)'''
 
 
 class PendingListView(APIView):

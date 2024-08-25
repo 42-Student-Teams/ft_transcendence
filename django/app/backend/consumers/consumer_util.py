@@ -71,10 +71,10 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
             print('RETURN', flush=True)
             return
         self.user = JwtUser.objects.filter(username=payload['username']).first()
-        self.user_username = self.user.username
         if self.user is None:
             print('RETURN', flush=True)
             return
+        self.user_username = self.user.username
         print('ALL GOOD', flush=True)
         self.authed = True
 

@@ -1,8 +1,6 @@
 import btnLogo from "../../assets/image/42-logo.png";
 import Component from "../../library/component.js";
-import { generateRandomState } from "../../utils/randomState.js";
-import store from "../../store/index.js";
-import { login } from "../../utils/langPack.js";
+import { generateRandomState } from "../../utils/generateRandomState.js";
 
 export default class Login extends Component {
 	constructor() {

@@ -59,7 +59,7 @@ export default class FormRegister extends Component {
         this.element = document.getElementById("formRegister");
         this.element.innerHTML = view;
 
-        const fields = ["firstname", "lastname", "username", "email", "password"];
+        const fields = ["first_name", "last_name", "username", "email", "password"];
         addInputEventListeners('form-register', fields);
 
         handleEvent(
@@ -67,8 +67,8 @@ export default class FormRegister extends Component {
             fields,
             (field, value) => {
                 switch (field) {
-                    case 'firstname':
-                    case 'lastname':
+                    case 'first_name':
+                    case 'last_name':
                         return value.trim() !== '';
                     case 'username':
                         return value.length >= 3;
