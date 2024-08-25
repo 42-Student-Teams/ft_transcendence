@@ -202,13 +202,11 @@ export default class Profile extends Component {
 							profileNameElem.innerText = data.user.username;
 							profilePictureElem.src = data.user.avatar_url;
 						}
-						if (!response.ok) {
-							console.error('Error updating user profile:', response.statusText);
-							showToast(langPack.profileUpdateError, 'danger');
-						}
+					} else {
+						console.error('Failed to update user profile');
+						showToast(langPack.profileUpdateError, 'danger');
 					}
-				}
-				catch (error) {
+				} catch (error) {
 					console.error('Error updating user profile:', error);
 					showToast(langPack.profileUpdateError, 'danger');
 				}

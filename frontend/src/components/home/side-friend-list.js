@@ -236,6 +236,8 @@ export default class SideFriendList extends Component {
     const button = event.currentTarget;
     const username = button.getAttribute('data-username');
     const friendContainer = button.closest('.friend');
+	if (!username)
+		return ;
 
     try {
       const jwt = localStorage.getItem('jwt');
@@ -252,6 +254,8 @@ export default class SideFriendList extends Component {
       if (response.ok) {
         showToast(langPack.userBlockedSuccess.replace('{username}', username), "success");
         friendContainer.remove();
+		if (this.friends.length === 1)
+			document.getElementById("friend-list-display").innerHTML = `<p>${langPack.noFriendsFound}</p>`;
       } else {
         showToast(langPack.userBlockFailed.replace('{username}', username), "danger");
         console.error(`Failed to block friend ${username}`);

@@ -122,6 +122,9 @@ export default class SideBlockedList extends Component {
             if (response.ok) {
                 userContainer.remove();
                 showToast(langPack.userUnblockedSuccess.replace('{username}', username), "success");
+
+				if (this.blocked.blocked_users.length === 1) 
+					this.element.querySelector("#block-display").innerHTML = `<p>${langPack.noBlockedUsersFound}</p>`;
             } else {
                 console.error(`Failed to unblock user ${username}`);
                 showToast(langPack.userUnblockFailed.replace('{username}', username), "danger");

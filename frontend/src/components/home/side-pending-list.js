@@ -121,6 +121,8 @@ export default class SidePendingList extends Component {
 
 			if (response.ok) {
 				friendContainer.remove();
+				if (this.pending.friends.length === 1)
+					document.getElementById("friend-display").innerHTML = `<p>${langPack.noPendingFriendRequests}</p>`;
 				showToast(langPack.friendRequestAccepted.replace('{username}', username), 'success');
 			} else {
                 console.error(`Failed to accept friend request for ${username}`);
