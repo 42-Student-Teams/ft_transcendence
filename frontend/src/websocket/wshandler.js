@@ -1,7 +1,7 @@
 import {chatInsertMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
-import store from "../store/index.js";
 import {updateFromSocket} from "../views/localGame.js";
+import store from "/src/store/index.js";
 
 function handleMessage(msg) {
     console.log('Received socket message:');
@@ -32,6 +32,16 @@ function handleMessage(msg) {
                 openGameWebsocket(msg_obj['match_key']);
             }
             break;
+        case 'friend_status_update':
+            console.log('Dispatching friend status update event:', msg_obj.username, msg_obj.status);
+            document.dispatchEvent(new CustomEvent('friendStatusUpdate', {
+                detail: { username: msg_obj.username, status: msg_obj.status }
+            }));
+            // Mettre à jour le store
+            store.dispatch("updateFriendStatus", {
+                username: msg_obj.username,
+                status: msg_obj.status
+            });
         default:
             return;
     }

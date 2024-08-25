@@ -9,6 +9,7 @@ import Profile from "../views/profile.js";
 import Settings from "../views/settings.js";
 import OauthCallback from "../views/oauthcallback.js";
 import {wsSend} from "./wsUtils.js";
+import JoinTournament from "../views/tournamentList.js";
 
 const routes = [
 	{ path: "/", view: Home },
@@ -19,6 +20,7 @@ const routes = [
 	{ path: "/profile", view: Profile },
 	{ path: "/oauthcallback", view: OauthCallback },
 	{ path: "/settings", view: Settings },
+	{ path: "/join-tournament", view: JoinTournament },
 	// { path: "/record", view: TournamentRecord },
 ];
 

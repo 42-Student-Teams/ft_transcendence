@@ -39,26 +39,67 @@ class MessageSerializer(serializers.ModelSerializer):
 
 
 class GameHistorySerializer(serializers.ModelSerializer):
-    joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
-    joueur2_username = serializers.CharField(source='joueur2.username', read_only=True)
-    gagnant_username = serializers.CharField(source='gagnant.username', read_only=True)
+    joueur1_username = serializers.CharField(write_only=True)
+    joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
+    is_ai_opponent = serializers.BooleanField(default=False)
+    ai_opponent_name = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         model = GameHistory
-        fields = ('id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2', 'gagnant_username')
+        fields = ['joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2',
+                  'is_ai_opponent', 'ai_opponent_name', 'date_partie', 'gagnant']
+        read_only_fields = ['date_partie', 'gagnant']
+
+    def validate(self, data):
+        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
+            raise serializers.ValidationError("ai_opponent_name est requis lorsque is_ai_opponent est True")
+        if not data.get('is_ai_opponent') and not data.get('joueur2_username'):
+            raise serializers.ValidationError("joueur2_username est requis lorsque is_ai_opponent est False")
+        return data
 
 
 class GameHistoryCreateSerializer(serializers.ModelSerializer):
     joueur1_username = serializers.CharField(write_only=True)
-    joueur2_username = serializers.CharField(write_only=True)
+    joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
+    is_ai_opponent = serializers.BooleanField(required=False, default=False)
+    ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         model = GameHistory
-        fields = ('joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2')
+        fields = ('joueur1_username', 'joueur2_username', 'is_ai_opponent', 'ai_opponent_name', 'duree_partie', 'score_joueur1', 'score_joueur2')
 
     def create(self, validated_data):
-        joueur1 = JwtUser.objects.filter(username=validated_data.pop('joueur1_username')).first()
-        joueur2 = JwtUser.objects.filter(username=validated_data.pop('joueur2_username')).first()
-        if joueur1 is None or joueur2 is None:
-            return
-        return GameHistory.objects.create(joueur1=joueur1, joueur2=joueur2, **validated_data)
+        joueur1 = JwtUser.objects.get(username=validated_data.pop('joueur1_username'))
+        joueur2_username = validated_data.pop('joueur2_username', None)
+        is_ai_opponent = validated_data.pop('is_ai_opponent', False)
+        ai_opponent_name = validated_data.pop('ai_opponent_name', None)
+
+        joueur2 = None
+        if not is_ai_opponent and joueur2_username:
+            joueur2 = JwtUser.objects.get(username=joueur2_username)
+
+        return GameHistory.objects.create(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            is_ai_opponent=is_ai_opponent,
+            ai_opponent_name=ai_opponent_name,
+            **validated_data
+        )
+
+    def validate(self, data):
+        is_ai_opponent = data.get('is_ai_opponent', False)
+        joueur2_username = data.get('joueur2_username')
+        ai_opponent_name = data.get('ai_opponent_name')
+
+        if is_ai_opponent:
+            if joueur2_username is not None:
+                raise serializers.ValidationError("joueur2_username should be None when is_ai_opponent is True")
+            if not ai_opponent_name:
+                raise serializers.ValidationError("ai_opponent_name is required when is_ai_opponent is True")
+        else:
+            if ai_opponent_name:
+                raise serializers.ValidationError("ai_opponent_name should not be provided when is_ai_opponent is False")
+            if not joueur2_username:
+                raise serializers.ValidationError("joueur2_username is required when is_ai_opponent is False")
+
+        return data

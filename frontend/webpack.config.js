@@ -4,7 +4,6 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import webpack from 'webpack';
-import {env} from "process";
 
 const __filename =  fileURLToPath(import.meta.url);
 const __dirname = path.resolve();
@@ -39,15 +38,13 @@ export default {
           pathRewrite: {'^/api': ''}
         }
     ],
-    static: {
-      directory: path.resolve('dist'),
-    },
+    static: path.resolve(__dirname, 'dist'),
     historyApiFallback: true,
   },
   output: {
     filename: 'bundle.js',
     clean : true,
-    path: path.resolve('dist'),
+    path: path.resolve(__dirname, 'dist'),
   },
   module: {
     rules: [

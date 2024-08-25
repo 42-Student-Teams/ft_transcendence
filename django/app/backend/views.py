@@ -235,25 +235,34 @@ class BlockUserView(APIView):
 
 
 ##--------------------------------------GET-FRIEND-LIST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Récupération des amis : Récupère la liste des amis de l'utilisateur depuis la base de données.
-# 4.Construction de la liste d'amis : Crée une liste d'amis avec les noms d'utilisateur des amis.
-# 5.Retour de la réponse : Retourne une réponse de succès avec la liste des amis de l'utilisateur.
+
 class FriendListView(APIView):
     def get(self, request):
-        user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
-        print(f'Serving friends list to user `{user.username}`', flush=True)
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+            friends = user.friends.all()
+            friend_list = [{
+                'username': friend.username,
+                'status': friend.status,
+                'profile_picture': friend.avatar.url if friend.avatar else None
+            } for friend in friends]
 
-        friends = user.friends.all()
-        friend_list = [{'username': friend.username} for friend in friends]
+            return Response({
+                'status': 'success',
+                'friends': friend_list
+            }, status=status.HTTP_200_OK)
 
-        return Response({
-            'status': 'success',
-            'friends': friend_list
-        }, status=status.HTTP_200_OK)
+        except JwtUser.DoesNotExist:
+            return Response({
+                'status': 'error',
+                'message': 'Utilisateur non trouvé'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PendingListView(APIView):
@@ -377,24 +386,38 @@ class getUserProfileView(APIView):
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
 
 class GameHistoryCreateView(APIView):
-    def post(self, request):
-        username = check_jwt(request)
-        if not username:
-            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        serializer = GameHistoryCreateSerializer(data=request.data)
+    def post(self, request, format=None):
+        serializer = GameHistorySerializer(data=request.data)
         if serializer.is_valid():
-            game_history = serializer.save()
-            return Response({
-                'status': 'success',
-                'message': 'Partie enregistrée avec succès',
-                'game': GameHistorySerializer(game_history).data
-            }, status=status.HTTP_201_CREATED)
-        return Response({
-            'status': 'error',
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            joueur1_username = serializer.validated_data['joueur1_username']
+            joueur2_username = serializer.validated_data.get('joueur2_username')
+            is_ai_opponent = serializer.validated_data.get('is_ai_opponent', False)
+            ai_opponent_name = serializer.validated_data.get('ai_opponent_name')
 
+            try:
+                joueur1 = JwtUser.objects.get(username=joueur1_username)
+            except JwtUser.DoesNotExist:
+                return Response({'error': 'Joueur 1 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            joueur2 = None
+            if not is_ai_opponent:
+                try:
+                    joueur2 = JwtUser.objects.get(username=joueur2_username)
+                except JwtUser.DoesNotExist:
+                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+
+            game_history = GameHistory.enregistrer_partie(
+                joueur1=joueur1,
+                joueur2=joueur2,
+                duree_partie=serializer.validated_data['duree_partie'],
+                score_joueur1=serializer.validated_data['score_joueur1'],
+                score_joueur2=serializer.validated_data['score_joueur2'],
+                is_ai_opponent=is_ai_opponent,
+                ai_opponent_name=ai_opponent_name
+            )
+
+            return Response(GameHistorySerializer(game_history).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GameHistoryListView(APIView):
     def get(self, request):
@@ -402,15 +425,15 @@ class GameHistoryListView(APIView):
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = JwtUser.objects.filter(username=username).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
-        serializer = GameHistorySerializer(parties, many=True)
+        user = JwtUser.objects.get(username=username)
+        parties = GameHistory.objects.filter(
+            Q(joueur1=user) |
+            (Q(joueur2=user) & Q(is_ai_opponent=False)) |
+            (Q(joueur1=user) & Q(is_ai_opponent=True))
+        ).order_by('-date_partie')
 
+        serializer = GameHistorySerializer(parties, many=True)
         return Response({
             'status': 'success',
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
-    
-

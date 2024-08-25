@@ -7,6 +7,7 @@ import Component from "../library/component.js";
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js";
 import state from "../store/state.js";
+import * as bootstrap from 'bootstrap';
 
 export default class Home extends Component {
 	constructor() {
@@ -48,9 +49,19 @@ export default class Home extends Component {
                 </div>
                 <div id="main-home" class="col d-flex flex-column justify-content-center align-items-center">
 					<div class="d-flex gap-4">
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament</button>
+						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Online
+						</button>
+					  	<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
+					  		<i class="fa-solid fa-dice"></i> Create Tournament
+						</button>
+						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
+					  		<i class="fa-solid fa-users"></i> Join Tournament
+						</button>
+					
+					<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game (J)</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game (J)</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament (J)</button>
+					
 					</div>
                 </div>
               </div>
@@ -163,6 +174,32 @@ export default class Home extends Component {
 		    </div>
 		  </div>
 		</div>
+
+
+		<!-- Modal Join Tournament -->	
+		<div class="modal" id="tournament-join-game-modal" tabindex="-1">
+		  <div class="modal-dialog modal-dialog-centered">
+		    <div class="modal-content">
+			<form>
+		      <div class="modal-header">
+		        <h5 class="modal-title" id="modalVerticallyCenteredLabel">Settings of the Game</h5>
+		        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		      </div>
+		      <div class="modal-body">
+					<div class="p-3">
+				    	<label for="input-join-nickname" class="form-label">Nickname</label>
+				    	<input type="text" class="form-control" id="input-join-nickname" aria-describedby="nickName" required>
+				    	<div id="nickNameJoin" class="form-text">Please enter a Nickname for the tournament</div>
+					</div>
+			  </div>
+		      <div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+		    	<button id="btn-join-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">Next</button>
+		      </div>
+			<form>
+		    </div>
+		  </div>
+		</div>
         `;
 		this.element.innerHTML = view;
 		this.handleEvent();
@@ -239,7 +276,7 @@ export default class Home extends Component {
 			}
 			store.dispatch("setCurrentGameData", game);
 			//console.log(game);
-			//document.getElementById('local-game-modal').hide();
+			localStorage.setItem('local-game', JSON.stringify(game));
 			navigateTo("/local-game");
 		});
 
@@ -250,6 +287,12 @@ export default class Home extends Component {
 			const speed = document.getElementById('formSwitchCheckTournament').checked;
 			const aiPlayers = Array.from(aiNicknames);
 
+			// From here added code for the tournament toast
+			if (!nickname || aiNicknames.has(nickname)) {
+                this.showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+                return;
+            }
+
 			const game = {
 				Nickname: nickname,
 				Color: colorRadio.value,
@@ -257,9 +300,55 @@ export default class Home extends Component {
 				AiPlayers: aiPlayers
 			};
 			
-			//console.log(game);
-			navigateTo("/tournament-game");
-		});
+			try {
+                // Simulate backend interaction
+                const response = await this.postTournamentData(game);
+                if (response.status !== 200) throw new Error("Backend error");
+
+                navigateTo("/tournament-game");
+            } catch (error) {
+                this.showToast("Incorrect input or server error. Please try again.", "danger");
+            }
+        });
+
+		this.element.querySelector("#btn-join-tournament").addEventListener("click", async (event) => {
+			event.preventDefault();
+			const nickname = document.getElementById('input-join-nickname').value;
+
+			// From here added code for the tournament toast
+			if (!nickname) {
+                this.showToast("Invalid input: Nickname can't be empty", "danger");
+                return;
+            }
+
+			try {
+                // Simulate backend interaction
+                //const response = await this.postTournamentData(game);
+                //if (response.status !== 200) throw new Error("Backend error");
+				store.dispatch("setJoinTournamentNickName", nickname);
+				console.log(store.state.joinNickname);
+                navigateTo("/join-tournament");
+            } catch (error) {
+                this.showToast("Incorrect input or server error. Please try again.", "danger");
+            }
+        });
+
+		// backend interaction, essaie
+		// 	try {
+		// 		// Make a real API call to post tournament data
+		// 		const response = await this.postTournamentData(game);
+		// 		if (response.ok) {
+		// 			this.showToast("Tournament created successfully!", "success");
+		// 			navigateTo("/tournament-game");
+		// 		} else {
+		// 			const errorData = await response.json();
+		// 			this.showToast(errorData.message || "Error creating tournament.", "danger");
+		// 		}
+		// 	} catch (error) {
+		// 		console.error("Error:", error);
+		// 		this.showToast("Server error. Please try again.", "danger");
+		// 	}
+		// });
 
 		// Helper function to toggle visibility
 		function toggleVisibility(activeList, buttonToActivate, lists, buttons) {
@@ -332,5 +421,58 @@ export default class Home extends Component {
 			store.dispatch("setCurrentGameData", game);
 			navigateTo("/local-game");
 		});
+	}
+	async postTournamentData(gameData) {
+        // Simulated function for posting data to the server
+        // remplacer ca avec un vrai call API voir avec leo comment faire
+        return { status: 200 }; // Assume success
+    }
+
+	// // posting data tournament pour de vrai, esssaie
+    // async postTournamentData(gameData) {
+    //     const apiurl = 'https://localhost/backend'; // base URL for API
+    //     const jwt = localStorage.getItem('jwt');
+
+    //     try {
+    //         const response = await fetch(`${apiurl}/tournament`, {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Authorization': `Bearer ${jwt}`,
+    //                 'Content-Type': 'application/json'
+    //             },
+    //             body: JSON.stringify(gameData)
+    //         });
+
+    //         return response;
+    //     } catch (error) {
+    //         console.error("Error posting tournament data:", error);
+    //         throw error;
+    //     }
+    // }
+
+    showToast(message, type) {
+		// Bootstrap toast centered in the page
+		const toastHTML = `
+			<div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
+				<div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">
+							${message}
+						</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+			</div>
+		`;
+		const toastContainer = document.createElement('div');
+		toastContainer.innerHTML = toastHTML;
+		document.body.appendChild(toastContainer);
+
+		const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+		toastElement.show();
+
+		setTimeout(() => {
+			document.body.removeChild(toastContainer);
+		}, 5000);
 	}
 }

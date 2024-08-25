@@ -8,24 +8,26 @@ export default class ProfileInfo extends Component {
 
     async render() {
         const view = /*html*/ `
-            <div class="card mb-2 p-3">
-                <div class="d-flex align-items-center mb-3">
-                    <img src="https://via.placeholder.com/80" alt="Profile" class="img-fluid rounded mr-3" id="profile-picture">
-                    <div class="ml-3 mx-2">
-                        <h5 class="mb-0">lsaba-qu</h5>
-                        <p class="mb-0">12 Wins 13 Losses 43% Winrate</p>
+            <div class="card shadow-sm rounded mb-4">
+                <div class="d-flex flex-column align-items-center p-4">
+                    <img src="https://via.placeholder.com/80" alt="Profile" class="img-fluid rounded-circle mb-3" id="profile-picture">
+                    <div class="text-center">
+                        <h5 class="mb-1 font-weight-bold">Leonel Saba</h5>
+                        <p class="text-muted mb-2">Lsaba-qu</p>
+                        <button class="btn btn-outline-secondary btn-sm mb-4" data-bs-toggle="modal" data-bs-target="#edit-profile-modal">
+                            <i class="fa-solid fa-pen"></i> Edit Profile
+                        </button>
+                    </div>
+                    <div class="w-100 border-top mt-2 pt-3">
+                        <div class="text-center">
+                            <h6 class="mb-0">Wins: 10</h6>
+                            <h6 class="text-muted mb-0">Losses: 0</h6>
+                        </div>
                     </div>
                 </div>
-                <div class="pb-3">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Email</span>
-                        <span class="profile-user-info">lsaba-qu@42lausanne.ch</span>
-                    </div>
-                </div>
-                <button class="btn btn-secondary btn-sm mb-3 edit-profil-btn" data-bs-toggle="modal" data-bs-target="#edit-profile-modal"><i class="fa-solid fa-pen"></i> Edit profile</button>
             </div>
         `;
-		this.element = document.getElementById("profileInfo");
+        this.element = document.getElementById("profileInfo");
         this.element.innerHTML = view;
     }
 }

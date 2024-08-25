@@ -31,6 +31,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = [
     'localhost',
     os.getenv('BACKEND_IP', '0.0.0.0'),
+    'pong.ch',
 ]
 
 JWT_SECRET = os.getenv('JWT_SECRET')

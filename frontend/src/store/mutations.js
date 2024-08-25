@@ -21,9 +21,15 @@ function setIntraId(state, payload) {
 }
 
 // main
+
 function setLanguage(state, payload) {
-	state.languageId = payload.languageId;
-	return state;
+    state.language = payload;
+    return state;
+}
+
+function setJoinTournamentNickName(state, payload) {
+    state.joinNickname = payload;
+    return state;
 }
 
 function setWebSocket(state, payload) {
@@ -46,6 +52,17 @@ function setGameRequestId(state, payload) {
 	return state;
 }
 
+function updateFriendStatus(state, payload) {
+    if (!state.friends) {
+        state.friends = [];
+    }
+    const friendIndex = state.friends.findIndex(friend => friend.username === payload.username);
+    if (friendIndex !== -1) {
+        state.friends[friendIndex].status = payload.status;
+    }
+    return state;
+}
+
 
 export default {
 	updateLocation,
@@ -56,5 +73,7 @@ export default {
 	setGameSocket,
 	setCurrentGameData,
 	setGameRequestId,
+	updateFriendStatus,
+	setJoinTournamentNickName,
 	// setIntraId,
 };
