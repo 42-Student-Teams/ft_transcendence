@@ -70,14 +70,13 @@ export default class SidePendingList extends Component {
 
 		if (this.pending.friends.length > 0) {
 			this.pending.friends.forEach((friend, index) => {
-				const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3];
 				const friendHtml = /*html*/ `
                     <div class="friend container py-3">
                         <div class="row mr-4">
                             <div class="col-8 container user-info">
                                 <div class="row">
                                     <div class="col friend-image">
-                                        <img class="friend-img" src=${profilePicture} />
+                                        <img class="friend-img" src=${friend.avatar} />
                                     </div>
                                     <div class="col friend-info">
                                         <span>${friend.username}</span>

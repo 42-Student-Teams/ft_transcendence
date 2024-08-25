@@ -356,7 +356,10 @@ class PendingListView(APIView):
         user = JwtUser.objects.get(username=check_jwt(request))
 
         friend_requests = user.friend_requests.all()
-        friend_list = [{'username': friend.username} for friend in friend_requests]
+        friend_list = [{
+            'username': friend.username,
+            'avatar': friend.avatar.url if friend.avatar else None
+        } for friend in friend_requests]
 
         return Response({
             'status': 'success',
@@ -368,7 +371,10 @@ class BlockedListView(APIView):
         user = JwtUser.objects.get(username=check_jwt(request))
 
         blocked_users = user.blocked_users.all()
-        blocked_list = [{'username': blocked_user.username} for blocked_user in blocked_users]
+        blocked_list = [{
+            'username': blocked_user.username,
+            'avatar': blocked_user.avatar.url if blocked_user.avatar else None
+        } for blocked_user in blocked_users]
 
         return Response({
             'status': 'success',

@@ -69,14 +69,13 @@ export default class SideBlockedList extends Component {
         blockDisplayElement.innerHTML = '';
         if (this.blocked.blocked_users.length > 0) {
             this.blocked.blocked_users.forEach((user, index) => {
-                const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3];
                 const userHtml = /*html*/ `
                     <div class="friend container py-3" data-username="${user.username}">
                         <div class="row mr-4">
                             <div class="col-8 container user-info">
                                 <div class="row">
                                     <div class="col friend-image">
-                                        <img class="friend-img" src=${profilePicture} />
+                                        <img class="friend-img" src=${user.avatar} />
                                     </div>
                                     <div class="col friend-info">
                                         <span>${user.username}</span>
