@@ -239,7 +239,9 @@ class BlockUserView(APIView):
 class FriendListView(APIView):
     def get(self, request):
         try:
-            user = JwtUser.objects.get(username=check_jwt(request))
+            user = JwtUser.objects.filter(username=check_jwt(request)).first()
+            if user is None:
+                return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_400_BAD_REQUEST)
             friends = user.friends.all()
             friend_list = [{
                 'username': friend.username,
@@ -394,17 +396,15 @@ class GameHistoryCreateView(APIView):
             is_ai_opponent = serializer.validated_data.get('is_ai_opponent', False)
             ai_opponent_name = serializer.validated_data.get('ai_opponent_name')
 
-            try:
-                joueur1 = JwtUser.objects.get(username=joueur1_username)
-            except JwtUser.DoesNotExist:
+            joueur1 = JwtUser.objects.filter(username=joueur1_username).first()
+            if joueur1 is None:
                 return Response({'error': 'Joueur 1 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
 
             joueur2 = None
             if not is_ai_opponent:
-                try:
-                    joueur2 = JwtUser.objects.get(username=joueur2_username)
-                except JwtUser.DoesNotExist:
-                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+                joueur2 = JwtUser.objects.filter(username=joueur2_username).first()
+            if joueur2 is None:
+                return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
 
             game_history = GameHistory.enregistrer_partie(
                 joueur1=joueur1,
@@ -425,7 +425,9 @@ class GameHistoryListView(APIView):
         if not username:
             return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = JwtUser.objects.get(username=username)
+        user = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
         parties = GameHistory.objects.filter(
             Q(joueur1=user) |
             (Q(joueur2=user) & Q(is_ai_opponent=False)) |

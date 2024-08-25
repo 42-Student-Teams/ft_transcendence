@@ -27,12 +27,6 @@ def check_jwt(request, skip_user_exists_check=False):
     except (IndexError, jwt.DecodeError):
         raise AuthenticationFailed('Invalid token')
 
-    # je crois que l'exception n'est pas raised avec un simple objects.get
-    '''try:
-        user = JwtUser.objects.filter(username=payload['username']).first()
-    except JwtUser.DoesNotExist:
-        raise AuthenticationFailed('User not found')'''
-
     if not skip_user_exists_check:
         if 'username' not in payload:
             raise AuthenticationFailed('Missing username')

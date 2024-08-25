@@ -17,49 +17,50 @@ class WsConsumer(WsConsumerCommon):
 
     async def on_auth(self, msg_obj):
         await self.subscribe_to_groups()
+        await self.update_user_status('Connected')
 
-    def update_user_status(self, status):
+    def update_user_status_safe(self, status):
         if self.user:
             print(f"Updating status for user {self.user.username} to {status}")
             self.user.status = status
             self.user.save()
-            self.broadcast_status_change()
 
-    def broadcast_status_change(self):
-        for friend in self.user.friends.all():
-            self.send_channel(friend.username, 'friend_status_change', {
-                'user': self.user.username,
-                'status': self.user.status
+    async def update_user_status(self, status):
+        if self.user:
+            await database_sync_to_async(self.update_user_status_safe)(status)
+            await self.broadcast_status_change()
+
+    def get_user_status(self):
+        if self.user:
+            return self.user.status
+        else:
+            return ''
+
+    async def broadcast_status_change(self):
+        friends = await database_sync_to_async(self.get_friends)()
+        status = await database_sync_to_async(self.get_user_status)()
+        for friend_username in friends:
+            await self.send_channel(friend_username, 'friend_status_change', {
+                'user': self.user_username,
+                'status': status
             })
-
-    def connect(self):
-        super().connect()
-        if self.authed:
-            self.update_user_status('Connected')
-
-    def disconnect(self, close_code):
-        print(f"Disconnecting user: {self.user.username if self.user else 'Unknown'}")
-        if self.authed:
-            self.update_user_status('Offline')
-            self.broadcast_status_change()
-            self.user = None
-            self.authed = False
-        super().disconnect(close_code)
 
     @register_ws_func
     def logout(self, msg_obj):
-        print(f"Logging out user: {self.user.username if self.user else 'Unknown'}")
+        print(f"Logging out user: {self.user_username if self.user else 'Unknown'}")
         if self.user:
             self.update_user_status('Offline')
             self.user = None
             self.authed = False
 
-    def on_auth(self):
-        self.subscribe_to_groups()
-        self.update_user_status('Connected')
-
     async def on_disconnect(self):
         await database_sync_to_async(self.clean_db_entries)()
+        print(f"Disconnecting user: {self.user_username if self.user else 'Unknown'}")
+        if self.authed:
+            await self.update_user_status('Offline')
+            await self.broadcast_status_change()
+            self.user = None
+            self.authed = False
 
     def get_friends(self):
         friends = self.user.friends.all()
@@ -313,10 +314,10 @@ class WsConsumer(WsConsumerCommon):
             print(f'Sending the json from channel_dm ({self.user_username})', flush=True)
             await self.send_json(sanitized_msg_obj)
 
-    def friend_status_change(self, event):
+    async def friend_status_change(self, event):
         msg_obj = event["msg_obj"]
         print(f"Received friend status change: {msg_obj}")
-        self.send_json({
+        await self.send_json({
             'type': 'friend_status_update',
             'username': msg_obj['user'],
             'status': msg_obj['status']

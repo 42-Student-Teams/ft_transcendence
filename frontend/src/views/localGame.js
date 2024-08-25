@@ -344,7 +344,7 @@ export default class LocalGame extends Component {
 					`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 				}
 			}
-			else {
+			else if (window.gameState) {
 				const minutes = Math.floor(window.gameState.endTime / 60000);
 				const seconds = Math.floor((window.gameState.endTime % 60000) / 1000);
 				if (timerElement) {
