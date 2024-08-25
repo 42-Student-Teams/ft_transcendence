@@ -2,17 +2,27 @@ import Component from "../../library/component.js";
 import ProfilePicture1 from "../../assets/image/pp-6.jpg";
 import ProfilePicture2 from "../../assets/image/pp-7.png";
 import ProfilePicture3 from "../../assets/image/pp-8.jpg";
-
+import { showToast } from "../../utils/toastUtils.js";
+import { home } from "/src/utils/langPack.js";
+import store from "../../store/index.js";
 
 export default class SidePendingList extends Component {
 	constructor() {
 		super({ element: document.getElementById("side-pending-list") });
-		this.pendingFriends = []; // Initialize pendingFriends as an empty array
+		this.pendingFriends = [];
+		this.currentLang = store.state.language;
 		this.render();
+
+		store.events.subscribe('stateChange', () => {
+			if (this.currentLang !== store.state.language) {
+				this.currentLang = store.state.language;
+				this.render();
+			}
+		});
 	}
 
 	async render() {
-
+		const langPack = home[this.currentLang];
 		const view = /*html*/ `
             <div id="friend-display" class="blocked-list flex-grow-1 overflow-auto">
             </div>
@@ -26,7 +36,7 @@ export default class SidePendingList extends Component {
 	async handleEvent() {
 		document.getElementById("btn-toggle-pending").addEventListener("click", async (event) => {
 			event.preventDefault();
-			await this.getPendingList(); // Fetch and display the pending list
+			await this.getPendingList();
 		});
 	}
 
@@ -54,24 +64,23 @@ export default class SidePendingList extends Component {
 	}
 
 	renderPendingList() {
+		const langPack = home[this.currentLang];
 		const friendDisplayElement = document.getElementById("friend-display");
-		friendDisplayElement.innerHTML = ''; // Clear any existing content
+		friendDisplayElement.innerHTML = '';
 
 		if (this.pending.friends.length > 0) {
-
 			this.pending.friends.forEach((friend, index) => {
-				const profilePicture = [ProfilePicture1, ProfilePicture2, ProfilePicture3][index % 3]; // Cycle through profile pictures
 				const friendHtml = /*html*/ `
                     <div class="friend container py-3">
                         <div class="row mr-4">
                             <div class="col-8 container user-info">
                                 <div class="row">
                                     <div class="col friend-image">
-                                        <img class="friend-img" src=${profilePicture} />
+                                        <img class="friend-img" src=${friend.avatar} />
                                     </div>
                                     <div class="col friend-info">
                                         <span>${friend.username}</span>
-                                        <span class="friend-status">Pending</span>
+                                        <span class="friend-status">${langPack.pending}</span>
                                     </div>
                                 </div>
                             </div>
@@ -84,23 +93,23 @@ export default class SidePendingList extends Component {
 				friendDisplayElement.insertAdjacentHTML('beforeend', friendHtml);
 			});
 
-			// Add event listeners to the buttons after rendering
 			this.element.querySelectorAll('.btn-pending-friend').forEach(button => {
 				button.addEventListener('click', (event) => this.handleAcceptFriend(event));
 			});
 		} else {
-			friendDisplayElement.innerHTML = '<p>No pending friend requests.</p>';
+			friendDisplayElement.innerHTML = `<p>${langPack.noPendingFriendRequests}</p>`;
 		}
 	}
 
 	async handleAcceptFriend(event) {
+		const langPack = home[this.currentLang];
 		const button = event.currentTarget;
 		const username = button.getAttribute('data-username');
-		const friendContainer = button.closest('.friend'); // Get the parent container of the friend
+		const friendContainer = button.closest('.friend');
 
 		try {
 			const jwt = localStorage.getItem('jwt');
-			const apiurl = process.env.API_URL; // This should be replaced with the actual API URL
+			const apiurl = process.env.API_URL;
 			const response = await fetch(`${apiurl}/accept_friend_request`, {
 				method: 'POST',
 				headers: {
@@ -111,13 +120,17 @@ export default class SidePendingList extends Component {
 			});
 
 			if (response.ok) {
-				// Remove the friend container from the DOM
 				friendContainer.remove();
+				if (this.pending.friends.length === 1)
+					document.getElementById("friend-display").innerHTML = `<p>${langPack.noPendingFriendRequests}</p>`;
+				showToast(langPack.friendRequestAccepted.replace('{username}', username), 'success');
 			} else {
-				console.error(`Failed to accept friend request for ${username}`);
-			}
+                console.error(`Failed to accept friend request for ${username}`);
+                showToast(langPack.friendRequestAcceptFailed.replace('{username}', username), 'danger');
+            }
 		} catch (error) {
-			console.error(`Error accepting friend request for ${username}:`, error);
-		}
+            console.error(`Error accepting friend request for ${username}:`, error);
+            showToast(langPack.friendRequestAcceptError.replace('{username}', username), 'danger');
+        }
 	}
 }

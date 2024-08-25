@@ -23,8 +23,32 @@ function setLanguage(context, payload) {
     document.documentElement.lang = payload;
 }
 
-function setIntraId(context, payload) {
-	context.commit("setIntraId", payload);
+function setUsername(context, payload) {
+	context.commit("setUsername", payload);
+}
+
+function setFirstName(context, payload) {
+	context.commit("setFirstName", payload);
+}
+
+function setLastName(context, payload) {
+	context.commit("setLastName", payload);
+}
+
+function setAvatar(context, payload) {
+	context.commit("setAvatar", payload);
+}
+
+function setGamesPlayed(context, payload) {
+	context.commit("setGamesPlayed", payload);
+}
+
+function setGamesLossed(context, payload) {
+	context.commit("setGamesLossed", payload);
+}
+
+function setGamesWon(context, payload) {
+	context.commit("setGamesWon", payload);
 }
 
 function setJoinTournamentNickName(context, payload) {
@@ -56,10 +80,16 @@ export default {
 	logIn,
 	logOut,
 	setLanguage,
-	setIntraId,
 	setJoinTournamentNickName,
 	setWebSocket,
 	updateFriendStatus,
+	setUsername,
+	setFirstName,
+	setLastName,
+	setAvatar,
+	setGamesPlayed,
+	setGamesLossed,
+	setGamesWon,
 	setGameSocket,
 	setCurrentGameData,
 	setGameRequestId,

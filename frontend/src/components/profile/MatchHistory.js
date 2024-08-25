@@ -1,49 +1,102 @@
 import Component from "../../library/component.js";
+import { showToast } from "../../utils/toastUtils.js";
+import { profile } from "../../utils/langPack.js";
+import store from "../../store/index.js";
 
 export default class MatchHistory extends Component {
     constructor() {
         super({ element: document.getElementById("matchHistory") });
+        this.matchHistory = [];
+        this.currentLang = store.state.language;
         this.render();
     }
 
     async render() {
+        const langPack = profile[this.currentLang];
         const view = /*html*/ `
-        <div class="card p-3 flex-grow-1 d-flex flex-column">
-            <div class="card-content flex-grow-1 d-flex flex-column">
-                <div class="card-body p-0 flex-grow-1 d-flex flex-column justify-content-between">
-                    <div class="my-1"></div>
-
-                    ${this.createMatch("Victory", "9-4", "01/01/2023 10:00 AM")}
-                    <div class="border-top my-3"></div>
-                    ${this.createMatch("Victory", "7-3", "02/01/2023 11:00 AM")}
-                    <div class="border-top my-3"></div>
-                    ${this.createMatch("Defeat", "5-7", "03/01/2023 12:00 PM")}
-                    <div class="border-top my-3"></div>
-                    ${this.createMatch("Victory", "8-2", "04/01/2023 01:00 PM")}
-                    <div class="border-top my-3"></div>
-                    ${this.createMatch("Defeat", "4-6", "05/01/2023 02:00 PM")}
-
-                    <div class="my-1"></div>
+            <div class="card p-2 m-0">
+                <div class="card-body p-2 m-0">
+                    <h5 class="card-title text-center mt-3 mb-4">${langPack.matchHistory}</h5>
+                    <div id="match-list-display" class="mt-3"></div>
                 </div>
             </div>
-        </div>
         `;
-
+        this.element = document.getElementById('matchHistory');
         this.element.innerHTML = view;
+        this.fetchMatchHistory();
     }
 
-    createMatch(result, score, date) {
+    async fetchMatchHistory() {
+        const langPack = profile[this.currentLang];
+        try {
+            const jwt = localStorage.getItem('jwt');
+            const apiurl = process.env.API_URL;
+            const response = await fetch(`${apiurl}/history_getGames`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Received match history data:', data);
+                
+                this.matchHistory = data.historique.slice(0, 5);
+
+                await this.renderMatchHistory();
+				console.log('1 Match history rendered');
+            } else {
+                console.error('Failed to fetch match history');
+                showToast(langPack.fetchMatchHistoryFailed, 'danger');
+            }
+        } catch (error) {
+            console.error('Error fetching match history:', error);
+            showToast(langPack.fetchMatchHistoryError, 'danger');
+        }
+    }
+
+    async renderMatchHistory() {
+        const langPack = profile[this.currentLang];
+        const matchDisplayElement = document.getElementById("match-list-display");
+        matchDisplayElement.innerHTML = '';
+		
+		console.log('2 Match history rendered');
+        if (this.matchHistory.length > 0) {
+            this.matchHistory.forEach((match, index) => {
+                const isLastMatch = index === this.matchHistory.length - 1;
+                const matchHtml = this.createMatch(match, isLastMatch);
+                matchDisplayElement.insertAdjacentHTML('beforeend', matchHtml);
+            });
+        } else {
+            matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
+        }
+    }
+
+    createMatch(match, isLastMatch) {
+		console.log('3 Match history rendered');
+        const langPack = profile[this.currentLang];
+        const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
+        const resultClass = result === langPack.victory ? "text-success" : "text-danger";
+        const score = `${match.score_joueur1} - ${match.score_joueur2}`;
+        const date = new Date(match.date_partie).toLocaleString(this.currentLang);
+
         return `
-        <div class="d-flex justify-content-between align-items-center my-3">
-            <div class="d-flex flex-column align-items-center">
-                <img src="https://via.placeholder.com/60" alt="Profile" class="img-fluid rounded-circle mb-1">
+        <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="${match.joueur2_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
+                <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
             </div>
             <div class="text-center">
-                <h6 class="mb-0">${result}</h6>
-                <p class="mb-0">${score}</p>
+                <span class="${resultClass} d-block mb-1">${result}</span>
+                <p class="mb-1">${score}</p>
                 <small class="text-muted">${date}</small>
             </div>
-            <img src="https://via.placeholder.com/60" alt="Second Image" class="img-fluid rounded-circle">
+            <div class="game-history-container d-flex flex-column align-items-center">
+                <img src="${match.joueur2_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
+                <small class="text-muted text-truncate text-center">${match.joueur2_username}</small>
+            </div>
         </div>
         `;
     }

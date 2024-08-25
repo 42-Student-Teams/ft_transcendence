@@ -47,18 +47,6 @@ function setupNavigation() {
 	});
 }
 
-async function setUserInfo() {
-	const response = await fetch("/api/v1/user", {
-		method: "GET",
-		credentials: "include",
-	});
-
-	const data = await response.json();
-
-	store.dispatch("setIntraId", { intraId: data.user.intraId });
-	// store.dispatch("setLanguage", { languageId: data.preferred_language });
-}
-
 async function checkAuthStatus() {
 	const response = await fetch("/api/check-login", {
 		credentials: "include",
@@ -80,17 +68,17 @@ async function checkAuthStatus() {
 
 function handleDefaultRoute() {
 	if (tokenExpired()) {
-        navigateTo("/login");
-    } else {
-        store.dispatch("logIn");
-        openCommWebsocket();
-        if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
-            navigateTo("/");
-        } else if (!store.state.joinNickname && ["/join-tournament"].includes(window.location.pathname)) {
+		navigateTo("/login");
+	} else {
+		store.dispatch("logIn");
+		openCommWebsocket();
+		if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
 			navigateTo("/");
-		} 
+		} else if (!store.state.joinNickname && ["/join-tournament"].includes(window.location.pathname)) {
+			navigateTo("/");
+		}
 		else {
-            router();
-        }
-    }
+			router();
+		}
+	}
 }

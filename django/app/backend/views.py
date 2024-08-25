@@ -1,7 +1,10 @@
 import os
 
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, FileResponse
+from django.templatetags.static import static
+from django.urls import reverse
+from django.core.exceptions import ValidationError
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -9,13 +12,14 @@ from django.db.models import Q
 #Q est spécifique à Django et fait partie de son ORM (Object-Relational Mapping).
 #combine plusieurs conditions avec des opérateurs logiques OR (|) ou AND (&).
 
+
 import jwt
 from .jwt_util import jwt_response, check_jwt
 from .models import JwtUser, GameHistory
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer
 
 from .util import get_user_info
 
@@ -26,6 +30,8 @@ def index(request):
 def create_user(request):
     return HttpResponse(f"Hello Transcendence, this route is deprecated")
 
+
+##--------------------------------------USER DATA - POST METHODE-----------------------------------------###
 class UserCreateView(APIView):
     def post(self, request):
         print('--------------------')
@@ -83,6 +89,7 @@ class UserLoginView(APIView):
             raise AuthenticationFailed('Incorrect username or password')
         return jwt_response(username)
 
+##--------------------------------------USER DATA - GET METHODE-----------------------------------------###
 class UserListView(APIView):
     def get(self, request):
         if check_jwt(request):
@@ -90,35 +97,115 @@ class UserListView(APIView):
         else:
             raise AuthenticationFailed()
 
-class UserUpdateView(APIView):
-    def post(self, request):
+class getUserProfileView(APIView):
+    def get(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        avatar = request.FILES.get('avatar')
-        if avatar is not None:
-            user.avatar = avatar
-            user.save()
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        if first_name is not None:
-            user.first_name = first_name
-            user.save()
-        if last_name is not None:
-            user.last_name = last_name
-            user.save()
-        return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        user.refresh_from_db() # Rafraîchit les données de l'utilisateur pour obtenir les champs mis à jour
+        parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+        parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+
+        profile_data = {
+            'nom': user.last_name,
+            'prenom': user.first_name,
+            'username': user.username,
+            'avatar': user.avatar.url,
+            'parties_jouees': parties_jouees,
+            'parties_perdues': parties_jouees - parties_gagnees,
+            'parties_gagnees': parties_gagnees
+        }
+
+        return Response(profile_data, status=status.HTTP_200_OK)
 
 
-##----------------------------------FRIEND-BLOCK-PENDING-LIST------------------------------###
+##--------------------------------------USER DATA - PUT METHODE-----------------------------------------###
+class ImprovedUpdateUserView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def put(self, request):
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserProfileSerializer(user, data=request.data)
+        if (not serializer.is_valid()):
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        max_avatar_size = 1024 * 1024  # 1MB
+
+        if 'avatar' in request.data:
+            if (request.data['avatar'].size > max_avatar_size):
+                return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
+            if request.data['avatar'] != 'staticfiles/avatars/default_avatar.png':
+                #delete if not default avatar
+                if user.avatar != 'staticfiles/avatars/default_avatar.png':
+                    user.avatar.delete()
+                user.avatar = request.data['avatar']
+            else:
+                user.avatar = request.data['avatar']
+            serializer.save()
+        return Response({
+            'status': 'success',
+            'message': 'Profile updated successfully',
+            'user': {
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'avatar_url': user.avatar.url,
+            }
+        }, status=status.HTTP_200_OK)
+
+
+
+# class UserUpdateView(APIView):
+#     parser_classes = (MultiPartParser, FormParser)
+
+#     def post(self, request):
+#         user = JwtUser.objects.get(username=check_jwt(request))
+#         if not (request.method == 'POST' and request.FILES.get('avatar')):
+#     # Send an error response
+#             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
+#         avatar = request.FILES['avatar']
+#         # do a print of avatar
+#         print(f"avatar: {avatar}")
+#         first_name = request.data.get('nom')
+#         last_name = request.data.get('prenom')
+#         print(f"data: {request.data}")
+#         # Vérifiez si le fichier est une image valide
+#         if not avatar.content_type.startswith('image'):
+#             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
+#         # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
+#         if user.avatar != 'staticfiles/avatars/default_avatar.png':
+#             user.avatar.delete(save=False)
+#         user.avatar = avatar
+
+#         first_name = request.data.get('first_name')
+#         last_name = request.data.get('last_name')
+#         print(f"first_name: {first_name}, last_name: {last_name}")
+
+#         if first_name is not None:
+#             user.first_name = first_name
+
+#         if last_name is not None:
+#             user.last_name = last_name
+#         try:
+#             user.save()
+#         except ValidationError as e:
+#             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+#         return Response({
+#             'status': 'success',
+#             'message': 'Profile updated successfully',
+#             'avatar_url': user.avatar.url
+#         }, status=status.HTTP_200_OK)
 
 ##--------------------------------------FRIEND-REQUEST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Validation du nom d'utilisateur de l'ami : Vérifie la présence du nom d'utilisateur de l'ami dans la requête.
-# 4.Ajout de l'ami : Vérifie que l'utilisateur n'ajoute pas lui-même et qu'ils ne sont pas déjà amis, puis ajoute l'ami.
-# 5.Retour de la réponse : Retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
+
 class FriendView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User not found'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         friend_username = request.data.get('friend_username')
         if not friend_username:
@@ -246,7 +333,8 @@ class FriendListView(APIView):
             friend_list = [{
                 'username': friend.username,
                 'status': friend.status,
-                'profile_picture': friend.avatar.url if friend.avatar else None
+                'avatar': friend.avatar.url
+                # 'avatar': request.build_absolute_uri(friend.avatar.url) if friend.avatar else request.build_absolute_uri(settings.MEDIA_URL + 'default_avatar.png')
             } for friend in friends]
 
             return Response({
@@ -274,7 +362,10 @@ class PendingListView(APIView):
             return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
 
         friend_requests = user.friend_requests.all()
-        friend_list = [{'username': friend.username} for friend in friend_requests]
+        friend_list = [{
+            'username': friend.username,
+            'avatar': friend.avatar.url if friend.avatar else None
+        } for friend in friend_requests]
 
         return Response({
             'status': 'success',
@@ -288,7 +379,10 @@ class BlockedListView(APIView):
             return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
 
         blocked_users = user.blocked_users.all()
-        blocked_list = [{'username': blocked_user.username} for blocked_user in blocked_users]
+        blocked_list = [{
+            'username': blocked_user.username,
+            'avatar': blocked_user.avatar.url if blocked_user.avatar else None
+        } for blocked_user in blocked_users]
 
         return Response({
             'status': 'success',
@@ -297,35 +391,7 @@ class BlockedListView(APIView):
 
 
 
-###-------------------------------------------------------------------------------------###
-
-class UpdateProfilePictureView(APIView):
-
-    parser_classes = (MultiPartParser, FormParser)
-
-    def put(self, request):
-        user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
-
-        avatar = request.FILES['avatar']
-
-        # Vérifiez si le fichier est une image valide
-        if not avatar.content_type.startswith('image'):
-            return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Supprimez l'ancien avatar si il existe
-        if user.avatar:
-            user.avatar.delete(save=False)
-
-        user.avatar = avatar
-        user.save()
-
-        return Response({
-            'status': 'success',
-            'message': 'Avatar updated successfully',
-            'avatar_url': user.avatar.url if user.avatar else None
-        }, status=status.HTTP_200_OK)
+###-----------------------------------MESSAGE API--------------------------------------------------###
 
 class ChatGetMessagesView(APIView):
     def post(self, request):
@@ -366,23 +432,46 @@ class ChatGetMessagesView(APIView):
 
 ###-----------------------------GET PROFILE--------------------------------------------------------###
 
-class getUserProfileView(APIView):
+class getFriendProfileView(APIView):
     def get(self, request):
-        user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        
-        # Vérification de l'existence de l'utilisateur
-        if not user:
+        requesting_user = check_jwt(request)
+        if not requesting_user:
+            return Response({'status': 'error', 'message': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        friend_username = request.GET.get('username')
+        if not friend_username:
+            return Response({'status': 'error', 'message': 'Username parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = JwtUser.objects.filter(username=friend_username).first()
+        if user is None:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # Préparation des données du profil
+        requesting_user_obj = JwtUser.objects.filter(username=requesting_user).first()
+        if requesting_user_obj is None:
+            return Response({'status': 'error', 'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user not in requesting_user_obj.friends.all():
+            return Response({'status': 'error', 'message': 'You can only view profiles of your friends'}, status=status.HTTP_403_FORBIDDEN)
+
+        parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+        parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+        parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
+        serializer = GameHistoryWithAvatarSerializer(parties, many=True, context={'request': request})
+
         profile_data = {
             'nom': user.last_name,
-            'prénom': user.first_name,
+            'prenom': user.first_name,
             'username': user.username,
-            'avatar': request.build_absolute_uri(user.avatar.url) if user.avatar else None
+            'status': user.status,
+            'avatar': user.avatar.url if user.avatar else None,
+            'parties_perdues': parties_jouees - parties_gagnees,
+            'parties_jouees': parties_jouees,
+            'parties_gagnees': parties_gagnees,
+            'historique': serializer.data
         }
-        
+
         return Response(profile_data, status=status.HTTP_200_OK)
+
+
 
 
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
@@ -403,8 +492,8 @@ class GameHistoryCreateView(APIView):
             joueur2 = None
             if not is_ai_opponent:
                 joueur2 = JwtUser.objects.filter(username=joueur2_username).first()
-            if joueur2 is None:
-                return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+                if joueur2 is None:
+                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
 
             game_history = GameHistory.enregistrer_partie(
                 joueur1=joueur1,
@@ -427,15 +516,38 @@ class GameHistoryListView(APIView):
 
         user = JwtUser.objects.filter(username=username).first()
         if user is None:
-            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'status': 'error', 'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
         parties = GameHistory.objects.filter(
             Q(joueur1=user) |
             (Q(joueur2=user) & Q(is_ai_opponent=False)) |
             (Q(joueur1=user) & Q(is_ai_opponent=True))
         ).order_by('-date_partie')
 
-        serializer = GameHistorySerializer(parties, many=True)
+        serializer = GameHistoryWithAvatarSerializer(parties, many=True, context={'request': request})
         return Response({
             'status': 'success',
             'historique': serializer.data
         }, status=status.HTTP_200_OK)
+
+class PlayerStatsView(APIView):
+    def get(self, request):
+        username = check_jwt(request)
+        if not username:
+            return Response({'status': 'error', 'message': 'Authentification requise'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user = JwtUser.objects.filter(username=username).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        total_games = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
+        victories = GameHistory.objects.filter(gagnant=user).count()
+        defeats = total_games - victories
+
+        stats = {
+            'total_games': total_games,
+            'victories': victories,
+            'defeats': defeats
+        }
+
+        serializer = PlayerStatsSerializer(stats)
+        return Response(serializer.data, status=status.HTTP_200_OK)

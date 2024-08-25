@@ -17,6 +17,7 @@ RUN openssl req -x509 -nodes \
         -subj "/C=CH/ST=Vaud/L=Lausanne/O=42/OU=42/CN=${BACKEND_IP}/UID=lsaba-qu"
 
 RUN mkdir -p /etc/nginx/sites-enabled
+RUN mkdir -p /var/www/backend/staticfiles/
 
 COPY data/nginx.conf /etc/nginx/
 COPY data/proxy_params /etc/nginx/

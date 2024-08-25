@@ -35,8 +35,8 @@ h1 {
 }
 
 .btn-fortytwo {
-  background: #00babc;
-  color: #fff !important;
+	background: #00babc;
+	color: #fff !important;
 }
 
 .btn-fortytwo:hover {
@@ -93,7 +93,7 @@ h1 {
 }
 
 
-.btn-primary{
+.btn-primary {
 	background-color: #F2F3F5;
 	border: none;
 }
@@ -177,33 +177,37 @@ button.btn.btn-primary:active {
 	height: 600px;
 }
 
-.friend{
-	height:80px;
-	border-top:1px solid #EBEBED;
-	border-bottom:1px solid transparent;
-	
+.friend {
+	height: 80px;
+	border-top: 1px solid #EBEBED;
+	border-bottom: 1px solid transparent;
+
 }
 
 .friend-img {
-	width: 50px;
+	width: 60px;
+	height:60px;
 	border-radius: 50%;
 }
 
-.friend:hover, .ia-player-display:hover{
+.friend:hover,
+.ia-player-display:hover {
 	border-radius: 4px;
 	background-color: #EBEBED !important;
 }
 
-.ia-player-display{
-	padding-left: 10px ;
-	border-top:1px solid #EBEBED;
-	height:45px;
-	border-bottom:1px solid transparent;
+.ia-player-display {
+	padding-left: 10px;
+	border-top: 1px solid #EBEBED;
+	height: 45px;
+	border-bottom: 1px solid transparent;
 }
 
-.friend-status-online, .friend-status-offline, .friend-status-absent{
-	font-size:13px;
-	font-weight:600;
+.friend-status-online,
+.friend-status-offline,
+.friend-status-absent {
+	font-size: 13px;
+	font-weight: 600;
 }
 
 .friend-status {
@@ -229,48 +233,50 @@ button.btn.btn-primary:active {
 	color: white;
 }
 
-#login-submit, #form-register-submit{
-  background-color: #0a57ca;
-  color:white;
+#login-submit,
+#form-register-submit {
+	background-color: #0a57ca;
+	color: white;
 }
 
-#login-submit:hover, #form-register-submit:hover{
-  background-color: #073d8d;
-  color:white;
+#login-submit:hover,
+#form-register-submit:hover {
+	background-color: #073d8d;
+	color: white;
 }
 
 
 /*  Blocked, list, friends */
 
-#home-page:hover{
-	cursor:pointer;
+#home-page:hover {
+	cursor: pointer;
 }
 
-.btn-add-friend:hover{
-	border:none;
-	color:#228B21;
+.btn-add-friend:hover {
+	border: none;
+	color: #228B21;
 }
 
-.btn-add-friend{
-	border:none;
+.btn-add-friend {
+	border: none;
 }
 
-.btn-unblock:hover{
-	border:none;
-	color:#ED5554;
+.btn-unblock:hover {
+	border: none;
+	color: #ED5554;
 }
 
 .btn-unblock {
 	border: none;
 }
 
-.btn-pending-friend:hover{
-	border:none;
-	color:#228B21;
+.btn-pending-friend:hover {
+	border: none;
+	color: #228B21;
 }
 
-.btn-pending-friend{
-	border:none;
+.btn-pending-friend {
+	border: none;
 }
 
 /* Modal */
@@ -295,107 +301,163 @@ canvas {
 }
 
 .score-display {
-    width: 100px; /* Set a fixed width */
-    text-align: center; /* Center-align the text */
-    box-sizing: border-box; /* Ensure padding and borders are included in the element's total width and height */
-    padding: 0rem; /* Add some padding */
+	width: 100px;
+	/* Set a fixed width */
+	text-align: center;
+	/* Center-align the text */
+	box-sizing: border-box;
+	/* Ensure padding and borders are included in the element's total width and height */
+	padding: 0rem;
+	/* Add some padding */
 	margin: 3px;
 }
 
 .canvanbutton {
-    position: relative;
-    display: inline-block;
+	position: relative;
+	display: inline-block;
 }
 
 #start-game {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
 }
 
 #Winner-text {
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
+	top: 30%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
 }
 
 #Timer {
 	top: 10%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-}
-.game-canva{
-  height:500px;
-  width:900px;;
-  background-color:#EBEBED;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 1;
 }
 
-.btn-add-ai{
-	background-color:#0a57ca;
-  	color:white;
+.game-canva {
+	height: 500px;
+	width: 900px;
+	;
+	background-color: #EBEBED;
 }
 
-.btn-add-ai:hover, .btn-add-ai:active{
-	background-color:blue !important;
-  	color:white !important;
+.btn-add-ai {
+	background-color: #0a57ca;
+	color: white;
+}
+
+.btn-add-ai:hover,
+.btn-add-ai:active {
+	background-color: blue !important;
+	color: white !important;
 }
 
 
 
-.btn-blue{
-	background-color:#0a58ca;
+.btn-blue {
+	background-color: #0a58ca;
 }
 
-.btn-blue:hover{
-	background-color:blue;
-	color:white;
+.btn-blue:hover {
+	background-color: blue;
+	color: white;
 }
 
 /* Profile */
 .bg-custom {
-  background-color: #f6f8fb !important;
+	background-color: #f6f8fb !important;
 }
 
-.profile-user-info{
+.profile-user-info {
 	font-weight: 500;
 }
 
 .edit-profil-btn {
-  color: white;
+	color: white;
 }
 
 .friend-status-indicator {
-  position: absolute;
-  bottom: 0;
-  left: -1px; /* Ajusté pour chevaucher légèrement l'image */
-  width: 20px; /* Taille augmentée comme demandé précédemment */
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  z-index: 2; /* Assurez-vous que l'indicateur est au-dessus de l'image */
+	position: absolute;
+	bottom: 0;
+	left: -7px;
+	/* Ajusté pour chevaucher légèrement l'image */
+	width: 17px;
+	/* Taille augmentée comme demandé précédemment */
+	height: 17px;
+	border-radius: 50%;
+	border: 2px solid #fff;
+	z-index: 2;
+	/* Assurez-vous que l'indicateur est au-dessus de l'image */
 }
-  
-  .status-connected {
-	background-color: #228B21; /* Vert, même couleur que .friend-status-online */
-  }
-  
-  .status-offline {
-	background-color: gray; /* Gris, même couleur que .friend-status-offline */
-  }
-  
-  .friend-image {
+
+.status-connected {
+	background-color: #228B21;
+	/* Vert, même couleur que .friend-status-online */
+}
+
+.status-offline {
+	background-color: gray;
+	/* Gris, même couleur que .friend-status-offline */
+}
+
+.friend-image {
 	position: relative;
-	margin-left: 8px; /* Ajusté pour compenser la taille plus grande de l'indicateur */
-  }
-  
-  .friend-img {
-	position: relative;
-	z-index: 0; /* Assurez-vous que l'image est en dessous de l'indicateur */
-  }
-  
-  
- 
+	margin-left: 8px;
+	/* Ajusté pour compenser la taille plus grande de l'indicateur */
+}
+
+
+/* Styles de base pour les boutons d'icônes */
+.btn-icon {
+	background: none;
+	border: none;
+	padding: 0.5rem;
+	cursor: pointer;
+	transition: color 0.3s ease;
+	color: #4E5057;
+	/* Couleur par défaut pour les icônes */
+}
+
+/* Styles pour l'icône de message */
+.btn-direct-message:hover {
+	color: #0a58ca;
+	/* Bleu au survol */
+}
+
+/* Styles pour l'icône de blocage */
+.btn-block:hover {
+	color: #dc3545;
+	/* Rouge au survol */
+}
+
+/* Suppression du contour au focus pour tous les boutons */
+.btn:focus {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Optionnel : ajustement de la taille des icônes si nécessaire */
+.btn-icon i {
+	font-size: 1.2rem;
+	/* Ajustez selon vos préférences */
+}
+
+.game-history-container {
+	width: 200px;
+}
+
+
+.img-match-history {
+	width: 60px;
+	height: 60px;
+}
+
+.img-profile-avatar {
+	width: 100px;
+	height: 100px;
+}

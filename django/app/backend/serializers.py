@@ -1,12 +1,16 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from django.conf import settings
 
 from .models import JwtUser, Message, GameHistory
 
 
+#-----------------------------------------User's--------------------------------------#
 class JwtUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = JwtUser
-        fields = ('username', 'password', 'isoauth')
+        fields = ('username', 'password', 'isoauth', 'first_name', 'last_name')
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -37,17 +41,19 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ('id', 'author_username', 'recipient_username', 'content', 'timestamp')
 
+#-----------------------------------------Game History--------------------------------------#
 
 class GameHistorySerializer(serializers.ModelSerializer):
     joueur1_username = serializers.CharField(write_only=True)
     joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
     is_ai_opponent = serializers.BooleanField(default=False)
     ai_opponent_name = serializers.CharField(required=False, allow_null=True)
+    gagnant_username = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = GameHistory
         fields = ['joueur1_username', 'joueur2_username', 'duree_partie', 'score_joueur1', 'score_joueur2',
-                  'is_ai_opponent', 'ai_opponent_name', 'date_partie', 'gagnant']
+                  'is_ai_opponent', 'ai_opponent_name', 'date_partie', 'gagnant', 'gagnant_username']
         read_only_fields = ['date_partie', 'gagnant']
 
     def validate(self, data):
@@ -57,6 +63,19 @@ class GameHistorySerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("joueur2_username est requis lorsque is_ai_opponent est False")
         return data
 
+    def get_gagnant_username(self, obj):
+        if obj.gagnant:
+            return obj.gagnant.username
+        elif obj.is_ai_opponent and obj.score_joueur2 > obj.score_joueur1:
+            return obj.ai_opponent_name
+        return None
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ret['joueur1_username'] = instance.joueur1.username
+        if instance.joueur2:
+            ret['joueur2_username'] = instance.joueur2.username
+        return ret
 
 class GameHistoryCreateSerializer(serializers.ModelSerializer):
     joueur1_username = serializers.CharField(write_only=True)
@@ -107,3 +126,50 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("joueur2_username is required when is_ai_opponent is False")
 
         return data
+
+class PlayerStatsSerializer(serializers.Serializer):
+    total_games = serializers.IntegerField()
+    victories = serializers.IntegerField()
+    defeats = serializers.IntegerField()
+
+class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
+    joueur1_avatar = serializers.SerializerMethodField()
+    joueur2_avatar = serializers.SerializerMethodField()
+    joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
+    joueur2_username = serializers.SerializerMethodField()
+    gagnant_username = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GameHistory
+        fields = ['id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie',
+                  'score_joueur1', 'score_joueur2', 'gagnant_username', 'is_ai_opponent',
+                  'ai_opponent_name', 'joueur1_avatar', 'joueur2_avatar']
+
+    def get_joueur1_avatar(self, obj):
+        if obj.joueur1 and obj.joueur1.avatar:
+            return obj.joueur1.avatar.url
+        return settings.STATIC_URL + 'avatars/default_avatar.png'
+
+    def get_joueur2_avatar(self, obj):
+        if obj.is_ai_opponent:
+            return settings.STATIC_URL + 'avatars/default_avatar.png'
+        elif obj.joueur2 and obj.joueur2.avatar:
+            return obj.joueur2.avatar.url
+        return settings.STATIC_URL + 'avatars/default_avatar.png'
+
+    def get_joueur2_username(self, obj):
+        if obj.is_ai_opponent:
+            return obj.ai_opponent_name
+        return obj.joueur2.username if obj.joueur2 else None
+
+    def get_gagnant_username(self, obj):
+        if obj.gagnant:
+            return obj.gagnant.username
+        elif obj.is_ai_opponent and obj.score_joueur2 > obj.score_joueur1:
+            return obj.ai_opponent_name
+        return None
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JwtUser
+        fields = ('first_name', 'last_name', 'avatar')

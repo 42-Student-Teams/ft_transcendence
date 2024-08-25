@@ -15,10 +15,43 @@ function logOut(state) {
 	return state;
 }
 
-function setIntraId(state, payload) {
-	state.intraId = payload.intraId;
+//profile
+
+function setUsername(state, payload) {
+	state.username = payload.username;
 	return state;
 }
+
+function setFirstName(state, payload) {
+	state.firstname = payload.firstname;
+	return state;
+}
+
+function setLastName(state, payload) {
+	state.lastname = payload.lastname;
+	return state;
+}
+
+function setAvatar(state, payload) {
+	state.avatar = payload.avatar;
+	return state;
+}
+
+function setGamesPlayed(state, payload) {
+	state.gamesPlayed = payload.gamesPlayed;
+	return state;
+}
+
+function setGamesLossed(state, payload) {
+	state.gamesLossed = payload.gamesLossed;
+	return state;
+}
+
+function setGamesWon(state, payload) {
+	state.gamesWon = payload.gamesWon;
+	return state;
+}
+
 
 // main
 
@@ -75,5 +108,11 @@ export default {
 	setGameRequestId,
 	updateFriendStatus,
 	setJoinTournamentNickName,
-	// setIntraId,
+	setUsername,
+	setFirstName,
+	setLastName,
+	setAvatar,
+	setGamesPlayed,
+	setGamesLossed,
+	setGamesWon
 };
