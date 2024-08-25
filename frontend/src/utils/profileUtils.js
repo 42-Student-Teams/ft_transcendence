@@ -47,3 +47,13 @@ export function updateProfile(profile) {
 	}
 	return false;
 }
+
+
+export function clearEditModalInputs(elementIds) {
+    elementIds.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.innerText = '';
+        }
+    });
+}

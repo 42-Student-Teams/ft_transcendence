@@ -2,7 +2,7 @@ import NavBar from '../components/home/navbar.js';
 import { showToast } from "../utils/toastUtils.js";
 import Component from "../library/component.js";
 import { profile } from "../utils/langPack.js";
-import { getProfile, updateProfile } from "../utils/profileUtils.js";
+import { getProfile, updateProfile, clearEditModalInputs } from "../utils/profileUtils.js";
 import store from "../store/index.js";
 
 export default class Profile extends Component {
@@ -127,13 +127,7 @@ export default class Profile extends Component {
 
 			this.fetchMatchHistory();
 			if (response.ok) {
-
-				const test = await getProfile();
-				console.log('test', test);
-
-
 				const profile = await response.json();
-				console.log('Received user profile data:', profile);
 				const profileUsernameElem = document.getElementById("profile-username");
 				const profileNameElem = document.getElementById("profile-name");
 				const profileWinsElem = document.getElementById("profile-wins");
@@ -177,7 +171,6 @@ export default class Profile extends Component {
 				formData.append('last_name', lastName);
 				formData.append('first_name', firstName);
 				formData.append('avatar', profilePicture);
-				console.log('formData', formData.get('avatar'));
 				try {
 					const jwt = localStorage.getItem('jwt');
 					const apiurl = process.env.API_URL;
@@ -194,26 +187,32 @@ export default class Profile extends Component {
 						showToast(langPack.profileUpdateSuccess, 'success');
 
 						const data = await response.json();
-						console.log('Received updated profile data:', data.user);
 						const profile = {
 							firstname: data.user.first_name,
 							lastname: data.user.last_name,
 							avatar: data.user.avatar_url,
 						};
-
-						console.log('user', profile);
 						await updateProfile(profile);
-						console.log('profile', getProfile());
-					}
-					if (!response.ok) {
-						console.error('Error updating user profile:', response.statusText);
-						showToast(langPack.profileUpdateError, 'danger');
+						const profileUsernameElem = document.getElementById("profile-username");
+						const profileNameElem = document.getElementById("profile-name");
+						const profilePictureElem = document.getElementById("profile-picture");
+
+						if (profileUsernameElem && profileNameElem && profilePictureElem) {
+							profileUsernameElem.innerText = `${data.user.first_name} ${data.user.last_name}`;
+							profileNameElem.innerText = data.user.username;
+							profilePictureElem.src = data.user.avatar_url;
+						}
+						if (!response.ok) {
+							console.error('Error updating user profile:', response.statusText);
+							showToast(langPack.profileUpdateError, 'danger');
+						}
 					}
 				}
 				catch (error) {
 					console.error('Error updating user profile:', error);
 					showToast(langPack.profileUpdateError, 'danger');
 				}
+				clearEditModalInputs(["edit-profile-username", "edit-profile-name", "edit-profile-picture"]);
 			});
 		}
 	}
@@ -234,19 +233,6 @@ export default class Profile extends Component {
 					this.matchHistory = data.historique.slice(0, 5);
 					this.renderMatchHistory();
 				});
-
-			/*if (response.ok) {
-				const data = await response.json();
-				console.log('Received match history data:', data);
-	
-				this.matchHistory = data.historique.slice(0, 5);
-	
-				await this.renderMatchHistory();
-				console.log('1 Match history rendered');
-			} else {
-				console.error('Failed to fetch match history');
-				showToast(langPack.fetchMatchHistoryFailed, 'danger');
-			}*/
 		} catch (error) {
 			console.error('Error fetching match history:', error);
 			showToast(langPack.fetchMatchHistoryError, 'danger');
@@ -258,8 +244,6 @@ export default class Profile extends Component {
 		const matchDisplayElement = document.getElementById("match-list-display");
 		if (matchDisplayElement)
 			matchDisplayElement.innerHTML = '';
-
-		console.log('2 Match history rendered');
 		if (this.matchHistory.length > 0) {
 			this.matchHistory.forEach((match, index) => {
 				const isLastMatch = index === this.matchHistory.length - 1;
