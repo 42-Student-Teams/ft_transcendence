@@ -295,9 +295,9 @@ export default class Home extends Component {
 					search_for_game: false,
 				};
 				if (state.currentGameData && 'opponent_username' in state.currentGameData) {
-				game['opponent_username'] = state.currentGameData['opponent_username'];
-			}
-			store.dispatch("setCurrentGameData", game);
+					game['opponent_username'] = state.currentGameData['opponent_username'];
+				}
+				store.dispatch("setCurrentGameData", game);
 				//console.log(game);
 				localStorage.setItem('local-game', JSON.stringify(game));
 				navigateTo("/local-game");

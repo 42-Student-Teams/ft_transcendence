@@ -173,6 +173,7 @@ export default class LocalGame extends Component {
 			'ai': state.currentGameData['ai'],
 			'fast': state.currentGameData['speed'],
 			'search_for_game': state.currentGameData['search_for_game'],
+			'joining_author': state.currentGameData['joining_author'],
 		});
 	}
 

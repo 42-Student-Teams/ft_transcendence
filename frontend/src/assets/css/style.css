@@ -121,6 +121,11 @@ button.btn.btn-primary:active {
 	border: none;
 }
 
+#send-invite {
+	background-color: #4E5057;
+	border: none;
+}
+
 
 /*Chat messages */
 

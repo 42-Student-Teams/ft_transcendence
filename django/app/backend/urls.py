@@ -26,4 +26,5 @@ urlpatterns=[
     path('get_game_stats', views.PlayerStatsView.as_view(), name='get_game_stats'),
     path('history_getGames', views.GameHistoryListView.as_view(), name='history_getGame s'),
     path('history_postGames', views.GameHistoryCreateView.as_view(), name='history_postGames'),
+    path('match_available', views.MatchRequestAvailableView.as_view(), name='match_available'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

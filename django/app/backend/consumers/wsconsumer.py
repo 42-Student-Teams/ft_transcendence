@@ -170,10 +170,17 @@ class WsConsumer(WsConsumerCommon):
         GameSearchQueue.add_user_to_queue(user)
 
     @staticmethod
-    def get_oldest_open_request():
+    def get_available_match_request(match_author_username=None):
         # Query for the oldest MatchRequest where target_user is None and fast is False
-        oldest_request: MatchRequest = MatchRequest.objects.filter(target_user__isnull=True, fast=False).order_by(
-            'created_at').first()
+        oldest_request = None
+        if match_author_username is None:
+            oldest_request: MatchRequest = MatchRequest.objects.filter(target_user__isnull=True, fast=False).order_by(
+                'created_at').first()
+        else:
+            match_author = JwtUser.objects.filter(username=match_author_username).first()
+            if match_author is None:
+                return None
+            oldest_request: MatchRequest = MatchRequest.objects.filter(request_author=match_author).first()
         print("Got oldest request", flush=True)
         if oldest_request:
             req_copy = AnonClass(
@@ -185,9 +192,6 @@ class WsConsumer(WsConsumerCommon):
                 created_at=oldest_request.created_at,
                 match_key=oldest_request.match_key
             )
-
-
-
             MatchRequest.objects.filter(request_author=oldest_request.request_author).delete()
             return req_copy
         return None
@@ -212,7 +216,7 @@ class WsConsumer(WsConsumerCommon):
         return JwtUser.objects.filter(username=username).exists()
 
     def get_friend_by_username(self, friend_username):
-        return self.user.friend.filter(username=friend_username).first()
+        return self.user.friends.filter(username=friend_username).first()
 
     # 2) server gets game request and replies to it with either a match_request_id
     #    or an acknowledgement (game start), in the case of game against AI
@@ -220,7 +224,11 @@ class WsConsumer(WsConsumerCommon):
     async def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
         if msg_obj.get('search_for_game') is not None and msg_obj.get('search_for_game') == True:
-            request = await database_sync_to_async(self.get_oldest_open_request)()
+            request = None
+            if msg_obj.get('joining_author') is not None:
+                request = await database_sync_to_async(self.get_available_match_request)(msg_obj.get('joining_author'))
+            else:
+                request = await database_sync_to_async(self.get_available_match_request)()
             if request is not None:
                 print('Someone is proposing a match, joining', flush=True)
                 # if someone is already proposing a match we join it
@@ -228,7 +236,6 @@ class WsConsumer(WsConsumerCommon):
                                                                                                               self.user)
                 if acknowledgement_key is None:
                     return
-                # TODO: see if we can share an acknowledgement. I guess yeah? the opponent doesn't need the acknowledgement
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
                 print(f'Sending acknowledgement to author ({request.request_author}, (we are {self.user_username} (his opponent))', flush=True)
                 # We need to specify the target_user because we ourselves are also subscribed to the group
@@ -256,7 +263,6 @@ class WsConsumer(WsConsumerCommon):
                 await self.send_json(errormsg)
                 print("err3", flush=True)
                 return
-
             friend = await database_sync_to_async(self.get_friend_by_username)(msg_obj.get('target_user'))
             if friend is None:
                 await self.send_json(errormsg)

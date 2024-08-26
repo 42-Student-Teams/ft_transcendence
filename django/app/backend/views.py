@@ -15,7 +15,7 @@ from django.db.models import Q
 
 import jwt
 from .jwt_util import jwt_response, check_jwt
-from .models import JwtUser, GameHistory
+from .models import JwtUser, GameHistory, MatchRequest
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -466,8 +466,6 @@ class getFriendProfileView(APIView):
         return Response(profile_data, status=status.HTTP_200_OK)
 
 
-
-
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
 
 class GameHistoryCreateView(APIView):
@@ -501,6 +499,7 @@ class GameHistoryCreateView(APIView):
 
             return Response(GameHistorySerializer(game_history).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class GameHistoryListView(APIView):
     def get(self, request):
@@ -545,3 +544,29 @@ class PlayerStatsView(APIView):
 
         serializer = PlayerStatsSerializer(stats)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Returns whether 'author' has us invited to a game at the moment (filtering MatchRequest)
+class MatchRequestAvailableView(APIView):
+    def get(self, request):
+        requesting_user = check_jwt(request)
+        if not requesting_user:
+            return Response({'status': 'error', 'message': 'Authentication required'},
+                            status=status.HTTP_401_UNAUTHORIZED)
+        requesting_user_object = JwtUser.objects.filter(username=requesting_user).first()
+        if not requesting_user_object:
+            return Response({'status': 'error', 'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+        author_username = request.GET.get('author')
+        if not author_username:
+            return Response({'status': 'error', 'message': 'match_key author is required'},
+                            status=status.HTTP_400_BAD_REQUEST)
+        author = JwtUser.objects.filter(username=author_username).first()
+        if not author:
+            return Response({'status': 'error', 'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        match_request: MatchRequest = MatchRequest.objects.filter(request_author=author,
+                                                                  target_user=requesting_user_object).first()
+        if match_request is None or requesting_user_object != match_request.target_user:
+            return Response({'available': 'false'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'available': 'true'}, status=status.HTTP_200_OK)

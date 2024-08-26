@@ -75,6 +75,10 @@ export const home = {
 	  userUnblockError: "Error unblocking user {username}.",
 	  messagePlaceholder: "Message",
 	  you: "You",
+		youInvitedForGame: "You invited for a game",
+		youWereInvited: "Invited you for a game",
+		failedLoadingChat: "Error, failed loading messages",
+		chatLoadMore: "Load more",
 	  languages: {
       en: "🇬🇧 English",
       fr: "🇫🇷 Français",
