@@ -79,6 +79,7 @@ export const home = {
 		youWereInvited: "Invited you for a game",
 		failedLoadingChat: "Error, failed loading messages",
 		chatLoadMore: "Load more",
+		localGame: "Local game",
 	  languages: {
       en: "🇬🇧 English",
       fr: "🇫🇷 Français",
@@ -161,6 +162,11 @@ export const home = {
 	  userUnblockError: "Erreur lors du déblocage de l'utilisateur {username}.",
 	  messagePlaceholder: "Message",
 	  you: "Vous",
+		youInvitedForGame: "Vous avez invité pour un jeu",
+		youWereInvited: "Vous avez été invité pour un jeu",
+		failedLoadingChat: "Erreur de chargement des messages",
+		chatLoadMore: "Charger plus de messages",
+		localGame: "Jeu local",
 	  languages: {
 		en: "🇬🇧 Anglais",
 		fr: "🇫🇷 Français",
@@ -244,6 +250,11 @@ export const home = {
 	  userUnblockError: "Error al desbloquear al usuario {username}.",
 	  messagePlaceholder: "Mensaje",
 	  you: "Tú",
+		youInvitedForGame: "Te invitó a un juego",
+    youWereInvited: "Te ha invitado a un juego",
+    failedLoadingChat: "Error, no se pudieron cargar los mensajes",
+    	chatLoadMore: "Cargar más",
+		localGame: "Juego local",
 	  languages: {
 		en: "🇬🇧 Inglés",
 		fr: "🇫🇷 Francés",

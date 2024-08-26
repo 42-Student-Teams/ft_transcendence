@@ -61,6 +61,9 @@ export default class Home extends Component {
                         <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
                             <i class="fa-solid fa-users"></i> ${langPack.joinTournament}
 						</button>
+						<button id="local-game-btn" class="btn btn-primary btn-game-init btn-lg" type="button">
+                            <i class="fa-solid fa-users"></i> ${langPack.localGame}
+						</button>
 					
 					<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game (J)</button>
 					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game (J)</button>
@@ -361,6 +364,19 @@ export default class Home extends Component {
 				}
 			});
 		}
+
+		//if (document.querySelector("#local-game-btn")) {
+
+			/*document.querySelector("#local-game-btn").addEventListener("click", (event) => {
+				event.preventDefault();
+				console.log('Navigating to local game');
+			});*/
+		//}
+
+		this.element.querySelector("#local-game-btn").addEventListener("click", async (event) => {
+		  event.preventDefault();
+		  navigateTo("/2player-local");
+		});
 
 		// backend interaction, essaie
 		// 	try {

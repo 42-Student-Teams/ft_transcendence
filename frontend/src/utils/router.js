@@ -10,6 +10,7 @@ import Settings from "../views/settings.js";
 import OauthCallback from "../views/oauthcallback.js";
 import {wsSend} from "./wsUtils.js";
 import JoinTournament from "../views/tournamentList.js";
+import TwoPlayerLocalGame from "../views/2playerLocal.js";
 
 const routes = [
 	{ path: "/", view: Home },
@@ -17,6 +18,7 @@ const routes = [
 	{ path: "/register", view: Register },
 	{ path: "/tournament-game", view: Tournament },
 	{ path: "/local-game", view: Local },
+	{path : "/2player-local", view: TwoPlayerLocalGame},
 	{ path: "/profile", view: Profile },
 	{ path: "/oauthcallback", view: OauthCallback },
 	{ path: "/settings", view: Settings },
