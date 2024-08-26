@@ -1,6 +1,8 @@
 from django.apps import AppConfig
 from django.db.utils import ProgrammingError, OperationalError
 
+from backend.tournament_schedule import start_scheduler
+
 class BackendConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'backend'
@@ -28,5 +30,7 @@ class BackendConfig(AppConfig):
             GameSearchQueue.objects.all().delete()
         except (ProgrammingError, OperationalError):
             print("Skipping deletion since tables do not exist yet", flush=True)
+
+        start_scheduler()
 
 
