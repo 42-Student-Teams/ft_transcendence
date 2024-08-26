@@ -39,7 +39,7 @@ export default class Profile extends Component {
             			        </div>
             			        <div class="w-100 border-top mt-2 pt-3 ">
             			            <div class="text-center ">
-            			                <h6 id="profile-wins" class="text-muted mb-0"></h6>
+										<h6 id="profile-wins" class="text-muted mb-0"></h6>
             			                <h6 id="profile-losses" class="text-muted mb-0"></h6>
 										<h6 id="profile-total" class="text-muted mb-0"></h6>
             			            </div>
@@ -264,7 +264,7 @@ export default class Profile extends Component {
 		return `
         <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="${match.joueur2_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
+                <img src="${match.joueur1_avatar}" alt="${langPack.profilePicture}" class="rounded-circle mb-2 img-match-history">
                 <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
             </div>
             <div class="text-center">
