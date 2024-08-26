@@ -10,7 +10,7 @@ import store from "../store/index.js";
 import state from "../store/state.js";
 import * as bootstrap from 'bootstrap';
 import { home } from "/src/utils/langPack.js";
-import { getProfile, setProfile } from "/src/utils/profileUtils.js";
+
 
 export default class Home extends Component {
 	constructor() {
@@ -213,29 +213,12 @@ export default class Home extends Component {
 	}
 
 
-	async setUserProfile() {
-		const jwt = localStorage.getItem('jwt');
-		const apiurl = process.env.API_URL;
-		const response = await fetch(`${apiurl}/get_user_profile`, {
-			method: 'GET',
-			headers: {
-				'Authorization': `Bearer ${jwt}`,
-				'Content-Type': 'application/json'
-			}
-		});
-		const data = await response.json();
-		setProfile(data);
-	}
-
-
-
 	async handleEvent() {
 		const iaPlayersContainer = this.element.querySelector("#ia-players");
 		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");
 		const noAiPlayersMessage = this.element.querySelector("#no-ai-players");
 		const aiNicknames = new Set();
 
-		await this.setUserProfile();
 		const updateNoAiPlayersMessage = () => {
 			if (iaPlayersContainer.children.length === 2) { // Only the "No AI players" message
 				noAiPlayersMessage.style.display = 'block';
@@ -367,17 +350,18 @@ export default class Home extends Component {
 
 		//if (document.querySelector("#local-game-btn")) {
 
-			/*document.querySelector("#local-game-btn").addEventListener("click", (event) => {
-				event.preventDefault();
-				console.log('Navigating to local game');
-			});*/
+		/*document.querySelector("#local-game-btn").addEventListener("click", (event) => {
+			event.preventDefault();
+			console.log('Navigating to local game');
+		});*/
 		//}
 
-		this.element.querySelector("#local-game-btn").addEventListener("click", async (event) => {
-		  event.preventDefault();
-		  navigateTo("/2player-local");
-		});
-
+		if (this.element.querySelector("#local-game-btn")) {
+			this.element.querySelector("#local-game-btn").addEventListener("click", async (event) => {
+				event.preventDefault();
+				navigateTo("/2player-local");
+			});
+		}
 		// backend interaction, essaie
 		// 	try {
 		// 		// Make a real API call to post tournament data
@@ -462,18 +446,20 @@ export default class Home extends Component {
 				toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 			});
 		}
-
-		this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
-			console.log('Join game button clicked');
-			const game = {
-				color: null,
-				speed: null,
-				ai : false,
-				search_for_game: true,
-			};
-			store.dispatch("setCurrentGameData", game);
-			navigateTo("/local-game");
-		});
+		
+		if (this.element.querySelector("#join-game-btn")) {
+			this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
+				console.log('Join game button clicked');
+				const game = {
+					color: null,
+					speed: null,
+					ai: false,
+					search_for_game: true,
+				};
+				store.dispatch("setCurrentGameData", game);
+				navigateTo("/local-game");
+			});
+		}
 	}
 
 

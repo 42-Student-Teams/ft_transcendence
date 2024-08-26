@@ -448,6 +448,7 @@ class getFriendProfileView(APIView):
 
         parties_jouees = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).count()
         parties_gagnees = GameHistory.objects.filter(gagnant=user).count()
+        #add with the ai history games
         parties = GameHistory.objects.filter(Q(joueur1=user) | Q(joueur2=user)).order_by('-date_partie')
         serializer = GameHistoryWithAvatarSerializer(parties, many=True, context={'request': request})
 

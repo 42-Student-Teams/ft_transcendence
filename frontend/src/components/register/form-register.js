@@ -82,7 +82,7 @@ export default class FormRegister extends Component {
             },
             async (data) => {
                 try {
-                    const apiurl = "/backend"; //process.env.API_URL;
+                    const apiurl = process.env.API_URL;
                     const response = await fetch(`${apiurl}/create_user`, {
                         method: "POST",
                         headers: {

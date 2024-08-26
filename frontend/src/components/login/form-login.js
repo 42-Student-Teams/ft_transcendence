@@ -3,6 +3,7 @@ import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 import { openCommWebsocket } from "../../utils/wsUtils.js";
 import { addInputEventListeners, showError, resetErrors } from "../../utils/formValidation.js";
+import { setProfile } from "../../utils/profileUtils.js";
 
 export default class FormLogin extends Component {
     constructor() {
@@ -84,6 +85,7 @@ export default class FormLogin extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
+					await this.setUserProfile();
                     openCommWebsocket();
                     console.log(store.state.socket);
                     navigateTo("/");
@@ -97,4 +99,18 @@ export default class FormLogin extends Component {
             }
         });
     }
+
+	async setUserProfile() {
+		const jwt = localStorage.getItem('jwt');
+		const apiurl = process.env.API_URL;
+		const response = await fetch(`${apiurl}/get_user_profile`, {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${jwt}`,
+				'Content-Type': 'application/json'
+			}
+		});
+		const data = await response.json();
+		setProfile(data);
+	}
 }
