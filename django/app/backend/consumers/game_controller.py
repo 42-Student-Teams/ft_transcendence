@@ -1,13 +1,10 @@
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 import random
-import threading
-import time
 
-from asgiref.sync import async_to_sync, sync_to_async
 from channels.layers import get_channel_layer
 
-from backend.models import JwtUser, AcknowledgedMatchRequest
+from backend.models import AcknowledgedMatchRequest
 
 
 #import inspect
@@ -315,7 +312,7 @@ class GameController():
                 continue
 
             if self.acknowledgement.is_bot:
-                move_paddle_ai(self.ball, self.opponent_paddle)
+                move_paddle_ai(self.ball, self.opponent_paddle, self.config)
 
             self.bigpad.checkbig(self.ball, self.author_paddle, self.opponent_paddle, self.config)
 

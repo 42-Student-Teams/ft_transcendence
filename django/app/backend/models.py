@@ -165,7 +165,7 @@ class AcknowledgedMatchRequest(models.Model):
     def create_safe_copy(acknowledgement):
         return AnonClass(
             request_author=AnonClass(username=acknowledgement.request_author.username),
-            target_user=AnonClass(username=acknowledgement.target_user.username),
+            target_user=AnonClass(username=acknowledgement.target_user.username) if acknowledgement.target_user else None,
             ball_color=acknowledgement.ball_color,
             fast=acknowledgement.fast,
             is_bot=acknowledgement.is_bot,
