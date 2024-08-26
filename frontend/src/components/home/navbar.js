@@ -51,22 +51,6 @@ export default class Navbar extends Component {
     }
 
     async handleEvent() {
-        this.element.querySelector("#profile-link")?.addEventListener("click", (event) => {
-            event.preventDefault();
-            navigateTo("/profile");
-        });
-
-        this.element.querySelector("#btnLogout")?.addEventListener("click", (event) => {
-            event.preventDefault();
-            store.dispatch("logOut");
-            navigateTo("/login");
-        });
-
-        this.element.querySelector("#home-page").addEventListener("click", (event) => {
-            event.preventDefault();
-            navigateTo("/");
-        });
-
         // Gestion du changement de langue
         const languageItems = this.element.querySelectorAll('[data-lang]');
         languageItems.forEach(item => {
