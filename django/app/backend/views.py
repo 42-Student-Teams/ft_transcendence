@@ -131,19 +131,29 @@ class ImprovedUpdateUserView(APIView):
         serializer = UserProfileSerializer(user, data=request.data)
         if (not serializer.is_valid()):
             return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
         max_avatar_size = 1024 * 1024  # 1MB       
         
-        if 'avatar' in request.data:
-            if (request.data['avatar'].size > max_avatar_size):
+        if 'avatar' in request.FILES:
+            avatar = request.FILES['avatar']
+            
+            # Vérification du type de fichier
+            allowed_types = ['image/png', 'image/jpeg', 'image/jpg']
+            if avatar.content_type not in allowed_types:
+                return Response({'status': 'error', 'message': 'Invalid file type. Only PNG, JPEG, and JPG are allowed.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if avatar.size > max_avatar_size:
                 return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
-            if request.data['avatar'] != 'staticfiles/avatars/default_avatar.png':
-                #delete if not default avatar
-                if user.avatar != 'staticfiles/avatars/default_avatar.png':
-                    user.avatar.delete()
-                user.avatar = request.data['avatar']
-            else:
-                user.avatar = request.data['avatar']
-            serializer.save()
+            
+            # Gestion de l'avatar par défaut et suppression de l'ancien avatar
+            if user.avatar.name != 'staticfiles/avatars/default_avatar.png':
+                # Suppression de l'ancien avatar s'il n'est pas l'avatar par défaut
+                user.avatar.delete(save=False)
+            
+            # Affectation du nouvel avatar
+            user.avatar = avatar
+
+        serializer.save()
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
