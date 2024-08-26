@@ -46,12 +46,14 @@ class WsConsumer(WsConsumerCommon):
             })
 
     @register_ws_func
-    def logout(self, msg_obj):
-        print(f"Logging out user: {self.user_username if self.user else 'Unknown'}")
+    async def logout(self, msg_obj):
+        print(f"Logging out user: {self.user_username if self.user_username else 'Unknown'}")
         if self.user:
-            self.update_user_status('Offline')
+            await self.update_user_status('Offline')
             self.user = None
             self.authed = False
+            self.connected = False
+        await self.close()
 
     async def on_disconnect(self):
         await database_sync_to_async(self.clean_db_entries)()

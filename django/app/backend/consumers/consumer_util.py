@@ -24,6 +24,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         self.subscribed_groups = []
         self.user: JwtUser = None
         self.user_username: str = None
+        self.connected = False
 
         # For every method in a child class marked with the register_ws_func decorator
         # we append it to the funcs dict
@@ -35,6 +36,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
     async def connect(self):
         print('someone connected', flush=True)
         await self.accept()
+        self.connected = True
 
     async def on_disconnect(self):
         pass
@@ -46,6 +48,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
                 group, self.channel_name
             )
         await self.on_disconnect()
+        self.connected = False
         await self.close()
 
     async def subscribe_to_group(self, group):
@@ -79,6 +82,9 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         self.authed = True
 
     async def receive(self, text_data):
+        #print(dir(self))
+        if not self.connected:
+            return
         print('RECEIVE', text_data, flush=True)
         msg_obj = None
         try:

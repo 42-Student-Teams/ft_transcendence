@@ -32,11 +32,11 @@ export default class FormRegister extends Component {
             </style>
             <form id="form-register" novalidate>
                 <div class="input-group mb-3">
-                    <input id="form-register-firstname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
+                    <input id="form-register-first_name" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
                     <div id="error-firstname" class="invalid-feedback">Please enter your first name.</div>
                 </div>
                 <div class="input-group mb-3">
-                    <input id="form-register-lastname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Last Name" required>
+                    <input id="form-register-last_name" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Last Name" required>
                     <div id="error-lastname" class="invalid-feedback">Please enter your last name.</div>
                 </div>
                 <div class="input-group mb-3">
