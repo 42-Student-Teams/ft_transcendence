@@ -5,27 +5,36 @@ import store from "../../store/index.js";
 export default class FriendMatchHistory extends Component {
 	constructor() {
 		super({ element: document.getElementById("friendMatchHistory") });
-		this.friendUsername = null;
 		this.matchHistory = [];
 		this.currentLang = store.state.language;
 
 		store.events.subscribe('stateChange', () => {
 			if (this.currentLang !== store.state.language) {
 				this.currentLang = store.state.language;
+				this.updateElement();
 				this.render();
 			}
 		});
 	}
 
-	setFriendUsername(username) {
-		this.friendUsername = username;
+	updateElement() {
+		this.element = document.getElementById("friendMatchHistory");
+	}
+
+	setMatchHistory(history) {
+		this.matchHistory = history || [];
 		this.render();
 	}
 
-	async render() {
+	render() {
+		this.updateElement(); // Ensure the element is up-to-date
+
+		if (!this.element) {
+			console.error("FriendMatchHistory element not found");
+			return;
+		}
+
 		const langPack = profile[this.currentLang];
-
-
 
 		const view = /*html*/ `
             <div class="card p-2 m-0">
@@ -34,54 +43,20 @@ export default class FriendMatchHistory extends Component {
                     <div id="match-list-display" class="mt-3"></div>
                 </div>
             </div>
-            `;
-		this.element = document.getElementById('friendMatchHistory');
+        `;
 		this.element.innerHTML = view;
-		await this.handleEvent();
-
-
+		this.renderMatchHistory();
 	}
 
+	renderMatchHistory() {
+		const matchDisplayElement = document.getElementById("match-list-display");
 
-	async handleEvent() {
-
-		const langPack = profile[this.currentLang];
-		if (!this.friendUsername) {
-			console.error("Friend username not set");
+		if (!matchDisplayElement) {
+			console.error("Match list display element not found");
 			return;
 		}
 
-		try {
-			const jwt = localStorage.getItem("jwt");
-			const apiurl = process.env.API_URL;
-			const response = await fetch(`${apiurl}/get_friend_profile?username=${this.friendUsername}`, {
-				method: "GET",
-				headers: {
-					Authorization: `Bearer ${jwt}`,
-					"Content-Type": "application/json",
-				},
-			});
-
-			if (response.ok) {
-				const data = await response.json();
-				console.log("Friend history data:", data);
-				this.matchHistory = data.historique.slice(0, 5);
-				this.renderMatchHistory();
-			}
-			else {
-				console.error('Failed to fetch match history');
-				showToast(langPack.fetchMatchHistoryFailed, 'danger');
-			}
-
-		} catch (error) {
-			console.error('Error fetching friends match history:', error);
-			showToast(langPack.fetchMatchHistoryError, 'danger');
-		}
-	}
-
-	async renderMatchHistory() {
 		const langPack = profile[this.currentLang];
-		const matchDisplayElement = document.getElementById("match-list-display");
 		matchDisplayElement.innerHTML = '';
 
 		if (this.matchHistory.length > 0) {
@@ -95,7 +70,6 @@ export default class FriendMatchHistory extends Component {
 		}
 	}
 
-
 	createMatch(match, isLastMatch) {
 		const langPack = profile[this.currentLang];
 		const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
@@ -106,8 +80,8 @@ export default class FriendMatchHistory extends Component {
 		return `
         <div class="d-flex justify-content-between align-items-center py-3 ${!isLastMatch ? 'border-bottom' : ''}">
             <div class="game-history-container d-flex flex-column align-items-center">
-                <img src="${match.joueur1_avatar}" alt="" class=" rounded-circle mb-2 img-match-history">
-                <small class="text-muted text-truncate text-center" >${match.joueur1_username}</small>
+                <img src="${match.joueur1_avatar}" alt="" class="rounded-circle mb-2 img-match-history">
+                <small class="text-muted text-truncate text-center">${match.joueur1_username}</small>
             </div>
             <div class="text-center">
                 <span class="${resultClass} d-block mb-1">${result}</span>

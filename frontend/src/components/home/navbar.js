@@ -15,20 +15,20 @@ export default class Navbar extends Component {
         const langPack = home[this.currentLang]; // Utilisation du pack de langue pour la page d'accueil
 
         const view = /*html*/ `
-            <a id="home-page" class="navbar-brand ps-3">${langPack.title}</a>
+            <a id="home-page" href="/" data-link class="navbar-brand ps-3">${langPack.title}</a>
             <div class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0"></div>
             <ul class="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
                 <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="true"><i class="fas fa-user fa-fw"></i></a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                     <li>
-                        <a href="" id="profile-link" role="button" class="dropdown-item">${langPack.profile}</a>
+                        <a href="/profile" data-link id="profile-link" role="button" class="dropdown-item">${langPack.profile}</a>
                     </li>
                     <li>
                         <hr class="dropdown-divider" />
                     </li>
                     <li id="btnLogout">
-                        <a href="" class="dropdown-item" role="button">${langPack.logout}</a>
+                        <a href="/login" data-link class="dropdown-item" role="button">${langPack.logout}</a>
                     </li>
                 </ul>
             </li>
@@ -37,9 +37,9 @@ export default class Navbar extends Component {
                     <i class="fas fa-globe"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
-                    <li><a class="dropdown-item" href="#" data-lang="en">${langPack.languages.en} ${this.currentLang === 'en' ? '✓' : ''}</a></li>
-                    <li><a class="dropdown-item" href="#" data-lang="fr">${langPack.languages.fr} ${this.currentLang === 'fr' ? '✓' : ''}</a></li>
-                    <li><a class="dropdown-item" href="#" data-lang="es">${langPack.languages.es} ${this.currentLang === 'es' ? '✓' : ''}</a></li>
+                    <li><a class="dropdown-item" href="" data-lang="en">${langPack.languages.en} ${this.currentLang === 'en' ? '✓' : ''}</a></li>
+                    <li><a class="dropdown-item" href="" data-lang="fr">${langPack.languages.fr} ${this.currentLang === 'fr' ? '✓' : ''}</a></li>
+                    <li><a class="dropdown-item" href="" data-lang="es">${langPack.languages.es} ${this.currentLang === 'es' ? '✓' : ''}</a></li>
                 </ul>
             </li>
             </ul>
