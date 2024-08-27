@@ -218,11 +218,27 @@ class WsConsumer(WsConsumerCommon):
     def get_friend_by_username(self, friend_username):
         return self.user.friends.filter(username=friend_username).first()
 
+    @staticmethod
+    def acknowledgement_by_key(key):
+        return AcknowledgedMatchRequest.objects.filter(match_key=key).first()
+
+    @staticmethod
+    def acknowledgement_to_key(acknowledgement: AcknowledgedMatchRequest):
+        return acknowledgement.match_key
+
     # 2) server gets game request and replies to it with either a match_request_id
     #    or an acknowledgement (game start), in the case of game against AI
     @register_ws_func
     async def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
+        if msg_obj.get('tournament_id') is not None:
+            print(f'Got game request from tournament {msg_obj.get("tournament_id")}')
+            acknowledgement = await database_sync_to_async(self.acknowledgement_by_key)(msg_obj.get("match_key"))
+            if acknowledgement is None:
+                return
+            key = await database_sync_to_async(self.acknowledgement_to_key)(acknowledgement)
+            await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
+
         if msg_obj.get('search_for_game') is not None and msg_obj.get('search_for_game') == True:
             request = None
             if msg_obj.get('joining_author') is not None:

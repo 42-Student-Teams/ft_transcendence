@@ -1,7 +1,7 @@
 import asyncio
 import json
 
-from backend.models import AcknowledgedMatchRequest, JwtUser
+from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 from backend.consumers.game_controller import GameController
 from backend.util import random_bot_name
@@ -22,6 +22,10 @@ class GameConsumer(WsConsumerCommon):
         self.author_channel = None
         self.opponent_channel = None
         self.acknowledgement_key = None
+        self.tournament_id = None
+        self.author_nickname = None
+        self.opponent_nickname = None
+        self.opponent_disconnected_first = False
 
 
     def get_acknowledgement_by_key(self, key):
@@ -41,6 +45,10 @@ class GameConsumer(WsConsumerCommon):
     def create_acknowledgement_safe_copy(acknowledgement):
         return AcknowledgedMatchRequest.create_safe_copy(acknowledgement)
 
+    @staticmethod
+    def report_tournament_win(nickname, tournament_id):
+        Tournament.report_results(nickname, tournament_id)
+
     async def on_auth(self, msg_obj):
         print('Received auth message', flush=True)
         if msg_obj.get('match_key') is None:
@@ -59,6 +67,9 @@ class GameConsumer(WsConsumerCommon):
         self.opponent = acknowledgement.target_user
         self.fast = acknowledgement.fast
         self.acknowledgement_key = acknowledgement.match_key
+        self.tournament_id = acknowledgement.tournament_id
+        self.author_nickname = acknowledgement.author_nickname
+        self.opponent_nickname = acknowledgement.opponent_nickname
 
         self.author_channel = f'author_{acknowledgement.match_key}'
 
@@ -80,18 +91,34 @@ class GameConsumer(WsConsumerCommon):
 
         # maybe we should wait for the opponent...
         print('Sending start json', flush=True)
+        bot_name = random_bot_name()
+        if self.opponent_nickname.startswith('bot:'):
+            bot_name = self.opponent_nickname[len('bot:'):]
         await self.send_json({
             'type': 'start',
             'ball_color': self.ball_color,
             'is_bot': self.is_bot,
             'author': request_author_username,
-            'opponent': self.opponent.username if self.opponent else f'{random_bot_name()} (BOT)',
+            'opponent': self.opponent.username if self.opponent else f'{bot_name} (BOT)',
             'fast': self.fast})
 
     async def on_disconnect(self):
         if self.game_controller is not None:
             await self.game_controller.stop()
             await database_sync_to_async(self.delete_acknowledgement_by_key)(self.acknowledgement_key)
+            if self.tournament_id is not None:
+                if self.opponent_disconnected_first:
+                    if self.game_controller.opponent_score >= 3:
+                        await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname,
+                                                                                 self.tournament_id)
+                    else:
+                        await database_sync_to_async(self.report_tournament_win)(self.author_nickname,
+                                                                                 self.tournament_id)
+                elif self.game_controller.author_score >= 3:
+                    await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.tournament_id)
+                else: # we report a win if either opponent has score >= 3 or author abandoned
+                    await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.tournament_id)
+
         else:
             await self.send_channel(self.author_channel, 'opponent_disconnect', {'opponent': self.opponent.username})
 
@@ -125,9 +152,14 @@ class GameConsumer(WsConsumerCommon):
         await self.game_controller.client_update_relay(msg_obj.get('msg_obj'))
 
     async def relay_from_controller(self, event):
-        await self.send(text_data=json.dumps(event["msg_obj"]))
+        if event['msg_obj'].get('over') is not None:
+            print('Received OVER', flush=True)
+            await self.close()
+        else:
+            await self.send(text_data=json.dumps(event["msg_obj"]))
 
     async def opponent_disconnect(self, event):
         if self.opponent.username == self.user.username:
             return
+        self.opponent_disconnected_first = True
         await self.disconnect(0)

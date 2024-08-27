@@ -353,8 +353,8 @@ class GameController():
                 update['opponent_timestamp'] = 1
             await self.send_game_update(update)
 
-            if self.author_score == 3 or self.opponent_score == 3:
-                pass
+            if self.author_score >= 3 or self.opponent_score >= 3:
+                await self.send_game_update({'over': True})
                 # TODO someone won, we should probs close, the client has all the info to figure out stuff itself
 
             # Wait for the next frame (e.g., 60 FPS => 16.67ms per frame)

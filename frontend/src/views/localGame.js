@@ -174,6 +174,10 @@ export default class LocalGame extends Component {
 			'fast': state.currentGameData['speed'],
 			'search_for_game': state.currentGameData['search_for_game'],
 			'joining_author': state.currentGameData['joining_author'],
+			'tournament_id': state.currentGameData['tournament_id'],
+			'opponent_nickname': state.currentGameData['opponent_nickname'],
+			'author_nickname': state.currentGameData['author_nickname'],
+			'match_key': state.currentGameData['match_key'],
 		});
 	}
 

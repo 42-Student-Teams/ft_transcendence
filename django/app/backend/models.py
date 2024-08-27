@@ -1,3 +1,5 @@
+import random
+
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -130,6 +132,10 @@ class AcknowledgedMatchRequest(models.Model):
     is_bot = models.BooleanField(default=False)
     match_key = models.CharField(null=True)
 
+    tournament_id = models.IntegerField(null=True)
+    opponent_nickname = models.CharField(null=True)
+    author_nickname = models.CharField(null=True)
+
     def __str__(self):
         return f"{self.request_author} vs {self.target_user if self.target_user else 'Anyone'}"
 
@@ -169,7 +175,10 @@ class AcknowledgedMatchRequest(models.Model):
             ball_color=acknowledgement.ball_color,
             fast=acknowledgement.fast,
             is_bot=acknowledgement.is_bot,
-            match_key=acknowledgement.match_key
+            match_key=acknowledgement.match_key,
+            tournament_id=acknowledgement.tournament_id,
+            opponent_nickname=acknowledgement.opponent_nickname,
+            author_nickname=acknowledgement.author_nickname,
         )
 
 
@@ -198,3 +207,134 @@ class GameSearchQueue(models.Model):
         if first_entry is not None:
             return first_entry.user
         return None
+
+
+class Tournament(models.Model):
+    op_lock = models.BooleanField(default=False)
+    name = models.CharField(max_length=255)
+    initiated_by = models.ForeignKey(JwtUser, on_delete=models.CASCADE, related_name='tournaments_initiated')
+    ball_color = models.CharField(max_length=50)
+    fast = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    waitlist = models.JSONField(default=list, blank=True)  # This stores usernames and bot names
+    active_participants_count = models.IntegerField(default=0)
+
+    def add_to_waitlist(self, username):
+        """Add a user or bot (identified by username) to the waitlist."""
+        self.waitlist.append(username)
+        self.save()
+
+    def remove_from_waitlist(self, username):
+        """Remove a user or bot from the waitlist."""
+        if username in self.waitlist:
+            self.waitlist.remove(username)
+            self.save()
+
+    @staticmethod
+    def report_results(winner, tournament_id):
+        tournament = Tournament.objects.filter(id=tournament_id).first()
+        if tournament is None:
+            return
+        tournament.active_participants_count -= 1
+        tournament.waitlist.append(winner)
+        tournament.save()
+
+    def pair_and_notify(self):
+        self.op_lock = True
+        self.save()
+        from asgiref.sync import async_to_sync
+        from channels.layers import get_channel_layer
+        channel_layer = get_channel_layer()
+
+        if self.active_participants_count == 1:
+            if len(self.waitlist) > 0:
+                user = self.waitlist.pop(0)
+                if user.startswith('user:'):
+                    user_obj = JwtUser.objects.filter(username=user[len('user:'):]).first()
+                    if user_obj is not None:
+                        print(f'Sending WON to {user_obj.username}', flush=True)
+                        async_to_sync(channel_layer.group_send)(user_obj.username,
+                                                                {"type": "tournament_won",
+                                                                 "username": user_obj.username})
+            print(f'Deleting tournament {self.id}', flush=True)
+            self.__class__.objects.filter(id=self.id).delete()
+            return
+        elif self.active_participants_count < 1:
+            print(f'Deleting tournament {self.id}', flush=True)
+            self.__class__.objects.filter(id=self.id).delete()
+            return
+
+        while len(self.waitlist) > 1:
+            user1 = self.waitlist.pop(0)
+            user2 = self.waitlist.pop(0)
+
+            if user1.startswith('bot:') and user2.startswith('bot:'):
+                winner = random.choice([user1, user2])
+                self.waitlist.append(winner)
+                self.active_participants_count -= 1
+            elif user1.startswith('bot:') and user2.startswith('user:') or user1.startswith('user:') and user2.startswith('bot:'):
+                bot_user = user1 if user1.startswith('bot:') else user2
+                real_user = user1 if user1.startswith('user:') else user2
+
+                real_user_obj: JwtUser = JwtUser.objects.filter(username=real_user[len('user:'):]).first()
+                if real_user_obj is None:
+                    self.waitlist.append(bot_user)
+                    self.active_participants_count -= 1
+                    continue
+                acknowledgement = AcknowledgedMatchRequest(
+                    request_author=real_user_obj,
+                    target_user=None,
+                    ball_color=self.ball_color,
+                    fast=self.fast,
+                    is_bot=True,
+                    match_key=random_alphanum(10),
+                    tournament_id=self.id,
+                    opponent_nickname=bot_user,
+                    author_nickname=real_user,
+                )
+                acknowledgement.save()
+                async_to_sync(channel_layer.group_send)(real_user_obj.username,
+                                                        {"type": "tournament_game_invite",
+                                                         "match_key": acknowledgement.match_key,
+                                                         "username": real_user_obj.username})
+            else:
+                real_user1_obj: JwtUser = JwtUser.objects.filter(username=user1[len('user:'):]).first()
+                real_user2_obj: JwtUser = JwtUser.objects.filter(username=user2[len('user:'):]).first()
+                if real_user1_obj is None and real_user2_obj is not None:
+                    self.waitlist.append(user2)
+                    self.active_participants_count -= 1
+                    continue
+                elif real_user2_obj is None and real_user1_obj is not None:
+                    self.waitlist.append(user1)
+                    self.active_participants_count -= 1
+                    continue
+                elif real_user1_obj is None and real_user2_obj is None:
+                    self.active_participants_count -= 2
+                    continue
+
+                acknowledgement = AcknowledgedMatchRequest(
+                    request_author=real_user1_obj,
+                    target_user=real_user2_obj,
+                    ball_color=self.ball_color,
+                    fast=self.fast,
+                    is_bot=True,
+                    match_key=random_alphanum(10),
+                    tournament_id=self.id,
+                    opponent_nickname=user2,
+                    author_nickname=user1,
+                )
+                acknowledgement.save()
+                async_to_sync(channel_layer.group_send)(real_user1_obj.username,
+                                                        {"type": "tournament_game_invite",
+                                                         "match_key": acknowledgement.match_key,
+                                                         "username": real_user1_obj.username})
+                async_to_sync(channel_layer.group_send)(real_user2_obj.username,
+                                                        {"type": "tournament_game_invite",
+                                                         "match_key": acknowledgement.match_key,
+                                                         "username": real_user2_obj.username})
+
+
+        # If there's an odd participant, they stay in the waitlist
+        self.op_lock = False
+        self.save()
