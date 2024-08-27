@@ -183,7 +183,7 @@ class AcknowledgedMatchRequest(models.Model):
 
 
 class GameSearchQueue(models.Model):
-    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='search_queue')
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='game_search_queue')
 
     @classmethod
     def add_user_to_queue(cls, user):
@@ -210,13 +210,14 @@ class GameSearchQueue(models.Model):
 
 
 class TournamentSearchQueue(models.Model):
-    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='search_queue')
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='tournament_search_queue')
+    nickname = models.CharField(max_length=255)
 
     @classmethod
-    def add_user_to_queue(cls, user):
+    def add_user_to_queue(cls, user, nickname):
         # Add the user to the queue if not already in it
         if not cls.objects.filter(user=user).exists():
-            cls.objects.create(user=user)
+            cls.objects.create(user=user, nickname=nickname)
 
     @classmethod
     def remove_user_from_queue(cls, user):
@@ -232,8 +233,8 @@ class TournamentSearchQueue(models.Model):
     def get_up_to_x_users(cls, x):
         # Get up to x users from the queue
         queue_entries = cls.objects.all()[:x]
-        res = [entry.user for entry in queue_entries]
-        for user in res:
+        res = [(entry.user, entry.nickname) for entry in queue_entries]
+        for user, _ in res:
             cls.remove_user_from_queue(user)
         return res
 
@@ -291,7 +292,7 @@ class Tournament(models.Model):
                         print(f'Sending WON to {user_obj.username}', flush=True)
                         async_to_sync(channel_layer.group_send)(user_obj.username,
                                                                 {"type": "toast",
-                                                                "localization": f"%youWonTournament% {self.name}"
+                                                                "localization": f"%youWonTournament% {self.name}",
                                                                  "target_user": user_obj.username})
             print(f'Deleting tournament {self.id}', flush=True)
             self.__class__.objects.filter(id=self.id).delete()
