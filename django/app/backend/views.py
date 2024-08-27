@@ -9,9 +9,8 @@ from django.core.exceptions import ValidationError
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.db.models import Q, F
-#Q est spécifique à Django et fait partie de son ORM (Object-Relational Mapping).
-#combine plusieurs conditions avec des opérateurs logiques OR (|) ou AND (&).
+from django.db.models import Q
+from django.utils.text import slugify
 
 
 import jwt
@@ -20,7 +19,7 @@ from .models import JwtUser, GameHistory, MatchRequest, Tournament, TournamentSe
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer, ImprovedUserProfileSerializer, FriendUsernameSerializer, UsernameSerializer, ChatMessagesSerializer
 
 from .util import get_user_info
 
@@ -39,10 +38,16 @@ class UserCreateView(APIView):
         print(request.data)
         print('--------------------')
         serializer = JwtUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        print(f"got username: {user.username}", flush=True)
-        return jwt_response(user.username)
+        if serializer.is_valid():
+            user = serializer.save()
+            print(f"got username: {user.username}", flush=True)
+            return jwt_response(user.username)
+        else:
+            errors = []
+            for error_msgs in serializer.errors.values():
+                errors.extend([f"({error})" for error in error_msgs])
+            print(f"Validation errors: {errors}", flush=True)
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserOauthLoginView(APIView):
     def post(self, request):
@@ -77,17 +82,21 @@ class UserOauthLoginView(APIView):
 
 class UserLoginView(APIView):
     def post(self, request):
-        username, password = None, None
-        if 'username' in request.data:
-            username = request.data['username']
-        if 'password' in request.data:
-            password = request.data['password']
+        serializer = UserLoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        
         user: JwtUser = JwtUser.objects.filter(username=username).first()
-        if user is None:
-            raise AuthenticationFailed('Incorrect username or password')
-        if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect username or password')
+        
+        if user is None or not user.check_password(password):
+            return Response(
+                {"erreur": "Nom d'utilisateur ou mot de passe incorrect"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         return jwt_response(username)
 
 ##--------------------------------------USER DATA - GET METHODE-----------------------------------------###
@@ -125,26 +134,25 @@ class ImprovedUpdateUserView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def put(self, request):
-        user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+        except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserProfileSerializer(user, data=request.data)
-        if (not serializer.is_valid()):
+        serializer = ImprovedUserProfileSerializer(user, data=request.data, partial=True)
+        if not serializer.is_valid():
             return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        max_avatar_size = 1024 * 1024  # 1MB
 
-        if 'avatar' in request.data:
-            if (request.data['avatar'].size > max_avatar_size):
-                return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
-            if request.data['avatar'] != 'staticfiles/avatars/default_avatar.png':
-                #delete if not default avatar
-                if user.avatar != 'staticfiles/avatars/default_avatar.png':
-                    user.avatar.delete()
-                user.avatar = request.data['avatar']
-            else:
-                user.avatar = request.data['avatar']
-            serializer.save()
+        if 'avatar' in request.FILES:
+            avatar = request.FILES['avatar']
+            if user.avatar.name != 'staticfiles/avatars/default_avatar.png':
+                user.avatar.delete(save=False)
+            
+            file_name = self.generate_safe_filename(avatar.name)
+            avatar.name = file_name
+
+        serializer.save()
+
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
@@ -156,78 +164,43 @@ class ImprovedUpdateUserView(APIView):
             }
         }, status=status.HTTP_200_OK)
 
+    def generate_safe_filename(self, filename):
+        name, ext = os.path.splitext(filename)
+        safe_name = slugify(name)
+        return f"{safe_name}{ext}"
 
-
-# class UserUpdateView(APIView):
-#     parser_classes = (MultiPartParser, FormParser)
-
-#     def post(self, request):
-#         user = JwtUser.objects.get(username=check_jwt(request))
-#         if not (request.method == 'POST' and request.FILES.get('avatar')):
-#     # Send an error response
-#             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
-#         avatar = request.FILES['avatar']
-#         # do a print of avatar
-#         print(f"avatar: {avatar}")
-#         first_name = request.data.get('nom')
-#         last_name = request.data.get('prenom')
-#         print(f"data: {request.data}")
-#         # Vérifiez si le fichier est une image valide
-#         if not avatar.content_type.startswith('image'):
-#             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-#         # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
-#         if user.avatar != 'staticfiles/avatars/default_avatar.png':
-#             user.avatar.delete(save=False)
-#         user.avatar = avatar
-
-#         first_name = request.data.get('first_name')
-#         last_name = request.data.get('last_name')
-#         print(f"first_name: {first_name}, last_name: {last_name}")
-
-#         if first_name is not None:
-#             user.first_name = first_name
-
-#         if last_name is not None:
-#             user.last_name = last_name
-#         try:
-#             user.save()
-#         except ValidationError as e:
-#             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-#         return Response({
-#             'status': 'success',
-#             'message': 'Profile updated successfully',
-#             'avatar_url': user.avatar.url
-#         }, status=status.HTTP_200_OK)
 
 ##--------------------------------------FRIEND-REQUEST-----------------------------------------###
 
 class FriendView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'User not found'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        friend_username = request.data.get('friend_username')
-        if not friend_username:
-            return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
-
-        friend = JwtUser.objects.filter(username=friend_username).first()
-        if friend is None:
+        if not user:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = FriendUsernameSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend_username = serializer.validated_data['friend_username']
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if not friend:
+            return Response({'status': 'error', 'message': 'Friend not found'}, status=status.HTTP_404_NOT_FOUND)
+
         if user == friend:
-            return Response({'status': 'error', 'message': 'Cannot send friend request to yourself'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'You cannot send a friend request to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if friend in user.friends.all():
-            return Response({'status': 'error', 'message': 'Already friends'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'You are already friends with this user.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if friend in user.friend_requests.all():
-            return Response({'status': 'error', 'message': 'Friend request already sent'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'A friend request has already been sent to this user.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if user in friend.friend_requests.all():
-            return Response({'status': 'error', 'message': 'This user has already sent you a friend request'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'This user has already sent you a friend request.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        friend.friend_requests.add(user)  # L'utilisateur actuel envoie une demande d'ami à l'ami
+        friend.friend_requests.add(user)
 
         return Response({
             'status': 'success',
@@ -235,7 +208,7 @@ class FriendView(APIView):
             'friend': {
                 'username': friend.username,
                 'status': 'Pending',
-                'profile_picture': friend.profile_picture.url if hasattr(friend, 'profile_picture') else None
+                'avatar_url': friend.avatar.url if friend.avatar else None
             }
         }, status=status.HTTP_200_OK)
 
@@ -243,18 +216,23 @@ class FriendView(APIView):
 class AcceptFriendRequestView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-
-        friend_username = request.data.get('friend_username')
-        if not friend_username:
-            return Response({'status': 'error', 'message': 'Missing friend username'}, status=status.HTTP_400_BAD_REQUEST)
-
-        friend = JwtUser.objects.filter(username=friend_username).first()
-        if friend is None:
+        if not user:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        if friend not in user.friend_requests.all():  # Changement ici
-            return Response({'status': 'error', 'message': 'No friend request from this user'}, status=status.HTTP_400_BAD_REQUEST)
 
-        user.friend_requests.remove(friend)  # L'utilisateur actuel retire la demande d'ami
+        serializer = FriendUsernameSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        friend_username = serializer.validated_data['friend_username']
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if not friend:
+            return Response({'status': 'error', 'message': 'Friend not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if friend not in user.friend_requests.all():
+            return Response({'status': 'error', 'message': 'No pending friend request from this user.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.friend_requests.remove(friend)
         user.friends.add(friend)
         friend.friends.add(user)
 
@@ -267,20 +245,23 @@ class AcceptFriendRequestView(APIView):
 class UnblockUserView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-
-        username_to_unblock = request.data.get('username')
-        if not username_to_unblock:
-            return Response({'status': 'error', 'message': 'Missing username to unblock'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_to_unblock = JwtUser.objects.filter(username=username_to_unblock).first()
-        if user_to_unblock is None:
+        if not user:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UsernameSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        username_to_unblock = serializer.validated_data['username']
+        user_to_unblock = JwtUser.objects.filter(username=username_to_unblock).first()
+        if not user_to_unblock:
+            return Response({'status': 'error', 'message': 'User to unblock not found'}, status=status.HTTP_404_NOT_FOUND)
+
         if user_to_unblock not in user.blocked_users.all():
-            return Response({'status': 'error', 'message': 'This user is not blocked'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'This user is not blocked.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.blocked_users.remove(user_to_unblock)
-        user.friends.add(user_to_unblock)
-        user_to_unblock.friends.add(user)
 
         return Response({
             'status': 'success',
@@ -289,28 +270,28 @@ class UnblockUserView(APIView):
 
 
 ##--------------------------------------BLOCK-FRIEND-REQUEST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Validation du nom d'utilisateur à bloquer : Vérifie la présence du nom d'utilisateur à bloquer dans la requête.
-# 4.Vérification des conditions de blocage : Vérifie que l'utilisateur à bloquer existe, qu'il n'est pas l'utilisateur lui-même, et qu'il est dans la liste d'amis de l'utilisateur.
-# 5.Blocage de l'utilisateur : Ajoute l'utilisateur à bloquer à la liste des utilisateurs bloqués, le retire de la liste d'amis, et retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
+
 class BlockUserView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-
-        user_to_block_username = request.data.get('username')
-        if not user_to_block_username:
-            return Response({'status': 'error', 'message': 'Missing username to block'}, status=status.HTTP_400_BAD_REQUEST)
-
-        user_to_block = JwtUser.objects.filter(username=user_to_block_username).first()
-        if user_to_block is None:
+        if not user:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
-        if user_to_block == user:
-            return Response({'status': 'error', 'message': 'Cannot block yourself'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Nouvelle condition : vérifier si l'utilisateurs est dans la liste d'amis
+        serializer = UsernameSerializer(data=request.data)
+        
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        username_to_block = serializer.validated_data['username']
+        user_to_block = JwtUser.objects.filter(username=username_to_block).first()
+        if not user_to_block:
+            return Response({'status': 'error', 'message': 'User to block not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if user_to_block == user:
+            return Response({'status': 'error', 'message': 'You cannot block yourself.'}, status=status.HTTP_400_BAD_REQUEST)
+
         if user_to_block not in user.friends.all():
-            return Response({'status': 'error', 'message': 'Can only block users from your friend list'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'status': 'error', 'message': 'You can only block users from your friend list.'}, status=status.HTTP_400_BAD_REQUEST)
 
         user.blocked_users.add(user_to_block)
         user.friends.remove(user_to_block)
@@ -318,7 +299,7 @@ class BlockUserView(APIView):
 
         return Response({
             'status': 'success',
-            'message': f'User {user_to_block_username} has been blocked and removed from friends'
+            'message': f'User {username_to_block} has been blocked and removed from your friends'
         }, status=status.HTTP_200_OK)
 
 
@@ -391,31 +372,24 @@ class BlockedListView(APIView):
 class ChatGetMessagesView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
-        print(f'Serving messages to user `{user.username}`', flush=True)
+        if not user:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        message_amount = 10
-        if request.data.get('message_amount') is None:
-            return Response({
-                'status': 'Param message_amount missing',
-            }, status=status.HTTP_400_BAD_REQUEST)
-        gotten_message_amount = int(request.data.get('message_amount'))
-        # limiting to 10
-        if gotten_message_amount < message_amount:
-            message_amount = gotten_message_amount
-        if request.data.get('friend_username') is None:
-            return Response({
-                'status': 'Param friend_username missing',
-            }, status=status.HTTP_400_BAD_REQUEST)
-        friend = JwtUser.objects.filter(username=request.data.get('friend_username')).first()
-        if friend is None:
-            return Response({
-                'status': 'Friend not found',
-            }, status=status.HTTP_404_NOT_FOUND)
-        start_id = None
-        if request.data.get('start_id') is not None:
-            start_id = int(request.data.get('start_id'))
+        serializer = ChatMessagesSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        message_amount = serializer.validated_data['message_amount']
+        friend_username = serializer.validated_data['friend_username']
+        start_id = serializer.validated_data.get('start_id')
+
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if not friend:
+            return Response({'status': 'error', 'message': 'Friend not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if friend not in user.friends.all():
+            return Response({'status': 'error', 'message': 'You can only retrieve messages from your friends.'}, status=status.HTTP_403_FORBIDDEN)
+
         messages = user.get_last_x_messages_with_friend(friend, message_amount, start_id)
 
         serialized_messages = MessageSerializer(messages, many=True).data
@@ -472,35 +446,41 @@ class getFriendProfileView(APIView):
 
 class GameHistoryCreateView(APIView):
     def post(self, request, format=None):
-        serializer = GameHistorySerializer(data=request.data)
-        if serializer.is_valid():
-            joueur1_username = serializer.validated_data['joueur1_username']
-            joueur2_username = serializer.validated_data.get('joueur2_username')
-            is_ai_opponent = serializer.validated_data.get('is_ai_opponent', False)
-            ai_opponent_name = serializer.validated_data.get('ai_opponent_name')
+        serializer = GameHistoryCreateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-            joueur1 = JwtUser.objects.filter(username=joueur1_username).first()
-            if joueur1 is None:
-                return Response({'error': 'Joueur 1 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+        validated_data = serializer.validated_data
+        joueur1 = JwtUser.objects.filter(username=validated_data['joueur1_username']).first()
+        if not joueur1:
+            return Response({'status': 'error', 'message': 'Joueur 1 not found'}, status=status.HTTP_404_NOT_FOUND)
 
-            joueur2 = None
-            if not is_ai_opponent:
-                joueur2 = JwtUser.objects.filter(username=joueur2_username).first()
-                if joueur2 is None:
-                    return Response({'error': 'Joueur 2 non trouvé'}, status=status.HTTP_404_NOT_FOUND)
+        joueur2 = None
+        if not validated_data['is_ai_opponent']:
+            joueur2 = JwtUser.objects.filter(username=validated_data['joueur2_username']).first()
+            if not joueur2:
+                return Response({'status': 'error', 'message': 'Joueur 2 not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        try:
             game_history = GameHistory.enregistrer_partie(
                 joueur1=joueur1,
                 joueur2=joueur2,
-                duree_partie=serializer.validated_data['duree_partie'],
-                score_joueur1=serializer.validated_data['score_joueur1'],
-                score_joueur2=serializer.validated_data['score_joueur2'],
-                is_ai_opponent=is_ai_opponent,
-                ai_opponent_name=ai_opponent_name
+                duree_partie=validated_data['duree_partie'],
+                score_joueur1=validated_data['score_joueur1'],
+                score_joueur2=validated_data['score_joueur2'],
+                is_ai_opponent=validated_data['is_ai_opponent'],
+                ai_opponent_name=validated_data.get('ai_opponent_name')
             )
+        except ValidationError as e:
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'status': 'error', 'message': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-            return Response(GameHistorySerializer(game_history).data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'success',
+            'message': 'Game history created successfully',
+            'game': GameHistorySerializer(game_history).data
+        }, status=status.HTTP_201_CREATED)
 
 
 class GameHistoryListView(APIView):
