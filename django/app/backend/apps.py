@@ -32,6 +32,18 @@ class BackendConfig(AppConfig):
             print("Removing all rows from the looking for game queue table", flush=True)
             from backend.models import GameSearchQueue
             GameSearchQueue.objects.all().delete()
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1 FROM backend_gamesearchqueue LIMIT 1;")
+            print("Removing all rows from the looking for tournament queue table", flush=True)
+            from backend.models import TournamentSearchQueue
+            TournamentSearchQueue.objects.all().delete()
+
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1 FROM backend_tournament LIMIT 1;")
+            print("Removing all rows from the tournament table", flush=True)
+            from backend.models import Tournament
+            Tournament.objects.all().delete()
         except (ProgrammingError, OperationalError):
             print("Skipping deletion since tables do not exist yet", flush=True)
 

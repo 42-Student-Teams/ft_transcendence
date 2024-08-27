@@ -354,3 +354,11 @@ class WsConsumer(WsConsumerCommon):
         if msg_obj.get('target_user') != self.user_username:
             return
         await self.send_json({'type': 'game_acknowledgement', 'match_key': msg_obj.get('match_key')})
+
+    async def toast(self, event):
+        msg_obj = event["msg_obj"]
+        if msg_obj.get('target_user') is None:
+            return
+        if msg_obj.get('target_user') != self.user_username:
+            return
+        await self.send_json({'type': 'toast', 'localization': msg_obj.get('localization')})
