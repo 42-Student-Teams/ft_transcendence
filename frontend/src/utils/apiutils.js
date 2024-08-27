@@ -16,7 +16,7 @@ async function registerUser(username, password) {
             },body: JSON.stringify(data)
         });
 
-        console.log(`url: ${apiurl}/create_user - response: ${response}`);
+        //console.log(`url: ${apiurl}/create_user - response: ${response}`);
 
         return (response);
     } catch (error) {

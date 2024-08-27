@@ -8,6 +8,7 @@ import Component from "../library/component.js";
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js";
 import state from "../store/state.js";
+import { MAX_AI_PLAYERS } from "../utils/enum.js";
 import * as bootstrap from 'bootstrap';
 import { home } from "/src/utils/langPack.js";
 
@@ -183,30 +184,30 @@ export default class Home extends Component {
 	</div>
 
 
-		<!-- Modal Join Tournament -->	
-		<div class="modal" id="tournament-join-game-modal" tabindex="-1">
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content">
+	<!-- Modal Join Tournament -->	
+	<div class="modal" id="tournament-join-game-modal" tabindex="-1">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
 				<form>
 					<div class="modal-header">
-					<h5 class="modal-title" id="modalVerticallyCenteredLabel">${langPack.settingsGameTitle}</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						<h5 class="modal-title" id="modalVerticallyCenteredLabel">${langPack.settingsGameTitle}</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 					<div class="modal-body">
-					<div class="p-3">
-						<label for="input-join-nickname" class="form-label">${langPack.nickname}</label>
-						<input type="text" class="form-control" id="input-join-nickname" aria-describedby="nickName" required>
-						<div id="nickNameJoin" class="form-text">${langPack.enterNicknameForTournament}</div>
-					</div>
+						<div class="p-3">
+							<label for="input-join-nickname" class="form-label">${langPack.nickname}</label>
+							<input type="text" class="form-control" id="input-join-nickname" aria-describedby="nickName" required>
+							<div id="nickNameJoin" class="form-text">${langPack.enterNicknameForTournament}</div>
+						</div>
 					</div>
 					<div class="modal-footer">
-					<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${langPack.cancel}</button>
-					<button id="btn-join-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">${langPack.next}</button>
+						<button type="button" class="btn btn-primary" data-bs-dismiss="modal" aria-label="Close">${langPack.cancel}</button>
+						<button id="btn-join-tournament" type="submit" data-bs-dismiss="modal" class="px-2 btn btn-success">${langPack.next}</button>
 					</div>
 				</form>
-				</div>
 			</div>
-			</div>
+		</div>
+	</div>
         `;
 		this.element.innerHTML = view;
 		this.handleEvent();
@@ -231,14 +232,20 @@ export default class Home extends Component {
 			event.preventDefault();
 			const aiNicknameInput = this.element.querySelector("#input-ai-nickname");
 			const nickname = aiNicknameInput.value.trim();
+			if (aiNicknames.size >= MAX_AI_PLAYERS) {
+				showToast("Maximum number of AI players reached.", "danger");
+				aiNicknameInput.value = "";
+				return;
+			}
 
 			if (nickname === "") {
-				alert("AI nickname cannot be empty.");
+				showToast("AI nickname cannot be empty.", "danger");
 				return;
 			}
 
 			if (aiNicknames.has(nickname)) {
-				console.log("This AI nickname is already used. Please choose another one.");
+				showToast(`This AI nickname ${nickname} is already used. Please choose another one.`, "danger");
+				aiNicknameInput.value = "";
 				return;
 			}
 
@@ -267,6 +274,7 @@ export default class Home extends Component {
 		});
 
 		updateNoAiPlayersMessage();
+
 		if (this.element.querySelector("#btn-play-local")) {
 
 			this.element.querySelector("#btn-play-local").addEventListener("click", async (event) => {
@@ -299,8 +307,15 @@ export default class Home extends Component {
 				const aiPlayers = Array.from(aiNicknames);
 
 				// From here added code for the tournament toast
-				if (!nickname || aiNicknames.has(nickname)) {
+				if (!nickname) {
+					showToast("Invalid input: Nickname can't be empty", "danger");
+					return;
+				}
+
+				if (aiNicknames.has(nickname)) {
 					showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+					// clear the input field
+					document.getElementById('input-nickname').value = "";
 					return;
 				}
 
@@ -446,7 +461,7 @@ export default class Home extends Component {
 				toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 			});
 		}
-		
+
 		if (this.element.querySelector("#join-game-btn")) {
 			this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
 				console.log('Join game button clicked');

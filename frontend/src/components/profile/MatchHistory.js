@@ -40,13 +40,9 @@ export default class MatchHistory extends Component {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                console.log('Received match history data:', data);
-                
+                const data = await response.json();                
                 this.matchHistory = data.historique.slice(0, 5);
-
                 await this.renderMatchHistory();
-				console.log('1 Match history rendered');
             } else {
                 console.error('Failed to fetch match history');
                 showToast(langPack.fetchMatchHistoryFailed, 'danger');
@@ -62,7 +58,6 @@ export default class MatchHistory extends Component {
         const matchDisplayElement = document.getElementById("match-list-display");
         matchDisplayElement.innerHTML = '';
 		
-		console.log('2 Match history rendered');
         if (this.matchHistory.length > 0) {
             this.matchHistory.forEach((match, index) => {
                 const isLastMatch = index === this.matchHistory.length - 1;
@@ -75,7 +70,6 @@ export default class MatchHistory extends Component {
     }
 
     createMatch(match, isLastMatch) {
-		console.log('3 Match history rendered');
         const langPack = profile[this.currentLang];
         const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
         const resultClass = result === langPack.victory ? "text-success" : "text-danger";

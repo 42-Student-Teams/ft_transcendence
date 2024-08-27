@@ -86,7 +86,6 @@ async function authStatus() {
 	try {
 		const jwt = localStorage.getItem('jwt');
 		const apiurl = process.env.API_URL;
-		console.log(jwt);
 		const response = await fetch(`${apiurl}/get_logged_in_status`, {
 			method: 'GET',
 			headers: {

@@ -136,9 +136,7 @@ export default class SideFriendList extends Component {
 	friendDisplayElement.innerHTML = "";
   
     if (this.friends.length > 0) {
-      this.friends.forEach((friend) => {
-        console.log("Rendering friend:", friend);
-       
+      this.friends.forEach((friend) => {       
         const statusClass = friend.status === 'Connected' ? 'status-connected' : 'status-offline';
         
         const friendHtml = /*html*/ `

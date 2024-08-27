@@ -1,0 +1,1 @@
+export const MAX_AI_PLAYERS = 3; 
