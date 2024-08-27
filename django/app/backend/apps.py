@@ -1,3 +1,5 @@
+import os
+
 from django.apps import AppConfig
 from django.db.utils import ProgrammingError, OperationalError
 
@@ -8,6 +10,8 @@ class BackendConfig(AppConfig):
     name = 'backend'
 
     def ready(self):
+        if os.environ.get('RUN_MAIN', None) != 'true':
+            return
         from django.db import connection
         try:
             # Check if the tables exist before trying to delete

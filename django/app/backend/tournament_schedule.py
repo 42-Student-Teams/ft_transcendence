@@ -1,12 +1,13 @@
 from schedule import Scheduler
 import threading
 import time
+import multiprocessing
 
 
 _scheduler_started = False
 
 def process_tournaments():
-    print("Processing tournaments...", flush=True)
+    print(f"Processing tournaments [{multiprocessing.current_process().name}] [{threading.current_thread()}]...", flush=True)
     from backend.models import Tournament
 
     tournaments = Tournament.objects.all()
