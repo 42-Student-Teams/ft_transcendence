@@ -1,7 +1,9 @@
 export const home = {
 	en: {
 	  title: "Home",
+	  lookForGame: "Look for a Game",
 	  createTournament: "Create Tournament",
+	  createGame: "Create Game",
 	  joinTournament: "Join Tournament",
 	  online: "Online",
 	  settingsGameTitle: "Settings of the Game",
@@ -88,6 +90,8 @@ export const home = {
 	},
 	fr: {
 	  title: "Accueil",
+	  lookForGame: "Rechercher un Jeu",
+	  createGame: "Créer un Jeu",
 	  createTournament: "Créer un Tournoi",
 	  joinTournament: "Rejoindre un Tournoi",
 	  aiOpponentDescription: "Par défaut, l'adversaire IA est réglé sur OFF",
@@ -176,6 +180,8 @@ export const home = {
 	},
 	es: {
 	  title: "Inicio",
+	  lookForGame: "Buscar un Juego",
+	  createGame: "Crear Juego",
 	  createTournament: "Crear Torneo",
 	  joinTournament: "Unirse al Torneo",
 	  online: "En línea",

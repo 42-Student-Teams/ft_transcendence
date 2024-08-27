@@ -56,20 +56,21 @@ export default class Home extends Component {
                     <div class="d-flex gap-4">
                         <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> ${langPack.online}
                         </button>
-                        <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
-                            <i class="fa-solid fa-dice"></i> ${langPack.createTournament}
-                        </button>
-                        <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
+                         <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
                             <i class="fa-solid fa-users"></i> ${langPack.joinTournament}
 						</button>
 						<button id="local-game-btn" class="btn btn-primary btn-game-init btn-lg" type="button">
                             <i class="fa-solid fa-users"></i> ${langPack.localGame}
 						</button>
-					
-					<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game (J)</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game (J)</button>
-					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament (J)</button>
-					
+						<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button">
+							<i class="fa-solid fa-dice-one"></i> ${langPack.createGame} (J)
+						</button>
+						<button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one">
+							</i> ${langPack.lookForGame} (J)
+						</button>
+					  	<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button">
+					  		<i class="fa-solid fa-dice"></i> ${langPack.createTournament} (J)
+						</button>
 					</div>
                 </div>
               </div>
