@@ -7,8 +7,7 @@ from django.conf import settings
 from .models import JwtUser, Message, GameHistory
 import re
 
-
-#-----------------------------------------User's--------------------------------------#
+#-----------------------------------------User's DATA--------------------------------------#
 class JwtUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         min_length=3,
@@ -66,6 +65,36 @@ class JwtUserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+    
+#-----------------------------------------LOGIN DATA--------------------------------------#    
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex='^[a-zA-Z0-9_]+$',
+                message='Le nom d\'utilisateur doit être alphanumérique ou contenir des underscores',
+                code='nom_utilisateur_invalide'
+            ),
+        ]
+    )
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, data):
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            raise serializers.ValidationError("Le nom d'utilisateur et le mot de passe sont requis.")
+        
+        return data
+
+
+
+
+
+
+
 
 class MessageSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)

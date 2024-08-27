@@ -19,7 +19,7 @@ from .models import JwtUser, GameHistory, MatchRequest
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer
 
 from .util import get_user_info
 
@@ -82,17 +82,21 @@ class UserOauthLoginView(APIView):
 
 class UserLoginView(APIView):
     def post(self, request):
-        username, password = None, None
-        if 'username' in request.data:
-            username = request.data['username']
-        if 'password' in request.data:
-            password = request.data['password']
+        serializer = UserLoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+        
         user: JwtUser = JwtUser.objects.filter(username=username).first()
-        if user is None:
-            raise AuthenticationFailed('Incorrect username or password')
-        if not user.check_password(password):
-            raise AuthenticationFailed('Incorrect username or password')
+        
+        if user is None or not user.check_password(password):
+            return Response(
+                {"erreur": "Nom d'utilisateur ou mot de passe incorrect"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         return jwt_response(username)
 
 ##--------------------------------------USER DATA - GET METHODE-----------------------------------------###

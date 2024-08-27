@@ -13,7 +13,7 @@ class JwtUser(AbstractUser):
     last_name = models.CharField(max_length=12)
     username = models.CharField(unique=True, max_length=12)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=255)
+    password = models.CharField(max_length=128)
     isoauth = models.BooleanField(default=False)
     friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
     friend_requests = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='pending_friend_requests')
