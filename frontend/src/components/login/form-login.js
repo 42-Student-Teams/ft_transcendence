@@ -85,7 +85,6 @@ export default class FormLogin extends Component {
                 if (response.ok) {
                     store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
-					await this.setUserProfile();
                     openCommWebsocket();
                     console.log(store.state.socket);
                     navigateTo("/");
@@ -99,18 +98,4 @@ export default class FormLogin extends Component {
             }
         });
     }
-
-	async setUserProfile() {
-		const jwt = localStorage.getItem('jwt');
-		const apiurl = process.env.API_URL;
-		const response = await fetch(`${apiurl}/get_user_profile`, {
-			method: 'GET',
-			headers: {
-				'Authorization': `Bearer ${jwt}`,
-				'Content-Type': 'application/json'
-			}
-		});
-		const data = await response.json();
-		setProfile(data);
-	}
 }

@@ -42,6 +42,8 @@ class UserCreateView(APIView):
         user = serializer.save()
         print(f"got username: {user.username}", flush=True)
         return jwt_response(user.username)
+    
+
 
 class UserOauthLoginView(APIView):
     def post(self, request):
@@ -90,12 +92,13 @@ class UserLoginView(APIView):
         return jwt_response(username)
 
 ##--------------------------------------USER DATA - GET METHODE-----------------------------------------###
-class UserListView(APIView):
+class loggedInStatusView(APIView):
     def get(self, request):
         if check_jwt(request):
-            return ({'status': 'success'})
+            return Response({'status': 'success',}, status=status.HTTP_200_OK)
         else:
             raise AuthenticationFailed()
+        
 
 class getUserProfileView(APIView):
     def get(self, request):
@@ -154,49 +157,6 @@ class ImprovedUpdateUserView(APIView):
                 'avatar_url': user.avatar.url,
             }
         }, status=status.HTTP_200_OK)
-
-
-
-# class UserUpdateView(APIView):
-#     parser_classes = (MultiPartParser, FormParser)
-
-#     def post(self, request):
-#         user = JwtUser.objects.get(username=check_jwt(request))
-#         if not (request.method == 'POST' and request.FILES.get('avatar')):
-#     # Send an error response
-#             return JsonResponse({'status': 'error', 'message': 'Invalid request method or missing image file'}, status=400)
-#         avatar = request.FILES['avatar']
-#         # do a print of avatar
-#         print(f"avatar: {avatar}")
-#         first_name = request.data.get('nom')
-#         last_name = request.data.get('prenom')
-#         print(f"data: {request.data}")
-#         # Vérifiez si le fichier est une image valide
-#         if not avatar.content_type.startswith('image'):
-#             return Response({'status': 'error', 'message': 'File is not a valid image'}, status=status.HTTP_400_BAD_REQUEST)
-#         # Supprimez l'ancien avatar si il existe, si c'est un default_avatar.png, ne le supprimez pas
-#         if user.avatar != 'staticfiles/avatars/default_avatar.png':
-#             user.avatar.delete(save=False)
-#         user.avatar = avatar
-
-#         first_name = request.data.get('first_name')
-#         last_name = request.data.get('last_name')
-#         print(f"first_name: {first_name}, last_name: {last_name}")
-
-#         if first_name is not None:
-#             user.first_name = first_name
-
-#         if last_name is not None:
-#             user.last_name = last_name
-#         try:
-#             user.save()
-#         except ValidationError as e:
-#             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-#         return Response({
-#             'status': 'success',
-#             'message': 'Profile updated successfully',
-#             'avatar_url': user.avatar.url
-#         }, status=status.HTTP_200_OK)
 
 ##--------------------------------------FRIEND-REQUEST-----------------------------------------###
 

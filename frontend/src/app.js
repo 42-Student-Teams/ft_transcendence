@@ -28,11 +28,15 @@ window.addEventListener("popstate", (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
-	/*if (!store.state.isLoggedIn) {
-		navigateTo("/login");
+	if (!store.state.isLoggedIn) {
+		try {
+			await authStatus();
+		}catch (error){
+			navigateTo("/login");
+			return ;
+		}
 	}
 	console.log("app.js: store.state.isLoggedIn", store.state.isLoggedIn);
-*/
 	handleDefaultRoute();
 });
 
@@ -47,16 +51,42 @@ function setupNavigation() {
 	});
 }
 
-async function checkAuthStatus() {
-	const response = await fetch("/api/check-login", {
-		credentials: "include",
+
+async function setUserProfile() {
+	const jwt = localStorage.getItem('jwt');
+	const apiurl = process.env.API_URL;
+	const response = await fetch(`${apiurl}/get_user_profile`, {
+		method: 'GET',
+		headers: {
+			'Authorization': `Bearer ${jwt}`,
+			'Content-Type': 'application/json'
+		}
+	});
+	const data = await response.json();
+
+	if (!response.ok) {
+		throw new Error("Failed to get profile");
+	}
+
+	setProfile(data);
+}
+
+async function authStatus() {
+	const jwt = localStorage.getItem('jwt');
+	const apiurl = process.env.API_URL;
+	const response = await fetch(`${apiurl}/get_logged_in_status`, {
+		method: 'GET',
+		headers: {
+			'Authorization': `Bearer ${jwt}`,
+			'Content-Type': 'application/json'
+		}
 	});
 
 	const data = await response.json();
 
 	if (data.isLoggedIn) {
 		store.dispatch("logIn");
-		// await setUserInfo();
+		await setUserProfile();
 		navigateTo("/");
 		// console.log("login state: redirect to /");
 	} else {
