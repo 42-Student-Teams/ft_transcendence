@@ -49,4 +49,8 @@ server {
     location /staticfiles/avatars/ {
         alias /var/www/backend/staticfiles/avatars/;
     }
+
+	location /static/drf-yasg/ {
+        alias /var/www/backend/staticfiles/drf-yasg/;
+    }
 }

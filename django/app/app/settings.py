@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'backend',
     'corsheaders',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
@@ -119,6 +120,14 @@ DATABASES = {
         "PASSWORD": os.getenv('POSTGRES_PASSWORD'),
         "HOST": os.getenv('DB_HOST'),
         "PORT": os.getenv('DB_PORT'),
+    }
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        }
     }
 }
 
