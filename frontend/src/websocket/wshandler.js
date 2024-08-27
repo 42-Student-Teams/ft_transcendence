@@ -1,7 +1,9 @@
 import {chatInsertMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
+import { showToast } from "../utils/toastUtils.js";
 import {updateFromSocket} from "../views/localGame.js";
 import store from "/src/store/index.js";
+import { home } from "../utils/langPack.js";
 
 function handleMessage(msg) {
     console.log('Received socket message:');
@@ -42,6 +44,18 @@ function handleMessage(msg) {
                 username: msg_obj.username,
                 status: msg_obj.status
             });
+        case 'toast':
+            if (!('localization' in msg_obj)) {
+                return;
+            }
+            console.log(`Got toast: ${msg_obj['localization']}`);
+            const langPack = home[store.state.language];
+            let localized_message = msg_obj['localization'];
+            Object.keys(langPack).forEach(key => {
+                const placeholder = `%${key}%`;
+                localized_message = localized_message.replaceAll(placeholder, langPack[key]);
+            });
+            showToast(localized_message, "success");
         default:
             return;
     }

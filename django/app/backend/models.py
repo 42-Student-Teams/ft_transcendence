@@ -185,7 +185,7 @@ class AcknowledgedMatchRequest(models.Model):
 
 
 class GameSearchQueue(models.Model):
-    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='search_queue')
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='game_search_queue')
 
     @classmethod
     def add_user_to_queue(cls, user):
@@ -211,6 +211,36 @@ class GameSearchQueue(models.Model):
         return None
 
 
+class TournamentSearchQueue(models.Model):
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='tournament_search_queue')
+    nickname = models.CharField(max_length=255)
+
+    @classmethod
+    def add_user_to_queue(cls, user, nickname):
+        # Add the user to the queue if not already in it
+        if not cls.objects.filter(user=user).exists():
+            cls.objects.create(user=user, nickname=nickname)
+
+    @classmethod
+    def remove_user_from_queue(cls, user):
+        # Remove the user from the queue if they are in it
+        cls.objects.filter(user=user).delete()
+
+    @classmethod
+    def is_user_in_queue(cls, user):
+        # Check if the user is already in the queue
+        return cls.objects.filter(user=user).exists()
+
+    @classmethod
+    def get_up_to_x_users(cls, x):
+        # Get up to x users from the queue
+        queue_entries = cls.objects.all()[:x]
+        res = [(entry.user, entry.nickname) for entry in queue_entries]
+        for user, _ in res:
+            cls.remove_user_from_queue(user)
+        return res
+
+
 class Tournament(models.Model):
     op_lock = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
@@ -220,7 +250,10 @@ class Tournament(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
 
     waitlist = models.JSONField(default=list, blank=True)  # This stores usernames and bot names
+    # Format: 'user:username:nick name' for users and 'bot:bot nickname' for bots
     active_participants_count = models.IntegerField(default=0)
+    all_participants_count = models.IntegerField(default=0)
+    subscribed_count = models.IntegerField(default=0)
 
     def add_to_waitlist(self, username):
         """Add a user or bot (identified by username) to the waitlist."""
@@ -243,6 +276,8 @@ class Tournament(models.Model):
         tournament.save()
 
     def pair_and_notify(self):
+        if self.subscribed_count < self.all_participants_count:
+            return
         self.op_lock = True
         self.save()
         from asgiref.sync import async_to_sync
@@ -253,12 +288,14 @@ class Tournament(models.Model):
             if len(self.waitlist) > 0:
                 user = self.waitlist.pop(0)
                 if user.startswith('user:'):
-                    user_obj = JwtUser.objects.filter(username=user[len('user:'):]).first()
+                    username = user[len('user:'):user.rfind(':')]
+                    user_obj = JwtUser.objects.filter(username=username).first()
                     if user_obj is not None:
                         print(f'Sending WON to {user_obj.username}', flush=True)
                         async_to_sync(channel_layer.group_send)(user_obj.username,
-                                                                {"type": "tournament_won",
-                                                                 "username": user_obj.username})
+                                                                {"type": "toast",
+                                                                "localization": f"%youWonTournament% {self.name}",
+                                                                 "target_user": user_obj.username})
             print(f'Deleting tournament {self.id}', flush=True)
             self.__class__.objects.filter(id=self.id).delete()
             return
@@ -279,7 +316,8 @@ class Tournament(models.Model):
                 bot_user = user1 if user1.startswith('bot:') else user2
                 real_user = user1 if user1.startswith('user:') else user2
 
-                real_user_obj: JwtUser = JwtUser.objects.filter(username=real_user[len('user:'):]).first()
+                real_username = real_user[len('user:'):real_user.rfind(':')]
+                real_user_obj: JwtUser = JwtUser.objects.filter(username=real_username).first()
                 if real_user_obj is None:
                     self.waitlist.append(bot_user)
                     self.active_participants_count -= 1
@@ -301,8 +339,10 @@ class Tournament(models.Model):
                                                          "match_key": acknowledgement.match_key,
                                                          "username": real_user_obj.username})
             else:
-                real_user1_obj: JwtUser = JwtUser.objects.filter(username=user1[len('user:'):]).first()
-                real_user2_obj: JwtUser = JwtUser.objects.filter(username=user2[len('user:'):]).first()
+                real_username1 = user1[len('user:'):user1.rfind(':')]
+                real_user1_obj: JwtUser = JwtUser.objects.filter(username=real_username1).first()
+                real_username2 = user2[len('user:'):user2.rfind(':')]
+                real_user2_obj: JwtUser = JwtUser.objects.filter(username=real_username2).first()
                 if real_user1_obj is None and real_user2_obj is not None:
                     self.waitlist.append(user2)
                     self.active_participants_count -= 1
