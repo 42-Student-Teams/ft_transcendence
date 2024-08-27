@@ -39,6 +39,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return;
 		}
 	}
+
+	
+
+
 	handleDefaultRoute();
 });
 
