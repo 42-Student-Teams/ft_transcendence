@@ -50,11 +50,15 @@ export function updateProfile(profile) {
 }
 
 
-export function clearEditModalInputs(elementIds) {
+export async function clearEditModalInputs(elementIds) {
 	elementIds.forEach(id => {
 		const element = document.getElementById(id);
 		if (element) {
-			element.innerText = '';
+			if (element.tagName === 'INPUT') {
+				if (element.type === 'text' || element.type === 'file') {
+					element.value = '';
+				}
+			}
 		}
 	});
 }

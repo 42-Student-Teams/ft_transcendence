@@ -77,12 +77,12 @@ export default class Profile extends Component {
                                 <input type="file" class="form-control" id="edit-profile-picture">
                             </div>
                             <div class="p-3">
-                                <label for="edit-first-name" class="form-label">${langPack.firstName}</label>
-                                <input type="text" class="form-control" id="edit-first-name">
+                                <label for="edit-profile-firstname" class="form-label">${langPack.firstName}</label>
+                                <input type="text" class="form-control" id="edit-profile-firstname">
                             </div>
                             <div class="p-3">
-                                <label for="edit-last-name" class="form-label">${langPack.lastName}</label>
-                                <input type="text" class="form-control" id="edit-last-name">
+                                <label for="edit-profile-lastname" class="form-label">${langPack.lastName}</label>
+                                <input type="text" class="form-control" id="edit-profile-lastname">
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -141,8 +141,8 @@ export default class Profile extends Component {
 				event.preventDefault();
 
 				const profilePicture = document.getElementById("edit-profile-picture").files[0];
-				const firstName = document.getElementById("edit-first-name").value.trim();
-				const lastName = document.getElementById("edit-last-name").value.trim();
+				const firstName = document.getElementById("edit-profile-firstname").value.trim();
+				const lastName = document.getElementById("edit-profile-lastname").value.trim();
 
 				if (!firstName || !lastName) {
 					showToast(langPack.incorrectInput, "danger");
@@ -190,7 +190,7 @@ export default class Profile extends Component {
 					console.error('Error updating user profile:', error);
 					showToast(langPack.profileUpdateError, 'danger');
 				}
-				clearEditModalInputs(["edit-profile-username", "edit-profile-name", "edit-profile-picture"]);
+				await clearEditModalInputs(["edit-profile-firstname", "edit-profile-lastname", "edit-profile-picture"]);
 			});
 		}
 	}
