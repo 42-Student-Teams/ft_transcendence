@@ -3,7 +3,6 @@ import store from "../../store/index.js";
 import { navigateTo } from "../../utils/router.js";
 import { openCommWebsocket } from "../../utils/wsUtils.js";
 import { addInputEventListeners, showError, resetErrors } from "../../utils/formValidation.js";
-import { setProfile } from "../../utils/profileUtils.js";
 
 export default class FormLogin extends Component {
     constructor() {

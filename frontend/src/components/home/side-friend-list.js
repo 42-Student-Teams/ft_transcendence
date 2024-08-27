@@ -283,7 +283,7 @@ export default class SideFriendList extends Component {
       if (response.ok) {
         console.log(`Successfully sent friend request to ${username}`);
         showToast(langPack.friendRequestSentSuccess.replace('{username}', username), "success");
-        await this.getFriendList();
+        //await this.getFriendList();
       } else {
         showToast(langPack.friendRequestSentFailed.replace('{username}', username), "danger");
         console.error(`Failed to send friend request to ${username}`);

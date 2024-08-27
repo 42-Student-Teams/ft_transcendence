@@ -114,7 +114,8 @@ export default class Profile extends Component {
 	async handleEvent() {
 		const langPack = profile[this.currentLang];
 
-		const profilee = await getProfile();
+		await getProfile();
+
 		const profileUsernameElem = document.getElementById("profile-username");
 		const profileNameElem = document.getElementById("profile-name");
 		const profileWinsElem = document.getElementById("profile-wins");
@@ -123,12 +124,12 @@ export default class Profile extends Component {
 		const profileTotalElem = document.getElementById("profile-total");
 
 		if (profileUsernameElem && profileNameElem && profileWinsElem && profileLossesElem && profilePictureElem && profileTotalElem) {
-			profileUsernameElem.innerText = profilee.username;
-			profileNameElem.innerText = `${profilee.firstname} ${profilee.lastname}`;
-			profileWinsElem.innerText = `${langPack.wins}: ${profilee.gamesWon}`;
-			profilePictureElem.src = profilee.avatar;
-			profileLossesElem.innerText = `${langPack.losses}: ${profilee.gamesLossed}`;
-			profileTotalElem.innerText = `${langPack.totalGames}: ${profilee.gamesPlayed}`;
+			profileUsernameElem.innerText = store.state.username;
+			profileNameElem.innerText = `${store.state.firstname} ${store.state.lastname}`;
+			profileWinsElem.innerText = `${langPack.wins}: ${store.state.gamesWon}`;
+			profilePictureElem.src = store.state.avatar;
+			profileLossesElem.innerText = `${langPack.losses}: ${store.state.gamesLossed}`;
+			profileTotalElem.innerText = `${langPack.totalGames}: ${store.state.gamesPlayed}`;
 		}
 
 		this.fetchMatchHistory();

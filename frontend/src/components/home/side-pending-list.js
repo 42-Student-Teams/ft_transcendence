@@ -1,7 +1,4 @@
 import Component from "../../library/component.js";
-import ProfilePicture1 from "../../assets/image/pp-6.jpg";
-import ProfilePicture2 from "../../assets/image/pp-7.png";
-import ProfilePicture3 from "../../assets/image/pp-8.jpg";
 import { showToast } from "../../utils/toastUtils.js";
 import { home } from "/src/utils/langPack.js";
 import store from "../../store/index.js";

@@ -1,28 +1,31 @@
 import store from "../store/index.js";
 
 
-export function getProfile() {
+export async function getProfile() {
 
-	console.log("profileUtils.js - getProfile - store.state : ", store.state.firstname, store.state.lastname, store.state.avatar);
-	if (store.state.firstname != ""
-		&& store.state.lastname != ""
-		&& store.state.avatar != ""
-	) {
-		const userProfile = {
-			username: store.state.username,
-			firstname: store.state.firstname,
-			lastname: store.state.lastname,
-			avatar: store.state.avatar,
-			gamesPlayed: store.state.gamesPlayed,
-			gamesLossed: store.state.gamesLossed,
-			gamesWon: store.state.gamesWon,
-		};
-		return userProfile;
+	try {
+		const jwt = localStorage.getItem('jwt');
+		const apiurl = process.env.API_URL;
+		const response = await fetch(`${apiurl}/get_user_profile`, {
+			method: 'GET',
+			headers: {
+				'Authorization': `Bearer ${jwt}`,
+				'Content-Type': 'application/json'
+			}
+		});
+
+		
+		if (!response.ok) {
+			throw new Error("Failed to get profile");
+		}
+		const data = await response.json();
+		await setProfile(data);
+	} catch (error) {
+		console.error('Error fetching user profile:', error);
 	}
-	return null;
 }
 
-export async function setProfile (profile){
+export async function setProfile(profile) {
 	store.dispatch("setUsername", { username: profile.username });
 	store.dispatch("setFirstName", { firstname: profile.nom });
 	store.dispatch("setLastName", { lastname: profile.prenom });
@@ -34,8 +37,6 @@ export async function setProfile (profile){
 
 
 export function updateProfile(profile) {
-
-	console.log("profileUtils.js - updateProfile - profile : ", profile);
 	if (profile.firstname !== store.state.firstname
 		|| profile.lastName !== store.state.lastname
 		|| profile.avatar !== store.state.avatar
@@ -50,10 +51,10 @@ export function updateProfile(profile) {
 
 
 export function clearEditModalInputs(elementIds) {
-    elementIds.forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.innerText = '';
-        }
-    });
+	elementIds.forEach(id => {
+		const element = document.getElementById(id);
+		if (element) {
+			element.innerText = '';
+		}
+	});
 }
