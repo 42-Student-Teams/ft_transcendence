@@ -103,15 +103,15 @@ class ImprovedUserProfileSerializer(UserProfileSerializer):
         fields = ('first_name', 'last_name', 'avatar')
 
     def validate_first_name(self, value):
-        return self.validate_name(value, field_name="First name")
+        return self.validate_name(value, field_name="Prénom")
 
     def validate_last_name(self, value):
-        return self.validate_name(value, field_name="Last name")
+        return self.validate_name(value, field_name="Nom")
 
     def validate_name(self, value, field_name):
         value = self.sanitize_name(value)
-        if not (1 <= len(value) <= 50 and re.match(r'^[\w\s-]+$', value)):
-            raise serializers.ValidationError(f"{field_name} must be between 1 and 50 characters and contain only letters, numbers, spaces, and hyphens.")
+        if not (1 <= len(value) <= 12 and re.match(r'^[\w\s-]+$', value)):
+            raise serializers.ValidationError(f"{field_name} doit contenir entre 1 et 12 caractères et ne peut contenir que des lettres, des chiffres, des espaces et des tirets.")
         return value
 
     def sanitize_name(self, name):
@@ -123,16 +123,16 @@ class ImprovedUserProfileSerializer(UserProfileSerializer):
         allowed_extensions = ['jpg', 'jpeg', 'png']
 
         if avatar.size > max_size:
-            raise serializers.ValidationError('Avatar file size too large. Maximum size is 1 MB.')
+            raise serializers.ValidationError('La taille du fichier de l\'avatar est trop grande. La taille maximale est de 1 Mo.')
 
         if avatar.content_type not in allowed_types:
-            raise serializers.ValidationError('Invalid file type. Only JPEG and PNG are allowed.')
+            raise serializers.ValidationError('Type de fichier invalide. Seuls les fichiers JPEG et PNG sont autorisés.')
 
         validator = FileExtensionValidator(allowed_extensions=allowed_extensions)
         try:
             validator(avatar)
         except ValidationError:
-            raise serializers.ValidationError('Invalid file extension. Only .jpg, .jpeg, and .png are allowed.')
+            raise serializers.ValidationError('Extension de fichier invalide. Seules les extensions .jpg, .jpeg et .png sont autorisées.')
 
         return avatar
 
