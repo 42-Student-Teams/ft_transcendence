@@ -28,7 +28,7 @@ export default class Navbar extends Component {
                         <hr class="dropdown-divider" />
                     </li>
                     <li id="btnLogout">
-                        <a href="/login" data-link class="dropdown-item" role="button">${langPack.logout}</a>
+                        <a class="dropdown-item" role="button">${langPack.logout}</a>
                     </li>
                 </ul>
             </li>
@@ -60,6 +60,14 @@ export default class Navbar extends Component {
                 this.changeLanguage(newLang);
             });
         });
+
+		// Gestion du bouton de déconnexion
+		const btnLogout = document.getElementById("btnLogout");
+		btnLogout.addEventListener("click", async (event) => {
+			event.preventDefault();
+			store.dispatch("logOut");
+			navigateTo("/login");
+		});
     }
 
     changeLanguage(lang) {

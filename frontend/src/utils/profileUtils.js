@@ -22,7 +22,7 @@ export function getProfile() {
 	return null;
 }
 
-export function setProfile (profile){
+export async function setProfile (profile){
 	store.dispatch("setUsername", { username: profile.username });
 	store.dispatch("setFirstName", { firstname: profile.nom });
 	store.dispatch("setLastName", { lastname: profile.prenom });

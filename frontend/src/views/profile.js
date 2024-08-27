@@ -114,43 +114,24 @@ export default class Profile extends Component {
 	async handleEvent() {
 		const langPack = profile[this.currentLang];
 
-		try {
-			const jwt = localStorage.getItem('jwt');
-			const apiurl = process.env.API_URL;
-			const response = await fetch(`${apiurl}/get_user_profile`, {
-				method: 'GET',
-				headers: {
-					'Authorization': `Bearer ${jwt}`,
-					'Content-Type': 'application/json'
-				}
-			});
+		const profilee = await getProfile();
+		const profileUsernameElem = document.getElementById("profile-username");
+		const profileNameElem = document.getElementById("profile-name");
+		const profileWinsElem = document.getElementById("profile-wins");
+		const profileLossesElem = document.getElementById("profile-losses");
+		const profilePictureElem = document.getElementById("profile-picture");
+		const profileTotalElem = document.getElementById("profile-total");
 
-			this.fetchMatchHistory();
-			if (response.ok) {
-				const profile = await response.json();
-				const profileUsernameElem = document.getElementById("profile-username");
-				const profileNameElem = document.getElementById("profile-name");
-				const profileWinsElem = document.getElementById("profile-wins");
-				const profileLossesElem = document.getElementById("profile-losses");
-				const profilePictureElem = document.getElementById("profile-picture");
-				const profileTotalElem = document.getElementById("profile-total");
-
-				if (profileUsernameElem && profileNameElem && profileWinsElem && profileLossesElem && profilePictureElem && profileTotalElem) {
-					profileUsernameElem.innerText = profile.username;
-					profileNameElem.innerText = `${profile.prenom} ${profile.nom}`;
-					profileWinsElem.innerText = `${langPack.wins}: ${profile.parties_gagnees}`;
-					profilePictureElem.src = profile.avatar;
-					profileLossesElem.innerText = `${langPack.losses}: ${profile.parties_perdues}`;
-					profileTotalElem.innerText = `${langPack.totalGames}: ${profile.parties_jouees}`;
-				}
-			} else {
-				console.error('Failed to fetch match history');
-				showToast(langPack.fetchProfileFailed, 'danger');
-			}
-		} catch (error) {
-			console.error('Error fetching user profile:', error);
-			showToast(langPack.fetchProfileError, 'danger');
+		if (profileUsernameElem && profileNameElem && profileWinsElem && profileLossesElem && profilePictureElem && profileTotalElem) {
+			profileUsernameElem.innerText = profilee.username;
+			profileNameElem.innerText = `${profilee.firstname} ${profilee.lastname}`;
+			profileWinsElem.innerText = `${langPack.wins}: ${profilee.gamesWon}`;
+			profilePictureElem.src = profilee.avatar;
+			profileLossesElem.innerText = `${langPack.losses}: ${profilee.gamesLossed}`;
+			profileTotalElem.innerText = `${langPack.totalGames}: ${profilee.gamesPlayed}`;
 		}
+
+		this.fetchMatchHistory();
 
 		const editProfileModal = document.getElementById("edit-profile-modal");
 		// wait for the dom to load 
@@ -193,14 +174,12 @@ export default class Profile extends Component {
 							avatar: data.user.avatar_url,
 						};
 						await updateProfile(profile);
-						const profileUsernameElem = document.getElementById("profile-username");
 						const profileNameElem = document.getElementById("profile-name");
 						const profilePictureElem = document.getElementById("profile-picture");
 
-						if (profileUsernameElem && profileNameElem && profilePictureElem) {
-							profileUsernameElem.innerText = `${data.user.first_name} ${data.user.last_name}`;
-							profileNameElem.innerText = data.user.username;
-							profilePictureElem.src = data.user.avatar_url;
+						if (profileNameElem && profilePictureElem) {
+							profileNameElem.innerText = `${profile.firstname} ${profile.lastname}`;
+							profilePictureElem.src = profile.avatar;
 						}
 					} else {
 						console.error('Failed to update user profile');
@@ -252,7 +231,7 @@ export default class Profile extends Component {
 				if (matchDisplayElement)
 					matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
 			}
-		}else{
+		} else {
 			console.error("Match list display element not found");
 		}
 	}

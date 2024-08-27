@@ -83,7 +83,6 @@ export default class FormLogin extends Component {
                 const jsonData = await response.json();
 
                 if (response.ok) {
-                    store.dispatch("logIn");
                     localStorage.setItem('jwt', jsonData.jwt);
                     openCommWebsocket();
                     console.log(store.state.socket);

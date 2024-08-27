@@ -83,7 +83,6 @@ export default class OauthCallback extends Component {
                 // TODO: if logged in, also need jwt token
                 if ('jwt' in regStatus) {
                     document.getElementById('statemessage').innerText = 'Logged in';
-                    store.dispatch("logIn");
                     navigateTo("/");
                 } else {
                     document.getElementById('statemessage').innerText = 'Error';
