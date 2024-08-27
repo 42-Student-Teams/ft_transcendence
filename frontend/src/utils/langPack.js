@@ -1,6 +1,7 @@
 export const home = {
 	en: {
 	  title: "Home",
+	  aiMaxPlayers: "Maximum number of AI players reached.",
 	  lookForGame: "Look for a Game",
 	  createTournament: "Create Tournament",
 	  createGame: "Create Game",
@@ -90,6 +91,7 @@ export const home = {
 	},
 	fr: {
 	  title: "Accueil",
+	  aiMaxPlayers: "Nombre maximum de joueurs IA atteint.",
 	  lookForGame: "Rechercher un Jeu",
 	  createGame: "Créer un Jeu",
 	  createTournament: "Créer un Tournoi",
@@ -180,6 +182,7 @@ export const home = {
 	},
 	es: {
 	  title: "Inicio",
+	  aiMaxPlayers: "Se ha alcanzado el número máximo de jugadores IA.",
 	  lookForGame: "Buscar un Juego",
 	  createGame: "Crear Juego",
 	  createTournament: "Crear Torneo",

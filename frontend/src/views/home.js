@@ -216,6 +216,7 @@ export default class Home extends Component {
 
 
 	async handleEvent() {
+		const langPack = home[this.currentLang];
 		const iaPlayersContainer = this.element.querySelector("#ia-players");
 		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");
 		const noAiPlayersMessage = this.element.querySelector("#no-ai-players");
@@ -234,18 +235,18 @@ export default class Home extends Component {
 			const aiNicknameInput = this.element.querySelector("#input-ai-nickname");
 			const nickname = aiNicknameInput.value.trim();
 			if (aiNicknames.size >= MAX_AI_PLAYERS) {
-				showToast("Maximum number of AI players reached.", "danger");
+				showToast(`${langPack.aiMaxPlayers}`, "danger");
 				aiNicknameInput.value = "";
 				return;
 			}
 
 			if (nickname === "") {
-				showToast("AI nickname cannot be empty.", "danger");
+				showToast(`${langPack.aiNicknameCannotBeEmpty}`, "danger");
 				return;
 			}
 
 			if (aiNicknames.has(nickname)) {
-				showToast(`This AI nickname ${nickname} is already used. Please choose another one.`, "danger");
+				showToast(`${langPack.aiNicknameAlreadyUsed}`, "danger");
 				aiNicknameInput.value = "";
 				return;
 			}
@@ -309,12 +310,12 @@ export default class Home extends Component {
 
 				// From here added code for the tournament toast
 				if (!nickname) {
-					showToast("Invalid input: Nickname can't be empty", "danger");
+					showToast(`${langPack.emptyNicknameError}`, "danger");
 					return;
 				}
 
 				if (aiNicknames.has(nickname)) {
-					showToast("Invalid input: Nickname cannot be the same as AI nicknames.", "danger");
+					showToast(`${langPack.invalidNicknameInput}`, "danger");
 					// clear the input field
 					document.getElementById('input-nickname').value = "";
 					return;
@@ -334,7 +335,7 @@ export default class Home extends Component {
 
 					navigateTo("/tournament-game");
 				} catch (error) {
-					showToast("Incorrect input or server error. Please try again.", "danger");
+					showToast(`${langPack.serverError}`, "danger");
 				}
 			});
 		}
@@ -347,7 +348,7 @@ export default class Home extends Component {
 
 				// From here added code for the tournament toast
 				if (!nickname) {
-					showToast("Invalid input: Nickname can't be empty", "danger");
+					showToast(`${langPack.emptyNicknameError}`, "danger");
 					return;
 				}
 
@@ -359,7 +360,7 @@ export default class Home extends Component {
 					console.log(store.state.joinNickname);
 					navigateTo("/join-tournament");
 				} catch (error) {
-					showToast("Incorrect input or server error. Please try again.", "danger");
+					showToast(`${langPack.serverError}`, "danger");
 				}
 			});
 		}
