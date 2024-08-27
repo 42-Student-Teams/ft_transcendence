@@ -38,10 +38,16 @@ class UserCreateView(APIView):
         print(request.data)
         print('--------------------')
         serializer = JwtUserSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        print(f"got username: {user.username}", flush=True)
-        return jwt_response(user.username)
+        if serializer.is_valid():
+            user = serializer.save()
+            print(f"got username: {user.username}", flush=True)
+            return jwt_response(user.username)
+        else:
+            errors = []
+            for error_msgs in serializer.errors.values():
+                errors.extend([f"({error})" for error in error_msgs])
+            print(f"Validation errors: {errors}", flush=True)
+            return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserOauthLoginView(APIView):
     def post(self, request):

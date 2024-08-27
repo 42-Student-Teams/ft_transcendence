@@ -103,6 +103,12 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=255),
         ),
         migrations.AddField(
+            model_name='jwtuser',
+            name='email',
+            field=models.EmailField(unique=True),
+            preserve_default=False,
+        ),
+        migrations.AddField(
             model_name='acknowledgedmatchrequest',
             name='request_author',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='acknowledged_match_requests_authored', to=settings.AUTH_USER_MODEL),

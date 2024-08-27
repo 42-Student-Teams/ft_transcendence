@@ -9,10 +9,10 @@ from .util import timestamp_now, random_alphanum, AnonClass
 
 
 class JwtUser(AbstractUser):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    username = models.CharField(unique=True, max_length=255)
-    email = None
+    first_name = models.CharField(max_length=12)
+    last_name = models.CharField(max_length=12)
+    username = models.CharField(unique=True, max_length=12)
+    email = models.EmailField(unique=True)
     password = models.CharField(max_length=255)
     isoauth = models.BooleanField(default=False)
     friends = models.ManyToManyField('self', symmetrical=False, blank=True, related_name='user_friends')
@@ -22,7 +22,9 @@ class JwtUser(AbstractUser):
     status = models.CharField(max_length=20, default='Offline')
 
     USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
     REQUIRED_FIELDS = []
+    
 
     def get_last_x_messages_with_friend(self, friend, count, start_from_id=None):
         query = Message.objects.filter(

@@ -1,35 +1,69 @@
 from rest_framework import serializers, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator
 from django.conf import settings
 
 from .models import JwtUser, Message, GameHistory
+import re
 
 
 #-----------------------------------------User's--------------------------------------#
 class JwtUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        min_length=3,
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex='^[a-zA-Z0-9_]+$',
+                message='Le nom d\'utilisateur ne peut contenir que des lettres, des chiffres et des underscores.'
+            )
+        ]
+    )
+    first_name = serializers.CharField(max_length=12, required=True)
+    last_name = serializers.CharField(max_length=12, required=True)
+    email = serializers.EmailField(
+        validators=[EmailValidator(message="Entrez une adresse email valide.")],
+        required=True
+    )
+
     class Meta:
         model = JwtUser
-        fields = ('username', 'password', 'isoauth', 'first_name', 'last_name')
+        fields = ('username', 'password', 'isoauth', 'first_name', 'last_name', 'email')
         extra_kwargs = {
             'password': {'write_only': True},
         }
 
+    def validate_username(self, value):
+        if JwtUser.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Un utilisateur avec ce nom d'utilisateur existe déjà.")
+        return value
+
+    def validate_name_field(self, value, field_name):
+        if not value.strip():
+            raise serializers.ValidationError(f"Le {field_name} ne peut pas être vide.")
+        if value.isdigit():
+            raise serializers.ValidationError(f"Le {field_name} ne peut pas contenir uniquement des chiffres.")
+        if not re.match(r'^[a-zA-Z0-9]+$', value):
+            raise serializers.ValidationError(f"Le {field_name} ne peut contenir que des lettres et des chiffres.")
+        return value
+
+    def validate_first_name(self, value):
+        return self.validate_name_field(value, "prénom")
+
+    def validate_last_name(self, value):
+        return self.validate_name_field(value, "nom")
+
+    def validate_email(self, value):
+        if JwtUser.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cette adresse email est déjà utilisée.")
+        return value
+
     def create(self, validated_data):
         password = validated_data.pop('password', None)
         instance = self.Meta.model(**validated_data)
-        instance.set_password(password)
-        '''elif password is None and oauth_token is not None:
-            user_info = get_user_info(oauth_token)
-            if user_info is None:
-                raise PermissionDenied
-            instance.username = user_info['login']
-            if JwtUser.objects.filter(username=instance.username).exists():
-                return JwtUser.objects.filter(username=instance.username).first()
-            instance.set_unusable_password()
-            instance.isoauth = True
-        else:
-            raise PermissionDenied'''
+        if password:
+            instance.set_password(password)
         instance.save()
         return instance
 
