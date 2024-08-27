@@ -176,7 +176,6 @@ class UsernameSerializer(serializers.Serializer):
         return username.strip()
 
 
-
 #-----------------------------------------MESSAGE DATA--------------------------------------#
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -245,55 +244,46 @@ class GameHistorySerializer(serializers.ModelSerializer):
             ret['joueur2_username'] = instance.joueur2.username
         return ret
 
-class GameHistoryCreateSerializer(serializers.ModelSerializer):
+class GameHistoryCreateSerializer(serializers.Serializer):
     joueur1_username = serializers.CharField(write_only=True)
     joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
     is_ai_opponent = serializers.BooleanField(required=False, default=False)
     ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-
-    class Meta:
-        model = GameHistory
-        fields = ('joueur1_username', 'joueur2_username', 'is_ai_opponent', 'ai_opponent_name', 'duree_partie', 'score_joueur1', 'score_joueur2')
-
-    def create(self, validated_data):
-        joueur1 = JwtUser.objects.filter(username=validated_data.pop('joueur1_username')).first()
-        if joueur1 is None:
-            return
-        joueur2_username = validated_data.pop('joueur2_username', None)
-        is_ai_opponent = validated_data.pop('is_ai_opponent', False)
-        ai_opponent_name = validated_data.pop('ai_opponent_name', None)
-
-        joueur2 = None
-        if not is_ai_opponent and joueur2_username:
-            joueur2 = JwtUser.objects.filter(username=joueur2_username).first()
-        if joueur2 is None:
-            return
-
-        return GameHistory.objects.create(
-            joueur1=joueur1,
-            joueur2=joueur2,
-            is_ai_opponent=is_ai_opponent,
-            ai_opponent_name=ai_opponent_name,
-            **validated_data
-        )
+    duree_partie = serializers.IntegerField(min_value=1)
+    score_joueur1 = serializers.IntegerField(min_value=0)
+    score_joueur2 = serializers.IntegerField(min_value=0)
 
     def validate(self, data):
-        is_ai_opponent = data.get('is_ai_opponent', False)
-        joueur2_username = data.get('joueur2_username')
-        ai_opponent_name = data.get('ai_opponent_name')
-
-        if is_ai_opponent:
-            if joueur2_username is not None:
-                raise serializers.ValidationError("joueur2_username should be None when is_ai_opponent is True")
-            if not ai_opponent_name:
-                raise serializers.ValidationError("ai_opponent_name is required when is_ai_opponent is True")
-        else:
-            if ai_opponent_name:
-                raise serializers.ValidationError("ai_opponent_name should not be provided when is_ai_opponent is False")
-            if not joueur2_username:
-                raise serializers.ValidationError("joueur2_username is required when is_ai_opponent is False")
-
+        if data.get('is_ai_opponent') and not data.get('ai_opponent_name'):
+            raise serializers.ValidationError("ai_opponent_name is required when is_ai_opponent is True")
+        if not data.get('is_ai_opponent') and not data.get('joueur2_username'):
+            raise serializers.ValidationError("joueur2_username is required when is_ai_opponent is False")
         return data
+
+    def validate_joueur1_username(self, value):
+        return self.validate_username(value, "Joueur 1")
+
+    def validate_joueur2_username(self, value):
+        if value is not None:
+            return self.validate_username(value, "Joueur 2")
+        return value
+
+    def validate_username(self, value, player):
+        value = self.sanitize_username(value)
+        if not re.match(r'^[\w.@+-]+$', value):
+            raise serializers.ValidationError(f"{player} username contains invalid characters.")
+        user = JwtUser.objects.filter(username=value).first()
+        if not user:
+            raise serializers.ValidationError(f"{player} does not exist.")
+        return value
+
+    def sanitize_username(self, username):
+        return username.strip()
+
+    def validate_ai_opponent_name(self, value):
+        if value:
+            return value.strip()[:12]  # Limit to 12 characters
+        return value
 
 class PlayerStatsSerializer(serializers.Serializer):
     total_games = serializers.IntegerField()
