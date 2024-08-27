@@ -1,4 +1,3 @@
-// /src/views/friendProfile.js
 import Component from "../library/component.js";
 import NavBar from '../components/home/navbar.js';
 import FriendMatchHistory from "../components/profile/FriendMatchHistory.js";
@@ -13,7 +12,7 @@ export default class FriendProfile extends Component {
         this.currentLang = store.state.language;
         this.components = {
             navBar: new NavBar(),
-            friendProfileInfo: null,
+			friendProfileInfo: null,
             friendMatchHistory: null,
         };
 
@@ -38,6 +37,14 @@ export default class FriendProfile extends Component {
             return;
         }
 
+		const friendData = await this.fetchFriendData();
+
+		if (!friendData) {
+            this.element.innerHTML = `<p>${langPack.errorLoadingFriendProfile}</p>`;
+            return;
+        }
+
+
         const view = /*html*/ `
             <div class="h-100 d-flex flex-column bg-custom vh-100">
                 <div class="row m-0">
@@ -56,10 +63,40 @@ export default class FriendProfile extends Component {
         this.element.innerHTML = view;
         this.components.navBar.render();
 
-        // Initialiser les composants après que les éléments sont créés dans le DOM
         this.components.friendProfileInfo = new FriendProfileInfo();
         this.components.friendMatchHistory = new FriendMatchHistory();
-        this.components.friendProfileInfo.setFriendUsername(this.friendUsername);
-        this.components.friendMatchHistory.setFriendUsername(this.friendUsername);
+
+        // Pass the data to the components
+        this.components.friendProfileInfo.setFriendData(friendData);
+        this.components.friendMatchHistory.setMatchHistory(friendData.historique);
+    }
+
+	async fetchFriendData() {
+        if (!this.friendUsername) {
+            console.error("Friend username not set");
+            return null;
+        }
+
+        try {
+            const jwt = localStorage.getItem("jwt");
+            const apiurl = process.env.API_URL;
+            const response = await fetch(`${apiurl}/get_friend_profile?username=${this.friendUsername}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch friend profile');
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Error fetching friend profile:", error);
+            return null;
+        }
     }
 }

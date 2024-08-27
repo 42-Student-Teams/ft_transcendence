@@ -12,5 +12,8 @@ export default {
 	gamesWon: 0,
 	joinTournamentNickName: "",
 	socketConnection: null,
+	currentGameData: null,
+	gameSocket: null,
+	gameRequestId: null,
 	friends: [],
 };

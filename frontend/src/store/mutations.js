@@ -70,6 +70,21 @@ function setWebSocket(state, payload) {
 	return state;
 }
 
+function setGameSocket(state, payload) {
+	state.gameSocket = payload;
+	return state;
+}
+
+function setCurrentGameData(state, payload) {
+	state.currentGameData = payload;
+	return state;
+}
+
+function setGameRequestId(state, payload) {
+	state.gameRequestId = payload;
+	return state;
+}
+
 function updateFriendStatus(state, payload) {
     if (!state.friends) {
         state.friends = [];
@@ -88,6 +103,9 @@ export default {
 	logOut,
 	setLanguage,
 	setWebSocket,
+	setGameSocket,
+	setCurrentGameData,
+	setGameRequestId,
 	updateFriendStatus,
 	setJoinTournamentNickName,
 	setUsername,

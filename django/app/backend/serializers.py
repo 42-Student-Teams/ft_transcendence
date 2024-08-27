@@ -3,17 +3,10 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django.conf import settings
 
-from .models import User, JwtUser, Message, GameHistory
-from .util import get_user_info
+from .models import JwtUser, Message, GameHistory
 
 
 #-----------------------------------------User's--------------------------------------#
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'is_admin')
-        # fields = ('content', 'created_at') # to expose arbitrary fields
-
 class JwtUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = JwtUser
@@ -32,7 +25,7 @@ class JwtUserSerializer(serializers.ModelSerializer):
                 raise PermissionDenied
             instance.username = user_info['login']
             if JwtUser.objects.filter(username=instance.username).exists():
-                return JwtUser.objects.get(username=instance.username)
+                return JwtUser.objects.filter(username=instance.username).first()
             instance.set_unusable_password()
             instance.isoauth = True
         else:
@@ -95,14 +88,18 @@ class GameHistoryCreateSerializer(serializers.ModelSerializer):
         fields = ('joueur1_username', 'joueur2_username', 'is_ai_opponent', 'ai_opponent_name', 'duree_partie', 'score_joueur1', 'score_joueur2')
 
     def create(self, validated_data):
-        joueur1 = JwtUser.objects.get(username=validated_data.pop('joueur1_username'))
+        joueur1 = JwtUser.objects.filter(username=validated_data.pop('joueur1_username')).first()
+        if joueur1 is None:
+            return
         joueur2_username = validated_data.pop('joueur2_username', None)
         is_ai_opponent = validated_data.pop('is_ai_opponent', False)
         ai_opponent_name = validated_data.pop('ai_opponent_name', None)
 
         joueur2 = None
         if not is_ai_opponent and joueur2_username:
-            joueur2 = JwtUser.objects.get(username=joueur2_username)
+            joueur2 = JwtUser.objects.filter(username=joueur2_username).first()
+        if joueur2 is None:
+            return
 
         return GameHistory.objects.create(
             joueur1=joueur1,
@@ -141,11 +138,11 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
     joueur1_username = serializers.CharField(source='joueur1.username', read_only=True)
     joueur2_username = serializers.SerializerMethodField()
     gagnant_username = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = GameHistory
-        fields = ['id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie', 
-                  'score_joueur1', 'score_joueur2', 'gagnant_username', 'is_ai_opponent', 
+        fields = ['id', 'date_partie', 'joueur1_username', 'joueur2_username', 'duree_partie',
+                  'score_joueur1', 'score_joueur2', 'gagnant_username', 'is_ai_opponent',
                   'ai_opponent_name', 'joueur1_avatar', 'joueur2_avatar']
 
     def get_joueur1_avatar(self, obj):

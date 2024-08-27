@@ -240,17 +240,20 @@ export default class Profile extends Component {
 	async renderMatchHistory() {
 		const langPack = profile[this.currentLang];
 		const matchDisplayElement = document.getElementById("match-list-display");
-		if (matchDisplayElement)
+		if (matchDisplayElement) {
 			matchDisplayElement.innerHTML = '';
-		if (this.matchHistory.length > 0) {
-			this.matchHistory.forEach((match, index) => {
-				const isLastMatch = index === this.matchHistory.length - 1;
-				const matchHtml = this.createMatch(match, isLastMatch);
-				matchDisplayElement.insertAdjacentHTML('beforeend', matchHtml);
-			});
-		} else {
-			if (matchDisplayElement)
-				matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
+			if (this.matchHistory.length > 0) {
+				this.matchHistory.forEach((match, index) => {
+					const isLastMatch = index === this.matchHistory.length - 1;
+					const matchHtml = this.createMatch(match, isLastMatch);
+					matchDisplayElement.insertAdjacentHTML('beforeend', matchHtml);
+				});
+			} else {
+				if (matchDisplayElement)
+					matchDisplayElement.innerHTML = `<p class="text-center">${langPack.noMatchesPlayed}</p>`;
+			}
+		}else{
+			console.error("Match list display element not found");
 		}
 	}
 

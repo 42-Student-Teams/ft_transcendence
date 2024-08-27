@@ -32,11 +32,11 @@ export default class FormRegister extends Component {
             </style>
             <form id="form-register" novalidate>
                 <div class="input-group mb-3">
-                    <input id="form-register-firstname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
+                    <input id="form-register-first_name" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="First Name" required>
                     <div id="error-firstname" class="invalid-feedback">Please enter your first name.</div>
                 </div>
                 <div class="input-group mb-3">
-                    <input id="form-register-lastname" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Last Name" required>
+                    <input id="form-register-last_name" type="text" class="form-control form-control-lg bg-light fs-6" placeholder="Last Name" required>
                     <div id="error-lastname" class="invalid-feedback">Please enter your last name.</div>
                 </div>
                 <div class="input-group mb-3">
@@ -59,7 +59,7 @@ export default class FormRegister extends Component {
         this.element = document.getElementById("formRegister");
         this.element.innerHTML = view;
 
-        const fields = ["firstname", "lastname", "username", "email", "password"];
+        const fields = ["first_name", "last_name", "username", "email", "password"];
         addInputEventListeners('form-register', fields);
 
         handleEvent(
@@ -67,8 +67,8 @@ export default class FormRegister extends Component {
             fields,
             (field, value) => {
                 switch (field) {
-                    case 'firstname':
-                    case 'lastname':
+                    case 'first_name':
+                    case 'last_name':
                         return value.trim() !== '';
                     case 'username':
                         return value.length >= 3;
@@ -82,7 +82,7 @@ export default class FormRegister extends Component {
             },
             async (data) => {
                 try {
-                    const apiurl = "/backend"; //process.env.API_URL;
+                    const apiurl = process.env.API_URL;
                     const response = await fetch(`${apiurl}/create_user`, {
                         method: "POST",
                         headers: {

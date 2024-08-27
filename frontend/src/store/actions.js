@@ -59,6 +59,18 @@ function setWebSocket(context, payload) {
 	context.commit("setWebSocket", payload);
 }
 
+function setGameSocket(context, payload) {
+	context.commit("setGameSocket", payload);
+}
+
+function setCurrentGameData(context, payload) {
+	context.commit("setCurrentGameData", payload);
+}
+
+function setGameRequestId(context, payload) {
+	context.commit("setGameRequestId", payload);
+}
+
 function updateFriendStatus(context, payload) {
     context.commit("updateFriendStatus", payload);
 }
@@ -77,5 +89,8 @@ export default {
 	setAvatar,
 	setGamesPlayed,
 	setGamesLossed,
-	setGamesWon
+	setGamesWon,
+	setGameSocket,
+	setCurrentGameData,
+	setGameRequestId,
 };

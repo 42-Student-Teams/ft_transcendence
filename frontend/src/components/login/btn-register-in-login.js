@@ -10,19 +10,11 @@ export default class BtnRegisterInLogin extends Component {
     async render() {
         const view = /*html*/ `
             <small>Don't have account ?
-                <a href="">Sign up</a>
+                <a href="/register" data-link>Sign up</a>
             </small>
         `;
 
         this.element = document.getElementById("btnRegisterInLogin");
         this.element.innerHTML = view;
-        this.handleEvent();
-    }
-
-    async handleEvent() {
-        this.element.querySelector("a").addEventListener("click", (event) => {
-            event.preventDefault();
-            navigateTo("/register");
-        });
     }
 }

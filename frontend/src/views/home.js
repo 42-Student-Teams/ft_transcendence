@@ -5,11 +5,12 @@ import SideChat from '../components/home/side-chat.js';
 import SideFriendList from '../components/home/side-friend-list.js';
 import SidePendingList from '../components/home/side-pending-list.js';
 import Component from "../library/component.js";
-import store from "../store/index.js";
 import { navigateTo } from "../utils/router.js";
+import store from "../store/index.js";
+import state from "../store/state.js";
 import * as bootstrap from 'bootstrap';
 import { home } from "/src/utils/langPack.js";
-import { getProfile, setProfile } from "/src/utils/profileUtils.js";
+
 
 export default class Home extends Component {
 	constructor() {
@@ -59,8 +60,16 @@ export default class Home extends Component {
                         </button>
                         <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-join-game-modal" type="button">
                             <i class="fa-solid fa-users"></i> ${langPack.joinTournament}
-                        </button>
-                    </div>
+						</button>
+						<button id="local-game-btn" class="btn btn-primary btn-game-init btn-lg" type="button">
+                            <i class="fa-solid fa-users"></i> ${langPack.localGame}
+						</button>
+					
+					<button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#local-game-modal" type="button"><i class="fa-solid fa-dice-one"></i> Create Game (J)</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" type="button" id="join-game-btn"><i class="fa-solid fa-dice-one"></i> Look for Game (J)</button>
+					  <button class="btn btn-primary btn-game-init btn-lg" data-bs-toggle="modal" data-bs-target="#tournament-game-modal" type="button"><i class="fa-solid fa-dice"></i> Tournament (J)</button>
+					
+					</div>
                 </div>
               </div>
             </div>
@@ -204,29 +213,12 @@ export default class Home extends Component {
 	}
 
 
-	async setUserProfile() {
-		const jwt = localStorage.getItem('jwt');
-		const apiurl = process.env.API_URL;
-		const response = await fetch(`${apiurl}/get_user_profile`, {
-			method: 'GET',
-			headers: {
-				'Authorization': `Bearer ${jwt}`,
-				'Content-Type': 'application/json'
-			}
-		});
-		const data = await response.json();
-		setProfile(data);
-	}
-
-
-
 	async handleEvent() {
 		const iaPlayersContainer = this.element.querySelector("#ia-players");
 		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");
 		const noAiPlayersMessage = this.element.querySelector("#no-ai-players");
 		const aiNicknames = new Set();
 
-		await this.setUserProfile();
 		const updateNoAiPlayersMessage = () => {
 			if (iaPlayersContainer.children.length === 2) { // Only the "No AI players" message
 				noAiPlayersMessage.style.display = 'block';
@@ -285,8 +277,13 @@ export default class Home extends Component {
 				const game = {
 					color: colorRadio.value,
 					speed: speed,
-					ai: ai
+					ai: ai,
+					search_for_game: false,
 				};
+				if (state.currentGameData && 'opponent_username' in state.currentGameData) {
+					game['opponent_username'] = state.currentGameData['opponent_username'];
+				}
+				store.dispatch("setCurrentGameData", game);
 				//console.log(game);
 				localStorage.setItem('local-game', JSON.stringify(game));
 				navigateTo("/local-game");
@@ -351,6 +348,20 @@ export default class Home extends Component {
 			});
 		}
 
+		//if (document.querySelector("#local-game-btn")) {
+
+		/*document.querySelector("#local-game-btn").addEventListener("click", (event) => {
+			event.preventDefault();
+			console.log('Navigating to local game');
+		});*/
+		//}
+
+		if (this.element.querySelector("#local-game-btn")) {
+			this.element.querySelector("#local-game-btn").addEventListener("click", async (event) => {
+				event.preventDefault();
+				navigateTo("/2player-local");
+			});
+		}
 		// backend interaction, essaie
 		// 	try {
 		// 		// Make a real API call to post tournament data
@@ -395,8 +406,8 @@ export default class Home extends Component {
 			this.element.querySelector("#btn-toggle-blocked").addEventListener("click", async (event) => {
 				event.preventDefault();
 
-				var sideChat = document.getElementById('side-chat');
 				var pendingList = document.getElementById('side-pending-list');
+				var sideChat = document.getElementById('side-chat');
 				var blockedList = document.getElementById('side-blocked-list');
 				var friendlist = document.getElementById('side-friend-list');
 				var btnBlocked = document.getElementById('btn-toggle-blocked');
@@ -435,12 +446,26 @@ export default class Home extends Component {
 				toggleVisibility(pendingList, btnPending, [friendlist, pendingList, sideChat, blockedList], [btnFriends, btnPending, btnBlocked]);
 			});
 		}
+		
+		if (this.element.querySelector("#join-game-btn")) {
+			this.element.querySelector("#join-game-btn").addEventListener("click", async (event) => {
+				console.log('Join game button clicked');
+				const game = {
+					color: null,
+					speed: null,
+					ai: false,
+					search_for_game: true,
+				};
+				store.dispatch("setCurrentGameData", game);
+				navigateTo("/local-game");
+			});
+		}
 	}
 
 
 	async postTournamentData(gameData) {
 		// Simulated function for posting data to the server
-		// remplacer ca avec un vrai call API voir avec leo comment faire 
+		// remplacer ca avec un vrai call API voir avec leo comment faire
 		return { status: 200 }; // Assume success
 	}
 
@@ -465,32 +490,6 @@ export default class Home extends Component {
 	//         throw error;
 	//     }
 	// }
-
-	showToast(message, type) {
-		// Bootstrap toast centered in the page
-		const toastHTML = `
-			<div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
-				<div class="toast align-items-center text-bg-${type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body">
-							${message}
-						</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-			</div>
-		`;
-		const toastContainer = document.createElement('div');
-		toastContainer.innerHTML = toastHTML;
-		document.body.appendChild(toastContainer);
-
-		const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
-		toastElement.show();
-
-		setTimeout(() => {
-			document.body.removeChild(toastContainer);
-		}, 5000);
-	}
 
 	async onStateChange() {
 		if (this.currentLang !== store.state.language) {
