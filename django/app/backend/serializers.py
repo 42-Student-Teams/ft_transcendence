@@ -1,7 +1,7 @@
 from rest_framework import serializers, status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator
+from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator,FileExtensionValidator
 from django.conf import settings
 
 from .models import JwtUser, Message, GameHistory
@@ -89,9 +89,52 @@ class UserLoginSerializer(serializers.Serializer):
         
         return data
 
+#-----------------------------------------USER'S DATA UPDATED--------------------------------------#    
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JwtUser
+        fields = ('first_name', 'last_name', 'avatar')
 
 
+class ImprovedUserProfileSerializer(UserProfileSerializer):
+    class Meta(UserProfileSerializer.Meta):
+        model = JwtUser
+        fields = ('first_name', 'last_name', 'avatar')
 
+    def validate_first_name(self, value):
+        return self.validate_name(value, field_name="First name")
+
+    def validate_last_name(self, value):
+        return self.validate_name(value, field_name="Last name")
+
+    def validate_name(self, value, field_name):
+        value = self.sanitize_name(value)
+        if not (1 <= len(value) <= 50 and re.match(r'^[\w\s-]+$', value)):
+            raise serializers.ValidationError(f"{field_name} must be between 1 and 50 characters and contain only letters, numbers, spaces, and hyphens.")
+        return value
+
+    def sanitize_name(self, name):
+        return re.sub(r'[^\w\s-]', '', name).strip()
+
+    def validate_avatar(self, avatar):
+        max_size = 1024 * 1024  # 1 MB
+        allowed_types = ['image/jpeg', 'image/png']
+        allowed_extensions = ['jpg', 'jpeg', 'png']
+
+        if avatar.size > max_size:
+            raise serializers.ValidationError('Avatar file size too large. Maximum size is 1 MB.')
+
+        if avatar.content_type not in allowed_types:
+            raise serializers.ValidationError('Invalid file type. Only JPEG and PNG are allowed.')
+
+        validator = FileExtensionValidator(allowed_extensions=allowed_extensions)
+        try:
+            validator(avatar)
+        except ValidationError:
+            raise serializers.ValidationError('Invalid file extension. Only .jpg, .jpeg, and .png are allowed.')
+
+        return avatar
 
 
 
@@ -232,7 +275,3 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
             return obj.ai_opponent_name
         return None
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JwtUser
-        fields = ('first_name', 'last_name', 'avatar')

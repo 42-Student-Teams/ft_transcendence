@@ -9,8 +9,7 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q
-#Q est spécifique à Django et fait partie de son ORM (Object-Relational Mapping).
-#combine plusieurs conditions avec des opérateurs logiques OR (|) ou AND (&).
+from django.utils.text import slugify
 
 
 import jwt
@@ -19,7 +18,7 @@ from .models import JwtUser, GameHistory, MatchRequest
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer, ImprovedUserProfileSerializer
 
 from .util import get_user_info
 
@@ -134,26 +133,25 @@ class ImprovedUpdateUserView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def put(self, request):
-        user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
+        try:
+            user = JwtUser.objects.get(username=check_jwt(request))
+        except JwtUser.DoesNotExist:
             return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserProfileSerializer(user, data=request.data)
-        if (not serializer.is_valid()):
+        serializer = ImprovedUserProfileSerializer(user, data=request.data, partial=True)
+        if not serializer.is_valid():
             return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-        max_avatar_size = 1024 * 1024  # 1MB
 
-        if 'avatar' in request.data:
-            if (request.data['avatar'].size > max_avatar_size):
-                return Response({'status': 'error', 'message': 'Avatar file size too large'}, status=status.HTTP_400_BAD_REQUEST)
-            if request.data['avatar'] != 'staticfiles/avatars/default_avatar.png':
-                #delete if not default avatar
-                if user.avatar != 'staticfiles/avatars/default_avatar.png':
-                    user.avatar.delete()
-                user.avatar = request.data['avatar']
-            else:
-                user.avatar = request.data['avatar']
-            serializer.save()
+        if 'avatar' in request.FILES:
+            avatar = request.FILES['avatar']
+            if user.avatar.name != 'staticfiles/avatars/default_avatar.png':
+                user.avatar.delete(save=False)
+            
+            file_name = self.generate_safe_filename(avatar.name)
+            avatar.name = file_name
+
+        serializer.save()
+
         return Response({
             'status': 'success',
             'message': 'Profile updated successfully',
@@ -164,6 +162,11 @@ class ImprovedUpdateUserView(APIView):
                 'avatar_url': user.avatar.url,
             }
         }, status=status.HTTP_200_OK)
+
+    def generate_safe_filename(self, filename):
+        name, ext = os.path.splitext(filename)
+        safe_name = slugify(name)
+        return f"{safe_name}{ext}"
 
 
 
