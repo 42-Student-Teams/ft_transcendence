@@ -119,7 +119,7 @@ class ImprovedUserProfileSerializer(UserProfileSerializer):
 
     def validate_avatar(self, avatar):
         max_size = 1024 * 1024  # 1 MB
-        allowed_types = ['image/jpeg', 'image/png']
+        allowed_types = ['image/jpeg', 'image/png', 'image/jpg']
         allowed_extensions = ['jpg', 'jpeg', 'png']
 
         if avatar.size > max_size:
@@ -135,6 +135,51 @@ class ImprovedUserProfileSerializer(UserProfileSerializer):
             raise serializers.ValidationError('Extension de fichier invalide. Seules les extensions .jpg, .jpeg et .png sont autorisées.')
 
         return avatar
+
+#-----------------------------------------FRIEND USERNAME DATA--------------------------------------# 
+
+class FriendUsernameSerializer(serializers.Serializer):
+    friend_username = serializers.CharField(max_length=150)
+
+    def validate_friend_username(self, value):
+        value = self.sanitize_username(value)
+        
+        if not re.match(r'^[\w.@+-]+$', value):
+            raise serializers.ValidationError("Username contains invalid characters.")
+        
+        user = JwtUser.objects.filter(username=value).first()
+        if not user:
+            raise serializers.ValidationError("The specified user does not exist.")
+        
+        return value
+
+    def sanitize_username(self, username):
+        return username.strip()
+
+
+class UsernameSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150)
+
+    def validate_username(self, value):
+        value = self.sanitize_username(value)
+        
+        if not re.match(r'^[\w.@+-]+$', value):
+            raise serializers.ValidationError("Username contains invalid characters.")
+        
+        user = JwtUser.objects.filter(username=value).first()
+        if not user:
+            raise serializers.ValidationError("The specified user does not exist.")
+        
+        return value
+
+    def sanitize_username(self, username):
+        return username.strip()
+
+
+
+
+
+
 
 
 
