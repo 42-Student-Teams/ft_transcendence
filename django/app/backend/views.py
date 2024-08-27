@@ -18,7 +18,7 @@ from .models import JwtUser, GameHistory, MatchRequest
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer, ImprovedUserProfileSerializer, FriendUsernameSerializer, UsernameSerializer
+from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer, ImprovedUserProfileSerializer, FriendUsernameSerializer, UsernameSerializer, ChatMessagesSerializer
 
 from .util import get_user_info
 
@@ -269,11 +269,7 @@ class UnblockUserView(APIView):
 
 
 ##--------------------------------------BLOCK-FRIEND-REQUEST-----------------------------------------###
-# 1.Vérification de l'authentification : Vérifie et décode le jeton JWT de l'en-tête d'autorisation.
-# 2.Validation de l'utilisateur : Vérifie que l'utilisateur extrait du jeton existe dans la base de données.
-# 3.Validation du nom d'utilisateur à bloquer : Vérifie la présence du nom d'utilisateur à bloquer dans la requête.
-# 4.Vérification des conditions de blocage : Vérifie que l'utilisateur à bloquer existe, qu'il n'est pas l'utilisateur lui-même, et qu'il est dans la liste d'amis de l'utilisateur.
-# 5.Blocage de l'utilisateur : Ajoute l'utilisateur à bloquer à la liste des utilisateurs bloqués, le retire de la liste d'amis, et retourne une réponse de succès ou d'erreur selon les résultats des vérifications.
+
 class BlockUserView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
@@ -375,31 +371,24 @@ class BlockedListView(APIView):
 class ChatGetMessagesView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
-        if user is None:
-            return Response({'status': 'error', 'message': 'Missing username'}, status=status.HTTP_400_BAD_REQUEST)
-        print(f'Serving messages to user `{user.username}`', flush=True)
+        if not user:
+            return Response({'status': 'error', 'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        message_amount = 10
-        if request.data.get('message_amount') is None:
-            return Response({
-                'status': 'Param message_amount missing',
-            }, status=status.HTTP_400_BAD_REQUEST)
-        gotten_message_amount = int(request.data.get('message_amount'))
-        # limiting to 10
-        if gotten_message_amount < message_amount:
-            message_amount = gotten_message_amount
-        if request.data.get('friend_username') is None:
-            return Response({
-                'status': 'Param friend_username missing',
-            }, status=status.HTTP_400_BAD_REQUEST)
-        friend = JwtUser.objects.filter(username=request.data.get('friend_username')).first()
-        if friend is None:
-            return Response({
-                'status': 'Friend not found',
-            }, status=status.HTTP_404_NOT_FOUND)
-        start_id = None
-        if request.data.get('start_id') is not None:
-            start_id = int(request.data.get('start_id'))
+        serializer = ChatMessagesSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        message_amount = serializer.validated_data['message_amount']
+        friend_username = serializer.validated_data['friend_username']
+        start_id = serializer.validated_data.get('start_id')
+
+        friend = JwtUser.objects.filter(username=friend_username).first()
+        if not friend:
+            return Response({'status': 'error', 'message': 'Friend not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if friend not in user.friends.all():
+            return Response({'status': 'error', 'message': 'You can only retrieve messages from your friends.'}, status=status.HTTP_403_FORBIDDEN)
+
         messages = user.get_last_x_messages_with_friend(friend, message_amount, start_id)
 
         serialized_messages = MessageSerializer(messages, many=True).data

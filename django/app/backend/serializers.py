@@ -177,12 +177,7 @@ class UsernameSerializer(serializers.Serializer):
 
 
 
-
-
-
-
-
-
+#-----------------------------------------MESSAGE DATA--------------------------------------#
 
 class MessageSerializer(serializers.ModelSerializer):
     author_username = serializers.CharField(source='author.username', read_only=True)
@@ -191,6 +186,28 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = ('id', 'author_username', 'recipient_username', 'content', 'timestamp')
+
+
+class ChatMessagesSerializer(serializers.Serializer):
+    message_amount = serializers.IntegerField(min_value=1, max_value=100)
+    friend_username = serializers.CharField(max_length=150)
+    start_id = serializers.IntegerField(required=False, allow_null=True)
+
+    def validate_friend_username(self, value):
+        value = self.sanitize_username(value)
+        
+        if not re.match(r'^[\w.@+-]+$', value):
+            raise serializers.ValidationError("Username contains invalid characters.")
+        
+        user = JwtUser.objects.filter(username=value).first()
+        if not user:
+            raise serializers.ValidationError("The specified user does not exist.")
+        
+        return value
+
+    def sanitize_username(self, username):
+        return username.strip()
+
 
 #-----------------------------------------Game History--------------------------------------#
 
