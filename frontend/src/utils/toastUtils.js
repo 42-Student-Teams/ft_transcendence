@@ -2,6 +2,7 @@ import * as bootstrap from 'bootstrap';
 import {home} from "./langPack.js";
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
+import store from "..//store/index.js";
 
 export function showToast(message, type) {
     if (typeof bootstrap === 'undefined') {
@@ -44,6 +45,8 @@ export function showTournamentInvite(match_key, tournament_id) {
         return;
     }
 
+	const langPack = toast[store.state.language];
+
     // Définir l'icône et les classes Bootstrap en fonction du type de toast
     const iconHTML = '<i class="fas fa-gamepad text-success me-2"></i>';
 
@@ -52,11 +55,11 @@ export function showTournamentInvite(match_key, tournament_id) {
             <div data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        ${iconHTML}<span>Tournament match ready!</span>
+                        ${iconHTML}<span>${langpack.tournamentReady}</span>
                     </div>
                     <!--<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>-->
-                    <button onclick="document.acceptInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">Accept</button>
-                    <button onclick="document.rejectInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">Quit Tournament</button>
+                    <button onclick="document.acceptInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langpack.accept}</button>
+                    <button onclick="document.rejectInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langpack.quitTournament}</button>
                 </div>
             </div>
         </div>

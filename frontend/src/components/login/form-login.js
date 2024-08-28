@@ -87,12 +87,13 @@ export default class FormLogin extends Component {
                     console.log(store.state.socket);
                     navigateTo("/");
                 } else {
-                    console.error("Login failed:");
-                    showError('login', 'username'); // Optionally show general error
-                    throw new Error("Login failed: Invalid username or password.");
+					showError('login', 'username'); // Optionally show general error
+                    //console.error("Login failed:");
+                    //throw new Error("Login failed: Invalid username or password.");
                 }
             } catch (error) {
-                console.error("An error occurred:", error);
+				showError('login', 'username'); // Optionally show general error
+                //console.error("An error occurred:", error);
             }
         });
     }

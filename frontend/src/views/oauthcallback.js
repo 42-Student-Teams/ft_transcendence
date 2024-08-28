@@ -4,6 +4,7 @@ import store from "../store/index.js";
 import {navigateTo} from "../utils/router.js";
 
 async function getAccessToken(code) {
+	console.log('getAccessToken');
     const url = process.env.TOKEN_URL;
     const params = {
         grant_type: 'authorization_code',
@@ -36,6 +37,7 @@ async function getAccessToken(code) {
 export default class OauthCallback extends Component {
     constructor() {
         super({ element: document.getElementById("app") });
+		console.log('OauthCallback constructor');
 
         // store.events.subscribe("languageIdChange", () => this.renderAll());
 
@@ -59,6 +61,7 @@ export default class OauthCallback extends Component {
     async handleEvent() {
         const urlParams = new URLSearchParams(window.location.search);
         const state = urlParams.get('state');
+		console.log('handleEvent sessionstorage');
         document.getElementById('state').innerText = `State: ${state}`;
         const storedStateData = JSON.parse(sessionStorage.getItem('oauth_state'));
         document.getElementById('statemessage').innerText = 'Invalid state parameter.';
@@ -83,6 +86,7 @@ export default class OauthCallback extends Component {
                 // TODO: if logged in, also need jwt token
                 if ('jwt' in regStatus) {
                     document.getElementById('statemessage').innerText = 'Logged in';
+					localStorage.setItem('jwt', regStatus['jwt']);
                     navigateTo("/");
                 } else {
                     document.getElementById('statemessage').innerText = 'Error';

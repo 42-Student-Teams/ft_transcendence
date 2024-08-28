@@ -40,6 +40,7 @@ async function loginOauth(oauth_token) {
 
         //return (response);
         const result = await response.json();
+		localStorage.setItem("jwt", result.jwt);
         return result;
     } catch (error) {
         console.error("An error occurred:", error);
