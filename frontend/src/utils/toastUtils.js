@@ -57,7 +57,7 @@ export function showTournamentInvite(match_key, tournament_id) {
                         ${iconHTML}<span>${langPack.tournamentMatchReady}</span>
                     </div>
                     <!--<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>-->
-                    <button onclick="document.acceptInvite()F" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.accept}</button>
+                    <button onclick="document.acceptInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.accept}</button>
                     <button onclick="document.rejectInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.quitTournament}</button>
                 </div>
             </div>

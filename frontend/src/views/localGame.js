@@ -5,7 +5,7 @@ import { wsSend } from "../utils/wsUtils.js";
 import * as bootstrap from 'bootstrap';
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
-import { game } from "../utils/langPack.js";
+import { game, home } from "../utils/langPack.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -165,6 +165,8 @@ export default class LocalGame extends Component {
 	}
 
 	async handleEvent(view, element) {
+
+
 		window.startGame = this.startGame;
 		window.gameHtml = view;
 		window.thisElement = element;
@@ -185,18 +187,7 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
-		const lang = localStorage.getItem('language');
-		var langPackYou = "";
-
-		if (lang) {
-			if (lang === 'en') {
-				langPackYou = 'You';
-			} else if (lang === 'fr') {
-				langPackYou = 'Vous';
-			} else if (lang === 'es') {
-				langPackYou = 'Tú';
-			}
-		}
+		const langPack = game[store.state.language];
 
 		console.log(`Starting game with obj_:`);
 		console.log(obj_);
@@ -242,7 +233,7 @@ export default class LocalGame extends Component {
 		const listenedToKeys = [87, 83, 38, 40];
 
 		if (window.gameState.author_username === window.gameState.currentUsername) {
-			document.getElementById('left_player').innerText = langPackYou;
+			document.getElementById('left_player').innerText = langPack.you;
 			document.getElementById('right_player').innerText = obj_.opponent_username;
 			if (obj_.opponent_nickname) {
 				document.getElementById('right_player').innerText = obj_.opponent_nickname;
@@ -252,7 +243,7 @@ export default class LocalGame extends Component {
 			if (obj_.author_nickname) {
 				document.getElementById('left_player').innerText = obj_.author_nickname;
 			}
-			document.getElementById('right_player').innerText = langPackYou;
+			document.getElementById('right_player').innerText = langPack.you;
 		}
 
 		console.log('Gameoptions', obj_);
