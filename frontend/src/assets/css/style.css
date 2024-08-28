@@ -483,6 +483,32 @@ canvas {
 
 /* -- modal tournament bracket -- */
 
+.bracket {
+    background-color: #212529; /* Dark background */
+    padding: 20px;
+    border-radius: 8px;
+    color: white;
+}
+
+.bracket .round {
+    margin-bottom: 20px;
+}
+
+.bracket .match {
+    padding: 10px;
+    background-color: #343a40;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
+.bracket .match div {
+    color: white;
+}
+
+.match.winner {
+    background-color: #28a745;
+}
+
 .tournament-bracket {
 	display: flex;
 	justify-content: center;
