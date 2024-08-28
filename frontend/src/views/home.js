@@ -211,22 +211,6 @@ export default class Home extends Component {
 			</div>
 		</div>
 	</div>
-
-
-	<div id="tester" class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
-       	    <div data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-       	        <div class="d-flex">
-       	            <div class="toast-body text-center">
-       	                <i class="fas fa-gamepad text-success me-1"></i>
-						<span>Match Tournament Ready</span>
-       	            </div>
-					<div class="d-flex bg-secondary gap-2">
-						<button onclick="" type="button" class="btn btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">Accept</button>
-        	            <button onclick="" type="button" class="btn btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">Reject</button>
-					</div>
-        	    </div>
-        	</div>
-    </div>
         `;
 		this.element.innerHTML = view;
 		this.handleEvent();
@@ -234,11 +218,6 @@ export default class Home extends Component {
 
 
 	async handleEvent() {
-		// testing the toast
-		const toastContainer = document.getElementById('tester');
-		const toastElemente = new bootstrap.Toast(toastContainer.querySelector('.toast'));
-		toastElemente.show();
-
 		const langPack = home[this.currentLang];
 		const iaPlayersContainer = this.element.querySelector("#ia-players");
 		const btnAddAiPlayer = this.element.querySelector("#btn-add-ai-player");

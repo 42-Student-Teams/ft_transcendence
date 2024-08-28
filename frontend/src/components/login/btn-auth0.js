@@ -25,6 +25,7 @@ export default class Login extends Component {
 		this.element.querySelector("button").addEventListener("click", () => {
 			const { state, expirationTime } = generateRandomState();
         	sessionStorage.setItem('oauth_state', JSON.stringify({ state, expirationTime }));
+			
 			open(`${process.env.AUTHORIZATION_URL}?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&state=${state}&response_type=code`, "_self");
 		});
 	}

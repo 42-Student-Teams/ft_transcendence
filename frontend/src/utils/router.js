@@ -18,7 +18,7 @@ const routes = [
 	{ path: "/register", view: Register },
 	{ path: "/tournament-game", view: Tournament },
 	{ path: "/local-game", view: Local },
-	{path : "/2player-local", view: TwoPlayerLocalGame},
+	{ path : "/2player-local", view: TwoPlayerLocalGame},
 	{ path: "/profile", view: Profile },
 	{ path: "/oauthcallback", view: OauthCallback },
 	{ path: "/settings", view: Settings },

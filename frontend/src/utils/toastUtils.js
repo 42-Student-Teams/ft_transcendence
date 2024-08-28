@@ -47,18 +47,24 @@ export function showTournamentInvite(match_key, tournament_id) {
 	const langPack = toast[store.state.language];
 
     // Définir l'icône et les classes Bootstrap en fonction du type de toast
-    const iconHTML = '<i class="fas fa-gamepad text-success me-2"></i>';
+    const iconHTML = '<i class="fas fa-gamepad icon-tournament-ready icon-tournament-notification me-1"></i>';
 
     const toastHTML = `
         <div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
-            <div data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${iconHTML}<span>${langPack.tournamentMatchReady}</span>
-                    </div>
-                    <!--<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>-->
-                    <button onclick="document.acceptInvite()" type="button" class="btn btn-primary m-auto pr-2" data-bs-dismiss="toast" aria-label="Close">${langPack.accept}</button>
-                    <button onclick="document.rejectInvite()" type="button" class="btn btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.quitTournament}</button>
+            <div id="toast-tournament-ready-notification" data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="container-fluid">
+					<div class="toast-body text-center mb-2 pt-4">
+						<div class="pb-3">
+                        	${iconHTML}
+						</div>
+						<div>
+							<span class="center fs-5">${langPack.tournamentMatchReady}</span>
+						</div>
+					</div>
+					<div class="d-flex justify-content-center gap-3 a pb-4">
+                    	<button onclick="document.acceptInvite()" type="button" class="btn btn-success btn-md" data-bs-dismiss="toast" aria-label="Close">${langPack.accept}</button>
+                    	<button onclick="document.rejectInvite()" type="button" class="btn btn-primary btn-md" data-bs-dismiss="toast" aria-label="Close">${langPack.quitTournament}</button>
+					</div>
                 </div>
             </div>
         </div>
