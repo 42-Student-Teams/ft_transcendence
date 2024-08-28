@@ -1,6 +1,7 @@
 export const home = {
 	en: {
 		title: "Home",
+		userAlreadyHasTournament: "You already have a tournament in progress. Please finish it before creating a new one.",
 		aiMaxPlayers: "Maximum number of AI players reached.",
 		lookForGame: "Look for a Game",
 		createTournament: "Create Tournament",
@@ -46,6 +47,7 @@ export const home = {
 		cancel: "Cancel",
 		play: "Play",
 		next: "Next",
+		badNicknameTournament: "Bad nickname for the tournament",
 		aiNicknameCannotBeEmpty: "AI nickname cannot be empty.",
 		aiNicknameAlreadyUsed: "This AI nickname is already used. Please choose another one.",
 		invalidNicknameInput: "Invalid input: Nickname cannot be the same as AI nicknames.",
@@ -95,6 +97,8 @@ export const home = {
 	},
 	fr: {
 		title: "Accueil",
+		badNicknameTournament:"Mauvais pseudo pour le tournoi",
+		userAlreadyHasTournament: "Vous avez déjà un tournoi en cours. Veuillez le terminer avant d'en créer un nouveau.",
 		aiMaxPlayers: "Nombre maximum de joueurs IA atteint.",
 		lookForGame: "Rechercher un Jeu",
 		createGame: "Créer un Jeu",
@@ -190,7 +194,9 @@ export const home = {
 	},
 	es: {
 		title: "Inicio",
+		userAlreadyHasTournament: "Ya tienes un torneo en curso. Por favor, termínalo antes de crear uno nuevo.",
 		aiMaxPlayers: "Se ha alcanzado el número máximo de jugadores IA.",
+		badNicknameTournament:"Mal apodo para el torneo",
 		lookForGame: "Buscar un Juego",
 		createGame: "Crear Juego",
 		createTournament: "Crear Torneo",
@@ -404,7 +410,7 @@ export const toast = {
 		quitTournament: "Quitter le tournoi",
 	},
 	es: {
-		tournamentMatchReady: "¡Partido de torneo listo!",
+		tournamentMatchReady: "Partido de torneo listo!",
 		accept: "Aceptar",
 		quitTournament: "Salir del torneo",
 	}

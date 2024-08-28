@@ -1,5 +1,5 @@
 import * as bootstrap from 'bootstrap';
-import {home} from "./langPack.js";
+import {home, toast} from "./langPack.js";
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
 
@@ -54,11 +54,11 @@ export function showTournamentInvite(match_key, tournament_id) {
             <div data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
-                        ${iconHTML}<span>${langpack.tournamentReady}</span>
+                        ${iconHTML}<span>${langPack.tournamentMatchReady}</span>
                     </div>
                     <!--<button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>-->
-                    <button onclick="document.acceptInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langpack.accept}</button>
-                    <button onclick="document.rejectInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langpack.quitTournament}</button>
+                    <button onclick="document.acceptInvite()F" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.accept}</button>
+                    <button onclick="document.rejectInvite()" type="button" class="btn-primary m-auto" data-bs-dismiss="toast" aria-label="Close">${langPack.quitTournament}</button>
                 </div>
             </div>
         </div>

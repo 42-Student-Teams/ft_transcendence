@@ -30,9 +30,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
 	if (!store.state.isLoggedIn) {
-		try {
-			await authStatus();
-		} catch (error) {
+		const res = await authStatus();
+		if (!res) {
 			navigateTo("/login");
 			return;
 		}
@@ -92,11 +91,13 @@ async function authStatus() {
 			store.dispatch("logIn");
 			await setUserProfile();
 			navigateTo("/");
+			return true;
 		} else {
-			return ;
+			return false;
 		}
 	} catch (error) {
 		console.error('Error fetching auth status:', error);
+		return false;
 	}
 }
 

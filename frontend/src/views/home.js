@@ -333,12 +333,22 @@ export default class Home extends Component {
 
 				try {
 					const response = await this.postTournamentData(game);
-					console.log(response);
-					if (response.status !== 200) throw new Error("Backend error");
-
+					//clear all the ai players
+					iaPlayersContainer.innerHTML = "";
+					aiNicknames.clear();
+					updateNoAiPlayersMessage();
+					document.getElementById('input-nickname').value = "";
+					if (response.status !== 200) {
+						const errorData = await response.json();
+						throw new Error(`${errorData.message}`);
+					}
 					//navigateTo("/tournament-game");
 				} catch (error) {
-					showToast(`${langPack.serverError}`, "danger");
+					console.log(error.message);
+					if (error.message === "User already has a tournament")
+						showToast(`${langPack.userAlreadyHasTournament}`, "danger");
+					else
+						showToast(`${langPack.serverError}`, "danger");
 				}
 			});
 		}
@@ -362,11 +372,21 @@ export default class Home extends Component {
 				try {
 					const response = await this.postJoinTournament(data);
 					console.log(response);
-					if (response.status !== 200) throw new Error("Backend error");
+					if (response.status !== 200)
+					{
+						const errorData = await response.json();
+						throw new Error(`${errorData.message}`);
+					}
 
 					//navigateTo("/tournament-game");
 				} catch (error) {
-					showToast(`${langPack.serverError}`, "danger");
+					console.log(error.message);
+					if (error.message === "Bad nickname")
+						showToast(`${langPack.badNicknameTournament}`, "danger");
+					else if (error.message === "User already has a tournament")
+						showToast(`${langPack.userAlreadyHasTournament}`, "danger");
+					else
+						showToast(`${langPack.serverError}`, "danger");
 				}
 			});
 		}
@@ -489,40 +509,40 @@ export default class Home extends Component {
 	async postTournamentData(gameData) {
 		const langPack = home[store.state.language];
 		try {
-		  const jwt = localStorage.getItem('jwt');
-		  const apiurl = process.env.API_URL;
-		  const response = await fetch(`${apiurl}/create_tournament`, {
-			method: 'POST',
-			headers: {
-			  'Authorization': `Bearer ${jwt}`,
-			  'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(gameData)
-		  });
-		  return (response);
+			const jwt = localStorage.getItem('jwt');
+			const apiurl = process.env.API_URL;
+			const response = await fetch(`${apiurl}/create_tournament`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${jwt}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(gameData)
+			});
+			return (response);
 		} catch (error) {
-		  showToast(langPack.serverError, "danger");
-		  console.error(`Error:`, error);
+			showToast(langPack.serverError, "danger");
+			console.error(`Error:`, error);
 		}
 	}
 
 	async postJoinTournament(gameData) {
 		const langPack = home[store.state.language];
 		try {
-		  const jwt = localStorage.getItem('jwt');
-		  const apiurl = process.env.API_URL;
-		  const response = await fetch(`${apiurl}/join_tournament`, {
-			method: 'POST',
-			headers: {
-			  'Authorization': `Bearer ${jwt}`,
-			  'Content-Type': 'application/json'
-			},
-			body: JSON.stringify(gameData)
-		  });
-		  return (response);
+			const jwt = localStorage.getItem('jwt');
+			const apiurl = process.env.API_URL;
+			const response = await fetch(`${apiurl}/join_tournament`, {
+				method: 'POST',
+				headers: {
+					'Authorization': `Bearer ${jwt}`,
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(gameData)
+			});
+			return (response);
 		} catch (error) {
-		  showToast(langPack.serverError, "danger");
-		  console.error(`Error:`, error);
+			showToast(langPack.serverError, "danger");
+			console.error(`Error:`, error);
 		}
 	}
 
