@@ -6,7 +6,7 @@ import * as bootstrap from 'bootstrap';
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
-import ModalTournamentBracket from "../components/tournament/bracketModal.js";
+//import ModalTournamentBracket from "../components/tournament/bracketModal.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -89,17 +89,16 @@ function updateFromSocket(msg_obj) {
 export default class LocalGame extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
-        this.currentLang = store.state.language;
-		this.components = {
-			modalTournamentBracket: new ModalTournamentBracket(),
-		};
-
+		this.currentLang = store.state.language;
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
 		this.render();
 	}
 
 	async render() {
+
+	
+
 		const langPack = game[this.currentLang];
 		const tournament = {
 			p1: 'Player 1',
@@ -173,7 +172,7 @@ export default class LocalGame extends Component {
 					</div>
 				</div>
 			</div>
-			<div class="modal" id="modalTournamentBracket" tabindex="-1">
+			<div class="modal fade" id="modalTournamentBracket" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
@@ -209,7 +208,7 @@ export default class LocalGame extends Component {
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
 						</div>
 					</div>
 				</div>
@@ -229,6 +228,7 @@ export default class LocalGame extends Component {
 	async handleEvent(view, element) {
 
 
+		
 		window.startGame = this.startGame;
 		window.gameHtml = view;
 		window.thisElement = element;
@@ -249,12 +249,17 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
+
+
+		window.startGame = this.startGame;
 		const langPack = game[store.state.language];
 
 		console.log(`Starting game with obj_:`);
 		console.log(obj_);
 		wsSend('client_update', { 'update': 'lol' }, state.gameSocket);
 		window.thisElement.innerHTML = window.gameHtml;
+
+		
 
 		if (document.getElementById("back-to-home")) {
 			document.getElementById("back-to-home").addEventListener("click", (event) => {
@@ -287,7 +292,7 @@ export default class LocalGame extends Component {
 			startTime: Date.now(),
 			endTime: 0,
 			lookTime: 0,
-			myModal: new bootstrap.Modal(document.getElementById('exampleModal'), {keyboard: true}),
+			myModal: new bootstrap.Modal(document.getElementById('exampleModal'), { keyboard: true }),
 			bigpad: null,
 		};
 
@@ -374,6 +379,7 @@ export default class LocalGame extends Component {
 		canvas.style.backgroundColor = '#9c9c9e';
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
+		//const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
 
 		const config = {
 			canvasWidth: 900,
@@ -436,7 +442,7 @@ export default class LocalGame extends Component {
 				}
 				if (document.getElementById('Time')) {
 					document.getElementById('Time').innerText =
-					`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+						`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 				}
 			}
 			else if (window.gameState) {
@@ -519,6 +525,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
+			//myModal.show();
 			updateTimer();
 			window.requestAnimationFrame(animate);
 		}

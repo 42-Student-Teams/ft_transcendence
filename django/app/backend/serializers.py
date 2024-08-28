@@ -15,14 +15,14 @@ class JwtUserSerializer(serializers.ModelSerializer):
         validators=[
             RegexValidator(
                 regex='^[a-zA-Z0-9_]+$',
-                message='Le nom d\'utilisateur ne peut contenir que des lettres, des chiffres et des underscores.'
+                message='The username can only contain letters, numbers, and underscores.'
             )
         ]
     )
     first_name = serializers.CharField(max_length=12, required=True)
     last_name = serializers.CharField(max_length=12, required=True)
     email = serializers.EmailField(
-        validators=[EmailValidator(message="Entrez une adresse email valide.")],
+        validators=[EmailValidator(message="Please enter a valid email address.")],
         required=True
     )
 
@@ -35,16 +35,16 @@ class JwtUserSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if JwtUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Un utilisateur avec ce nom d'utilisateur existe déjà.")
+            raise serializers.ValidationError("A user with this username already exists.")
         return value
 
     def validate_name_field(self, value, field_name):
         if not value.strip():
-            raise serializers.ValidationError(f"Le {field_name} ne peut pas être vide.")
+            raise serializers.ValidationError(f"The {field_name} cannot be empty.")
         if value.isdigit():
-            raise serializers.ValidationError(f"Le {field_name} ne peut pas contenir uniquement des chiffres.")
+            raise serializers.ValidationError(f"The {field_name} cannot contain only numbers.")
         if not re.match(r'^[a-zA-Z0-9]+$', value):
-            raise serializers.ValidationError(f"Le {field_name} ne peut contenir que des lettres et des chiffres.")
+            raise serializers.ValidationError(f"The {field_name} can only contain letters and numbers.")
         return value
 
     def validate_first_name(self, value):
@@ -55,7 +55,7 @@ class JwtUserSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         if JwtUser.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Cette adresse email est déjà utilisée.")
+            raise serializers.ValidationError("This email address is already in use.")
         return value
 
     def create(self, validated_data):
@@ -73,8 +73,8 @@ class UserLoginSerializer(serializers.Serializer):
         validators=[
             RegexValidator(
                 regex='^[a-zA-Z0-9_]+$',
-                message='Le nom d\'utilisateur doit être alphanumérique ou contenir des underscores',
-                code='nom_utilisateur_invalide'
+                message='The username must be alphanumeric or contain underscores',
+                code='invalid_username'
             ),
         ]
     )
@@ -85,7 +85,7 @@ class UserLoginSerializer(serializers.Serializer):
         password = data.get('password')
         
         if not username or not password:
-            raise serializers.ValidationError("Le nom d'utilisateur et le mot de passe sont requis.")
+            raise serializers.ValidationError("Username and password are required.")
         
         return data
 
@@ -249,7 +249,7 @@ class GameHistoryCreateSerializer(serializers.Serializer):
     joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
     is_ai_opponent = serializers.BooleanField(required=False, default=False)
     ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    duree_partie = serializers.IntegerField(min_value=1)
+    duree_partie = serializers.IntegerField(min_value=1, max_value=2147483647) 
     score_joueur1 = serializers.IntegerField(min_value=0)
     score_joueur2 = serializers.IntegerField(min_value=0)
 
