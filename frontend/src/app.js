@@ -110,8 +110,6 @@ function handleDefaultRoute() {
 		openCommWebsocket();
 		if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
 			navigateTo("/");
-		} else if (!store.state.joinNickname && ["/join-tournament"].includes(window.location.pathname)) {
-			navigateTo("/");
 		}
 		else {
 			router();
