@@ -25,10 +25,8 @@ class GameConsumer(WsConsumerCommon):
         self.tournament_id = None
         self.author_nickname = None
         self.opponent_nickname = None
-        #self.opponent_disconnected_first = False
         self.voluntary_disconnect: bool = False
         self.received_over = False
-
 
     def get_acknowledgement_by_key(self, key):
         try:
@@ -39,7 +37,7 @@ class GameConsumer(WsConsumerCommon):
 
     def get_request_author_username(self, acknowledgement):
         return acknowledgement.request_author.username
- 
+
     def delete_acknowledgement_by_key(self, key):
         AcknowledgedMatchRequest.objects.filter(match_key=key).delete()
 
@@ -56,7 +54,7 @@ class GameConsumer(WsConsumerCommon):
         if msg_obj.get('match_key') is None:
             await self.close()
             return
-        
+
         self.start_time = timezone.now()
         acknowledgement_row: AcknowledgedMatchRequest = await database_sync_to_async(self.get_acknowledgement_by_key)(msg_obj.get('match_key'))
         acknowledgement = await database_sync_to_async(self.create_acknowledgement_safe_copy)(acknowledgement_row)
@@ -137,7 +135,6 @@ class GameConsumer(WsConsumerCommon):
             else:
                 await self.send_channel(self.author_channel, 'player_disconnect', {'who': self.user_username})
 
-
     @register_ws_func
     async def ping(self, msg_obj):
         try:
@@ -148,13 +145,9 @@ class GameConsumer(WsConsumerCommon):
     @register_ws_func
     def join(self, msg_obj):
         pass
-        # very important, this has to be used to join a game initiated by another user
-        # a game will have its channel as an alphanum ID, which will be sent to the joinee via comm
-        # wrong key and you're not allowed in
 
     @register_ws_func
     async def client_update(self, msg_obj):
-        #print(f'Game consumer: got update from user: {msg_obj}, sending to channel {self.controller_channel}', flush=True)
         msg_obj['username'] = self.user.username
         if self.game_controller is not None:
             await self.game_controller.client_update_relay(msg_obj)
@@ -166,8 +159,6 @@ class GameConsumer(WsConsumerCommon):
             return
         if self.opponent.username == self.user.username:
             return
-        #print(f'Game consumer: got update from opponent: {msg_obj}', flush=True)
-        # Yes, it's a nested msg_obj...
         if msg_obj.get('msg_obj') is None:
             return
         await self.game_controller.client_update_relay(msg_obj.get('msg_obj'))
@@ -217,8 +208,6 @@ class GameConsumer(WsConsumerCommon):
         self.voluntary_disconnect = True
         await self.disconnect(0)
 
-
-    # This is handled by the author socket. This is sent only if the disconnect was involuntary
     async def player_disconnect(self, event):
         print(f'({self.user_username}) Received Player disconnect', flush=True)
         if self.game_controller is None:
@@ -267,18 +256,18 @@ class GameConsumer(WsConsumerCommon):
 
     async def user_won(self, who):
         print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
-        
+
         # Déterminer le joueur1 et joueur2 (joueur1 est toujours l'auteur de la partie)
         joueur1 = self.user
         joueur2 = self.opponent if not self.is_bot else None
-        
+
         # Calculer la durée de la partie (vous devrez peut-être ajouter un attribut pour suivre le temps de début)
         duration = int((timezone.now() - self.start_time).total_seconds())
-        
+
         # Déterminer les scores
         score_joueur1 = self.game_controller.author_score
         score_joueur2 = self.game_controller.opponent_score
-        
+
         # Déterminer le nom de l'adversaire IA si applicable
         ai_opponent_name = None
         if self.is_bot:
@@ -317,3 +306,5 @@ class GameConsumer(WsConsumerCommon):
                                     {"localization": f"%youWonGame%", "target_user": self.opponent.username})
             await self.send_channel(self.user.username, 'toast',
                                     {"localization": f"%youLostGame%", "target_user": self.user.username})
+
+  
