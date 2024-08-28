@@ -577,7 +577,7 @@ class CreateTournamentView(APIView):
             if request.data.get(prop) is None:
                 return Response({'status': 'error', 'message': f'Missing parameter {prop}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        all_participants_count = 2 #settings.MAX_TOURNAMENT_PLAYERS #parse_to_int(request.data.get('all_participants_count'))
+        all_participants_count = settings.MAX_TOURNAMENT_PLAYERS #parse_to_int(request.data.get('all_participants_count'))
         #if all_participants_count < 0 or all_participants_count > settings.MAX_TOURNAMENT_PLAYERS:
         #    return Response({'status': 'error', 'message': 'Wrong all_participants_count param'}, status=status.HTTP_400_BAD_REQUEST)
         

@@ -228,8 +228,14 @@ export default class LocalGame extends Component {
 		if (window.gameState.author_username === window.gameState.currentUsername) {
 			document.getElementById('left_player').innerText = 'You';
 			document.getElementById('right_player').innerText = obj_.opponent_username;
+			if (obj_.opponent_nickname) {
+				document.getElementById('right_player').innerText = obj_.opponent_nickname;
+			}
 		} else {
 			document.getElementById('left_player').innerText = obj_.author_username;
+			if (obj_.author_nickname) {
+				document.getElementById('left_player').innerText = obj_.author_nickname;
+			}
 			document.getElementById('right_player').innerText = 'You';
 		}
 

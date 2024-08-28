@@ -241,6 +241,32 @@ class TournamentSearchQueue(models.Model):
         return res
 
 
+class TournamentPvPQueue(models.Model):
+    user = models.OneToOneField(JwtUser, on_delete=models.CASCADE, related_name='tournament_pvp_queue')
+    match_key = models.CharField(max_length=255)
+
+    @classmethod
+    def add_user_to_queue(cls, user, match_key):
+        # Add the user to the queue if not already in it
+        if not cls.objects.filter(user=user).exists():
+            cls.objects.create(user=user, match_key=match_key)
+
+    @classmethod
+    def remove_user_from_queue(cls, user):
+        # Remove the user from the queue if they are in it
+        cls.objects.filter(user=user).delete()
+
+    @classmethod
+    def is_user_in_queue(cls, user):
+        # Check if the user is already in the queue
+        return cls.objects.filter(user=user).exists()
+
+    @classmethod
+    def get_user_by_key(cls, match_key):
+        # Get up to x users from the queue
+        return cls.objects.filter(match_key=match_key)
+
+
 class Tournament(models.Model):
     op_lock = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
@@ -381,7 +407,7 @@ class Tournament(models.Model):
                     target_user=real_user2_obj,
                     ball_color=self.ball_color,
                     fast=self.fast,
-                    is_bot=True,
+                    is_bot=False,
                     match_key=random_alphanum(10),
                     tournament_id=self.id,
                     opponent_nickname=user2,

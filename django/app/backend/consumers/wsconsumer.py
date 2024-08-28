@@ -1,4 +1,5 @@
-from backend.models import JwtUser, Message, MatchRequest, AcknowledgedMatchRequest, GameSearchQueue
+from backend.models import (JwtUser, Message, MatchRequest, AcknowledgedMatchRequest, GameSearchQueue,
+                            TournamentPvPQueue, TournamentSearchQueue)
 from backend.util import timestamp_now, random_alphanum, AnonClass
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
@@ -14,6 +15,8 @@ class WsConsumer(WsConsumerCommon):
         MatchRequest.objects.filter(request_author=self.user).delete()
         AcknowledgedMatchRequest.objects.filter(request_author=self.user).delete()
         GameSearchQueue.objects.filter(user=self.user).delete()
+        TournamentPvPQueue.objects.filter(user=self.user).delete()
+        TournamentSearchQueue.objects.filter(user=self.user).delete()
 
     async def on_auth(self, msg_obj):
         await self.subscribe_to_groups()
@@ -223,8 +226,18 @@ class WsConsumer(WsConsumerCommon):
         return AcknowledgedMatchRequest.objects.filter(match_key=key).first()
 
     @staticmethod
-    def acknowledgement_to_key(acknowledgement: AcknowledgedMatchRequest):
-        return acknowledgement.match_key
+    def handle_acknowledgement(acknowledgement: AcknowledgedMatchRequest, user):
+        key = acknowledgement.match_key
+        print(f'Key: {key}', flush=True)
+        waiting: TournamentPvPQueue = TournamentPvPQueue.objects.filter(match_key=key).first()
+        if waiting is None:
+            print('waiting is None', flush=True)
+            TournamentPvPQueue.add_user_to_queue(user, key)
+        else:
+            username = waiting.user.username
+            waiting.delete()
+            return [key, username]
+        return [None, None]
 
     # 2) server gets game request and replies to it with either a match_request_id
     #    or an acknowledgement (game start), in the case of game against AI
@@ -236,8 +249,14 @@ class WsConsumer(WsConsumerCommon):
             acknowledgement = await database_sync_to_async(self.acknowledgement_by_key)(msg_obj.get("match_key"))
             if acknowledgement is None:
                 return
-            key = await database_sync_to_async(self.acknowledgement_to_key)(acknowledgement)
-            await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
+            key, waiting_username = await database_sync_to_async(self.handle_acknowledgement)(acknowledgement, self.user)
+            print(key, waiting_username, flush=True)
+            if key is not None:
+                print('!! sending game_acknowledgements', flush=True)
+                await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
+                await self.send_channel(waiting_username, 'relay_game_acknowledgement',
+                                        {'match_key': key,
+                                         'target_user': waiting_username})
 
         if msg_obj.get('search_for_game') is not None and msg_obj.get('search_for_game') == True:
             request = None
