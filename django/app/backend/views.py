@@ -61,7 +61,7 @@ class UserOauthLoginView(APIView):
             oauth_token = request.data['oauth_token']
         if oauth_token is not None:
             user_info = get_user_info(oauth_token)
-            print(user_info, flush=True)
+            #print(user_info, flush=True)
             if user_info is not None:
                 username = user_info['login']
             else:

@@ -1,5 +1,5 @@
 import Component from "../../library/component.js";
-import {chatInsertMessage, fetchChatHistory} from "../../utils/chatUtils.js";
+import {insertNewMessage, fetchChatHistory} from "../../utils/chatUtils.js";
 import {wsSend} from "../../utils/wsUtils.js";
 import { home } from "../../utils/langPack.js";
 import store from "../../store/index.js";
@@ -103,7 +103,8 @@ export default class SideChat extends Component {
             if (!override_message) {
                 document.getElementById("message-input").value = '';
             }
-            chatInsertMessage(langPack.you, msg);
+            //chatInsertMessage(langPack.you, msg);
+            insertNewMessage(msg, langPack.you);
         }
 
         window.sendInvite = () => {

@@ -1,4 +1,4 @@
-import {chatInsertMessage} from "../utils/chatUtils.js";
+import {insertNewMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
 import {showToast, showTournamentInvite} from "../utils/toastUtils.js";
 import {updateFromSocket} from "../views/localGame.js";
@@ -25,7 +25,7 @@ function handleMessage(msg) {
 
     switch(msg_obj['type']) {
         case 'dm':
-            chatInsertMessage(msg_obj['author'], msg_obj['message']);
+            insertNewMessage(msg_obj['message'], msg_obj['author']);
             break;
         /* 3) get an id to check against when we get an acknowledgement which isn't against a bot */
         /* Happens when requesting a match vs a player, which has to yet to be matched */
