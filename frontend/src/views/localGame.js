@@ -403,6 +403,7 @@ export default class LocalGame extends Component {
 				canvas.style.backgroundColor = '#9c9c9e';
 				window.gameState.endTime = window.gameState.startTime - Date.now();
 				window.gameState.stopperTime = true;
+				sendGameOver();
 			}
 			else {
 				canvas.style.backgroundColor = '#EBEBED';
@@ -410,6 +411,19 @@ export default class LocalGame extends Component {
 					startBall();
 				}, 1000);
 			}
+		}
+
+		function sendGameOver() {
+			const gameData = {
+				joueur1_username: window.gameState.author_username,
+				joueur2_username: window.gameState.opponent_username,
+				duree_partie: Math.floor(window.gameState.endTime / 1000),
+				score_joueur1: paddle1.score,
+				score_joueur2: paddle2.score,
+				is_ai_opponent: window.gameState.ai   
+			};
+		
+			wsSend('game_over', gameData, state.gameSocket);
 		}
 
 		function updateTimer() {

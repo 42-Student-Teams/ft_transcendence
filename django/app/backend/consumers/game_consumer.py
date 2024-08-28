@@ -1,14 +1,14 @@
 import asyncio
 import json
 
-from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament
+from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament, GameHistory
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 from backend.consumers.game_controller import GameController
 from backend.util import random_bot_name
+from django.utils import timezone
 
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-
 
 class GameConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
@@ -56,7 +56,8 @@ class GameConsumer(WsConsumerCommon):
         if msg_obj.get('match_key') is None:
             await self.close()
             return
-
+        
+        self.start_time = timezone.now()
         acknowledgement_row: AcknowledgedMatchRequest = await database_sync_to_async(self.get_acknowledgement_by_key)(msg_obj.get('match_key'))
         acknowledgement = await database_sync_to_async(self.create_acknowledgement_safe_copy)(acknowledgement_row)
 
@@ -252,36 +253,67 @@ class GameConsumer(WsConsumerCommon):
         self.voluntary_disconnect = True
         await self.disconnect(0)
 
+    @database_sync_to_async
+    def save_game_history(self, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2, is_ai_opponent, ai_opponent_name):
+        return GameHistory.enregistrer_partie(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            duree_partie=duree_partie,
+            score_joueur1=score_joueur1,
+            score_joueur2=score_joueur2,
+            is_ai_opponent=is_ai_opponent,
+            ai_opponent_name=ai_opponent_name
+        )
+
     async def user_won(self, who):
         print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
-        # put that into the history and tournament, if applicable
+        
+        # Déterminer le joueur1 et joueur2 (joueur1 est toujours l'auteur de la partie)
+        joueur1 = self.user
+        joueur2 = self.opponent if not self.is_bot else None
+        
+        # Calculer la durée de la partie (vous devrez peut-être ajouter un attribut pour suivre le temps de début)
+        duration = int((timezone.now() - self.start_time).total_seconds())
+        
+        # Déterminer les scores
+        score_joueur1 = self.game_controller.author_score
+        score_joueur2 = self.game_controller.opponent_score
+        
+        # Déterminer le nom de l'adversaire IA si applicable
+        ai_opponent_name = None
+        if self.is_bot:
+            ai_opponent_name = self.opponent_nickname.split(' (BOT)')[0] if self.opponent_nickname else "AI Opponent"
+
+        # Sauvegarder l'historique de la partie
+        await self.save_game_history(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            duree_partie=duration,
+            score_joueur1=score_joueur1,
+            score_joueur2=score_joueur2,
+            is_ai_opponent=self.is_bot,
+            ai_opponent_name=ai_opponent_name
+        )
+
+        # Gestion du tournoi si applicable
         if self.tournament_id is not None:
             if who == self.user:
                 print(f'Sending tournament report that {who.username} ({self.author_nickname}) won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.author_nickname,
-                                                                     self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.tournament_id)
             else:
                 print(f'Sending tournament report that {self.opponent_nickname} won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname,
-                                                                         self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.tournament_id)
 
+        # Envoyer des notifications aux joueurs
         if who == self.user:
             await self.send_channel(self.user.username, 'toast',
-                                    {
-                                        "localization": f"%youWonGame%",
-                                        "target_user": self.user.username})
+                                    {"localization": f"%youWonGame%", "target_user": self.user.username})
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {
-                                        "localization": f"%youLostGame%",
-                                        "target_user": self.opponent.username})
+                                    {"localization": f"%youLostGame%", "target_user": self.opponent.username})
         else:
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {
-                                        "localization": f"%youWonGame%",
-                                        "target_user": self.opponent.username})
+                                    {"localization": f"%youWonGame%", "target_user": self.opponent.username})
             await self.send_channel(self.user.username, 'toast',
-                                    {
-                                        "localization": f"%youLostGame%",
-                                        "target_user": self.user.username})
+                                    {"localization": f"%youLostGame%", "target_user": self.user.username})
