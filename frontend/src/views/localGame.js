@@ -177,11 +177,10 @@ export default class LocalGame extends Component {
 					<div class="modal-content">
 						<div class="modal-header">
 							<h5 class="modal-title">Tournament Bracket</h5>
-							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
 							<div class="tournament-bracket">
-								<div class="round round-1">
+								<div class="bg-info round round-1">
 									<h6>Round 1</h6>
 									<div class="match">
 										<div>${tournament.p1} (${score.round1[0]})</div>
@@ -202,13 +201,12 @@ export default class LocalGame extends Component {
 										<div>${winner.round1}</div>
 										<div>vs</div>
 										<div>${winner.round2}</div>
-										<strong>Winner: ${winner.round3}</strong>
+										<i class="fa-solid fa-trophy"> </i>
+										<span>Winner of the Tournament </span>
+										<strong> ${winner.round3}</strong>
 									</div>
 								</div>
 							</div>
-						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
 						</div>
 					</div>
 				</div>
@@ -379,7 +377,7 @@ export default class LocalGame extends Component {
 		canvas.style.backgroundColor = '#9c9c9e';
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
-		//const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
+		const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
 
 		const config = {
 			canvasWidth: 900,
@@ -511,7 +509,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
-			//myModal.show();
+			myModal.show();
 			updateTimer();
 			window.requestAnimationFrame(animate);
 		}
@@ -519,6 +517,7 @@ export default class LocalGame extends Component {
 		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
+		myModal.hide();
 		//resetBall();
 
 	}
