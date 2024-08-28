@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q, F
 from django.utils.text import slugify
+from django.db import IntegrityError
 
 
 from .jwt_util import jwt_response, check_jwt
@@ -473,8 +474,10 @@ class GameHistoryCreateView(APIView):
             )
         except ValidationError as e:
             return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except IntegrityError as e:
+            return Response({'status': 'error', 'message': 'Database integrity error. Please check your input.'}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
-            return Response({'status': 'error', 'message': 'An unexpected error occurred'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         return Response({
             'status': 'success',

@@ -249,7 +249,7 @@ class GameHistoryCreateSerializer(serializers.Serializer):
     joueur2_username = serializers.CharField(write_only=True, required=False, allow_null=True)
     is_ai_opponent = serializers.BooleanField(required=False, default=False)
     ai_opponent_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    duree_partie = serializers.IntegerField(min_value=1)
+    duree_partie = serializers.IntegerField(min_value=1, max_value=2147483647) 
     score_joueur1 = serializers.IntegerField(min_value=0)
     score_joueur2 = serializers.IntegerField(min_value=0)
 
