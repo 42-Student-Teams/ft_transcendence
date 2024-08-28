@@ -228,6 +228,8 @@ class WsConsumer(WsConsumerCommon):
     @staticmethod
     def handle_acknowledgement(acknowledgement: AcknowledgedMatchRequest, user):
         key = acknowledgement.match_key
+        if acknowledgement.is_bot:
+            return [key, acknowledgement.opponent_nickname]
         print(f'Key: {key}', flush=True)
         waiting: TournamentPvPQueue = TournamentPvPQueue.objects.filter(match_key=key).first()
         if waiting is None:
@@ -254,7 +256,8 @@ class WsConsumer(WsConsumerCommon):
             if key is not None:
                 print('!! sending game_acknowledgements', flush=True)
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
-                await self.send_channel(waiting_username, 'relay_game_acknowledgement',
+                if waiting_username.startswith('bot:'):
+                    await self.send_channel(waiting_username, 'relay_game_acknowledgement',
                                         {'match_key': key,
                                          'target_user': waiting_username})
 
