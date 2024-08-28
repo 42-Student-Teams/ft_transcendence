@@ -104,8 +104,6 @@ async function authStatus() {
 	}
 }
 
-// todo somewhere here: openCommWebsocket
-
 function handleDefaultRoute() {
 	if (tokenExpired() && !window.location.pathname.includes("/oauthcallback")) {
 		navigateTo("/login");

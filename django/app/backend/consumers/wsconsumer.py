@@ -331,7 +331,6 @@ class WsConsumer(WsConsumerCommon):
                                               msg_obj.get('fast')))
                 if acknowledgement_key is None:
                     return
-                # TODO: see if we can share an acknowledgement. I guess yeah? the opponent doesn't need the acknowledgement
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
                 await self.send_channel(waiting_username, 'relay_game_acknowledgement',
                                         {'match_key': acknowledgement_key,
@@ -376,6 +375,15 @@ class WsConsumer(WsConsumerCommon):
         if msg_obj.get('target_user') != self.user_username:
             return
         await self.send_json({'type': 'game_acknowledgement', 'match_key': msg_obj.get('match_key')})
+
+    async def relay_bye(self, event):
+        print(f"Received relay bye: {event}", flush=True)
+        msg_obj = event["msg_obj"]
+        if msg_obj.get('target_user') is None or msg_obj.get('match_key') is None:
+            return
+        if msg_obj.get('target_user') != self.user_username:
+            return
+        await self.send_json({'game_bye': True})
 
     async def toast(self, event):
         msg_obj = event["msg_obj"]
