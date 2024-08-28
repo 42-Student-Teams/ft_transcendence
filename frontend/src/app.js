@@ -29,8 +29,6 @@ window.addEventListener("popstate", (event) => {
 document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
-	console.log("app.js - document.addEventListener - store.state.isLoggedIn : ", store.state.isLoggedIn);
-
 	if (!store.state.isLoggedIn) {
 		try {
 			await authStatus();
@@ -39,9 +37,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 			return;
 		}
 	}
-
-	
-
 
 	handleDefaultRoute();
 });
@@ -98,7 +93,7 @@ async function authStatus() {
 			await setUserProfile();
 			navigateTo("/");
 		} else {
-			throw new Error("Not logged in");
+			return ;
 		}
 	} catch (error) {
 		console.error('Error fetching auth status:', error);

@@ -2,9 +2,10 @@ import Component from "../library/component.js";
 import state from "../store/state.js";
 import { usernameFromToken } from "../utils/jwtUtils.js";
 import { wsSend } from "../utils/wsUtils.js";
-import NavBar from '../components/home/navbar.js';
 import * as bootstrap from 'bootstrap';
 import { navigateTo } from "../utils/router.js";
+import store from "../store/index.js"
+import { game } from "../utils/langPack.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -87,6 +88,7 @@ function updateFromSocket(msg_obj) {
 export default class LocalGame extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
+        this.currentLang = store.state.language;
 
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
@@ -94,10 +96,11 @@ export default class LocalGame extends Component {
 	}
 
 	async render() {
+		const langPack = game[this.currentLang];
 
 		const view = /*html*/ `
     	<div class="h-100 d-flex flex-column">
-			<h1 class="pt-5 text-center display-1">Local Game</h1>
+			<h1 class="pt-5 text-center display-1">${langPack.gameTitle}</h1>
 			<div class="d-flex flex-row justify-content-center">
 				<h1  id=left_player class="display-5">Player 190</h1>
 				<br/>
@@ -112,7 +115,7 @@ export default class LocalGame extends Component {
 					<div class="col text-center">
 						<div class="game-canva rounded">
 							<div class="canvanbutton">
-								<button class="btn btn-primary" id=start-game> New Game</button>
+								<button class="btn btn-primary" id=start-game> ${langPack.newGame}</button>
 								<div id="Timer" class="position-absolute text-center h1"></div>
 								<canvas id="myCanvas"></canvas>
 							</div>
@@ -127,7 +130,7 @@ export default class LocalGame extends Component {
 				<div class="modal-dialog modal-dialog-centered">
 					<div class="modal-content">
 						<div class="modal-header">
-							<h5 class= "modal-title w-100 text-center" > Game over </h5>
+							<h5 class= "modal-title w-100 text-center" > ${langPack.gameOver} </h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
 						<div class="modal-body">
@@ -143,8 +146,8 @@ export default class LocalGame extends Component {
 							</div>
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="back-to-home" >Back to Home Page</button>
-							<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="Modal-New-Game" >New Game</button>
+							<button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="back-to-home" >${langPack.backToHome}</button>
+							<button type="button" class="btn btn-success" data-bs-dismiss="modal" id="Modal-New-Game" >${langPack.newGame}</button>
 						</div>
 					</div>
 				</div>
@@ -155,7 +158,7 @@ export default class LocalGame extends Component {
 		this.element.innerHTML = /*html*/ `
 		<button class="btn btn-primary" type="button" id="start-game">
 			<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
-			<span role="status">Please wait...</span>
+			<span role="status">${langPack.pleaseWait}</span>
 		</button>
 		`;
 		await this.handleEvent(view, this.element);
@@ -182,6 +185,19 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
+		const lang = localStorage.getItem('language');
+		var langPackYou = "";
+
+		if (lang) {
+			if (lang === 'en') {
+				langPackYou = 'You';
+			} else if (lang === 'fr') {
+				langPackYou = 'Vous';
+			} else if (lang === 'es') {
+				langPackYou = 'Tú';
+			}
+		}
+
 		console.log(`Starting game with obj_:`);
 		console.log(obj_);
 		wsSend('client_update', { 'update': 'lol' }, state.gameSocket);
@@ -226,7 +242,7 @@ export default class LocalGame extends Component {
 		const listenedToKeys = [87, 83, 38, 40];
 
 		if (window.gameState.author_username === window.gameState.currentUsername) {
-			document.getElementById('left_player').innerText = 'You';
+			document.getElementById('left_player').innerText = langPackYou;
 			document.getElementById('right_player').innerText = obj_.opponent_username;
 			if (obj_.opponent_nickname) {
 				document.getElementById('right_player').innerText = obj_.opponent_nickname;
@@ -236,7 +252,7 @@ export default class LocalGame extends Component {
 			if (obj_.author_nickname) {
 				document.getElementById('left_player').innerText = obj_.author_nickname;
 			}
-			document.getElementById('right_player').innerText = 'You';
+			document.getElementById('right_player').innerText = langPackYou;
 		}
 
 		console.log('Gameoptions', obj_);

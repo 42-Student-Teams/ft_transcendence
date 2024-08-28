@@ -2,7 +2,6 @@ import * as bootstrap from 'bootstrap';
 import {home} from "./langPack.js";
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
-import store from "..//store/index.js";
 
 export function showToast(message, type) {
     if (typeof bootstrap === 'undefined') {

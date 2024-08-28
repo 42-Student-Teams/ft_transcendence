@@ -20,11 +20,8 @@ function tokenToObject() {
 function tokenExpired() {
     let tokenObj = tokenToObject();
     if (tokenObj === null) {
-		console.log("tokenExpired: tokenObj is null");
         return (true);
     }
-
-	console.log(`tokenExpired: tokenObj['expires'] = ${tokenObj['expires']}, Date.now() / 1000 = ${Date.now() / 1000}`);
     //alert(`now: ${Date.now() / 1000}, jwt: ${tokenObj['expires']}`);
     return (tokenObj['expires'] < Date.now() / 1000);
 }

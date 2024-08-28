@@ -85,8 +85,8 @@ export const home = {
 		localGame: "Local game",
 		joinedTournament: "You joined tournament",
 		joinedTournamentQueue: "You joined the tournament queue",
-		youWonGame: "You have won the game",
-		youLostGame: "You have lost the game",
+		youWonGame: "You have won the game !",
+		youLostGame: "You have lost the game !",
 		languages: {
 			en: "🇬🇧 English",
 			fr: "🇫🇷 Français",
@@ -179,8 +179,8 @@ export const home = {
 		localGame: "Jeu local",
 		joinedTournament: "Vous avez rejoint le tournoi",
 		joinedTournamentQueue: "Vous avez rejoint la file d'attente",
-		youWonGame: "Vous avez gagné le jeu",
-		youLostGame: "Vous avez perdu le jeu",
+		youWonGame: "Vous avez gagné la partie !",
+		youLostGame: "Vous avez perdu la partie !",
 		languages: {
 			en: "🇬🇧 Anglais",
 			fr: "🇫🇷 Français",
@@ -274,8 +274,8 @@ export const home = {
 		localGame: "Juego local",
 		joinedTournament: "Te has inscrito en el torneo",
 		joinedTournamentQueue: "Te has unido a la cola del torneo",
-		youWonGame: "Has ganado el juego",
-		youLostGame: "Has perdido el juego",
+		youWonGame: "Has ganado el partido !",
+		youLostGame: "Has perdido el partido !",
 		languages: {
 			en: "🇬🇧 Inglés",
 			fr: "🇫🇷 Francés",
@@ -407,5 +407,35 @@ export const toast = {
 		tournamentMatchReady: "¡Partido de torneo listo!",
 		accept: "Aceptar",
 		quitTournament: "Salir del torneo",
+	}
+};
+
+export const game = {
+	en: {
+		you: "You",
+		gameTitle: "Game",
+		backToHome: "Back to Home",
+		localGameTitle: "Local Game",
+		newGame: "New Game",
+		pleaseWait: "Please wait...",
+		gameOver: "Game Over",
+	},
+	fr: {
+		you : "Vous",
+		gameTitle: "Jeu",
+		pleaseWait: "Veuillez patienter...",
+		backToHome: "Retour à l'accueil",
+		localGameTitle: "Jeu Local",
+		newGame: "Nouveau Jeu",
+		gameOver: "Partie terminée",
+	},
+	es: {
+		you: "Tú",
+		gameTitle: "Juego",
+		pleaseWait: "Por favor, espere...",
+		backToHome: "Volver a Inicio",
+		localGameTitle: "Juego Local",
+		newGame: "Nuevo Juego",
+		gameOver: "Juego Terminado",
 	}
 };
