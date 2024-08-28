@@ -93,7 +93,7 @@ class UserLoginView(APIView):
         
         if user is None or not user.check_password(password):
             return Response(
-                {"erreur": "Nom d'utilisateur ou mot de passe incorrect"},
+                {"erreur": "Incorrect username or password"},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
