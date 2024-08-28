@@ -53,14 +53,24 @@ class UserOauthLoginView(APIView):
     def post(self, request):
         oauth_token = None
         username = None
+        email = None
+        first_name = None
+        last_name = None
         if 'oauth_token' in request.data:
             oauth_token = request.data['oauth_token']
         if oauth_token is not None:
             user_info = get_user_info(oauth_token)
+            print(user_info, flush=True)
             if user_info is not None:
                 username = user_info['login']
             else:
                 raise AuthenticationFailed()
+            if 'email' in user_info:
+                email = user_info['email']
+            if 'first_name' in user_info:
+                first_name = user_info['first_name']
+            if 'last_name' in user_info:
+                last_name = user_info['last_name']
         else:
             raise AuthenticationFailed()
 
@@ -68,8 +78,11 @@ class UserOauthLoginView(APIView):
 
         user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
-            new_user = JwtUser.objects.create()
+            new_user: JwtUser = JwtUser.objects.create()
             new_user.username = username
+            new_user.email = email
+            new_user.first_name = first_name
+            new_user.last_name = last_name
             new_user.set_unusable_password()
             new_user.isoauth = True
             new_user.save()

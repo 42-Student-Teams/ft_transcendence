@@ -73,7 +73,6 @@ export default class OauthCallback extends Component {
             const currentTime = Date.now();
 			
             if (state === storedState && currentTime < expirationTime) {
-				console.log('jusquciici');
                 document.getElementById('statemessage').innerText = 'State parameter matches and is valid.';
                 const tokenResponse = await getAccessToken(urlParams.get('code'));
 
