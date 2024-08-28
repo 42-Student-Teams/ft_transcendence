@@ -61,18 +61,21 @@ export default class OauthCallback extends Component {
     async handleEvent() {
         const urlParams = new URLSearchParams(window.location.search);
         const state = urlParams.get('state');
-		console.log('handleEvent sessionstorage');
+		console.log('handleEvent CALLBACK : ',  urlParams);
         document.getElementById('state').innerText = `State: ${state}`;
         const storedStateData = JSON.parse(sessionStorage.getItem('oauth_state'));
+		console.log('test : ',storedStateData);
         document.getElementById('statemessage').innerText = 'Invalid state parameter.';
 
         if (storedStateData) {
-            const { state: storedState, expirationTime } = storedStateData;
+			const { state: storedState, expirationTime } = storedStateData;
+			console.log(state, storedState, expirationTime);
             const currentTime = Date.now();
-
+			
             if (state === storedState && currentTime < expirationTime) {
                 document.getElementById('statemessage').innerText = 'State parameter matches and is valid.';
                 const tokenResponse = await getAccessToken(urlParams.get('code'));
+
                 console.log(tokenResponse);
 
                 // TODO: we might actually return the username too..

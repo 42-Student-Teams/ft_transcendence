@@ -90,15 +90,24 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         try:
             msg_obj = json.loads(text_data)
         except:
-            await self.send(text_data='unauthed')
+            try:
+                await self.send(text_data='unauthed')
+            except:
+                pass
             return
         if not self.authed:
             print('Not authed, doing auth', flush=True)
             await sync_to_async(self.do_auth)(msg_obj)
             if not self.authed:
-                await self.send(text_data='{"status":"unauthed"}')
+                try:
+                    await self.send(text_data='{"status":"unauthed"}')
+                except:
+                    pass
             else:
-                await self.send(text_data='{"status":"authed"}')
+                try:
+                    await self.send(text_data='{"status":"authed"}')
+                except:
+                    pass
                 await self.on_auth(msg_obj)
             return
 
@@ -112,7 +121,10 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         pass
 
     async def send_json(self, content):
-        await self.send(text_data=json.dumps(content))
+        try:
+            await self.send(text_data=json.dumps(content))
+        except:
+            pass # socket was closed
 
     async def send_channel(self, channel, msgtype, content):
         print(f'SEND TO CHANNEL {channel} ({type(channel)})', flush=True)

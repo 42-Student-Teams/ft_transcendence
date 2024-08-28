@@ -21,8 +21,6 @@ export function openGameWebsocket(match_key) {
         socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "match_key": match_key}));
     });
     store.dispatch("setGameSocket", socket);
-
-    // TODO: we also want an onclose, which redirects the user to /home
 }
 
 function wsSend(func, content, socket=null) {

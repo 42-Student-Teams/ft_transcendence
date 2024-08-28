@@ -15,7 +15,8 @@ from django.db import IntegrityError
 
 
 from .jwt_util import jwt_response, check_jwt
-from .models import JwtUser, GameHistory, MatchRequest, Tournament, TournamentSearchQueue, AcknowledgedMatchRequest
+from .models import (JwtUser, GameHistory, MatchRequest, Tournament, TournamentSearchQueue, AcknowledgedMatchRequest,
+                     TournamentPvPQueue)
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -53,14 +54,24 @@ class UserOauthLoginView(APIView):
     def post(self, request):
         oauth_token = None
         username = None
+        email = None
+        first_name = None
+        last_name = None
         if 'oauth_token' in request.data:
             oauth_token = request.data['oauth_token']
         if oauth_token is not None:
             user_info = get_user_info(oauth_token)
+            print(user_info, flush=True)
             if user_info is not None:
                 username = user_info['login']
             else:
                 raise AuthenticationFailed()
+            if 'email' in user_info:
+                email = user_info['email']
+            if 'first_name' in user_info:
+                first_name = user_info['first_name']
+            if 'last_name' in user_info:
+                last_name = user_info['last_name']
         else:
             raise AuthenticationFailed()
 
@@ -68,8 +79,11 @@ class UserOauthLoginView(APIView):
 
         user: JwtUser = JwtUser.objects.filter(username=username).first()
         if user is None:
-            new_user = JwtUser.objects.create()
+            new_user: JwtUser = JwtUser.objects.create()
             new_user.username = username
+            new_user.email = email
+            new_user.first_name = first_name
+            new_user.last_name = last_name
             new_user.set_unusable_password()
             new_user.isoauth = True
             new_user.save()
@@ -717,10 +731,26 @@ class QuitTournamentView(APIView):
         match_acknowledgement: AcknowledgedMatchRequest = AcknowledgedMatchRequest.objects.filter(match_key=match_key).first()
         if match_acknowledgement is not None:
             if user == match_acknowledgement.request_author:
-                tournament.waitlist.append(match_acknowledgement.opponent_nickname)
+                #tournament.waitlist.append(match_acknowledgement.opponent_nickname)
+                Tournament.report_results(match_acknowledgement.opponent_nickname, tournament_id)
             else:
-                tournament.waitlist.append(match_acknowledgement.author_nickname)
-            tournament.save()
+                #tournament.waitlist.append(match_acknowledgement.author_nickname)
+                Tournament.report_results(match_acknowledgement.author_nickname, tournament_id)
+            #tournament.save()
+
+        channel_layer = get_channel_layer()
+        if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.request_author):
+            TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.request_author)
+            async_to_sync(channel_layer.group_send)(match_acknowledgement.request_author.username,
+                                                    {"type": "relay_bye", "msg_obj": {
+                                                        "target_user": match_acknowledgement.request_author.username,
+                                                    }})
+        if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.target_user):
+            TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.target_user)
+            async_to_sync(channel_layer.group_send)(match_acknowledgement.target_user.username,
+                                                    {"type": "relay_bye", "msg_obj": {
+                                                        "target_user": match_acknowledgement.target_user.username,
+                                                    }})
 
         return Response({
             'status': 'success',

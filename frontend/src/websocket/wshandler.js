@@ -14,6 +14,11 @@ function handleMessage(msg) {
     let msg_obj = JSON.parse(msg['data']);
     console.log(msg);
 
+    if ('game_bye' in msg_obj) {
+        console.log('Received BYE');
+        navigateTo('/');
+    }
+
     if (!('type' in msg_obj)) {
         return;
     }
@@ -94,6 +99,8 @@ function handleGameMessage(msg) {
                                 'opponent_username': msg_obj['opponent'],
                                 'author_username': msg_obj['author'],
                                 'is_bot': msg_obj['is_bot'],
+                                'author_nickname': msg_obj['author_nickname'],
+                                'opponent_nickname': msg_obj['opponent_nickname'],
                                 };
             // This might actually not be needed, since we pass gameData directly to startGame
             store.dispatch("setCurrentGameData", gameData);

@@ -30,13 +30,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 	setupNavigation();
 
 	if (!store.state.isLoggedIn) {
-		const res = await authStatus();
-		if (!res) {
-			navigateTo("/login");
-			return;
+		if (window.location.pathname != '/oauthcallback') {
+			console.log("Checking auth status");
+			const res = await authStatus();
+			if (!res) {
+				console.log('Not logged in, redirecting to login');
+				navigateTo("/login");
+				return;
+			}
 		}
 	}
-
 	handleDefaultRoute();
 });
 
@@ -101,16 +104,13 @@ async function authStatus() {
 	}
 }
 
-// todo somewhere here: openCommWebsocket
-
 function handleDefaultRoute() {
-	if (tokenExpired()) {
+	if (tokenExpired() && !window.location.pathname.includes("/oauthcallback")) {
 		navigateTo("/login");
+		console.log("Token expired, redirecting to login");
 	} else {
 		openCommWebsocket();
 		if (!store.state.gameStatus === "playing" && ["/game"].includes(window.location.pathname)) {
-			navigateTo("/");
-		} else if (!store.state.joinNickname && ["/join-tournament"].includes(window.location.pathname)) {
 			navigateTo("/");
 		}
 		else {

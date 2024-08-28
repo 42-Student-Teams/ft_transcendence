@@ -6,6 +6,7 @@ import * as bootstrap from 'bootstrap';
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
+import ModalTournamentBracket from "../components/tournament/bracketModal.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -89,6 +90,9 @@ export default class LocalGame extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
         this.currentLang = store.state.language;
+		this.components = {
+			modalTournamentBracket: new ModalTournamentBracket(),
+		};
 
 		// store.events.subscribe("languageIdChange", () => this.renderAll());
 
@@ -97,9 +101,26 @@ export default class LocalGame extends Component {
 
 	async render() {
 		const langPack = game[this.currentLang];
+		const tournament = {
+			p1: 'Player 1',
+			p2: 'Player 2',
+			p3: 'Player 3',
+			p4: 'Player 4',
+		};
+		const score = {
+			round1: [5, 10],
+			round2: [3, 5],
+			round3: [1, 2],
+		};
+
+		const winner = {
+			round1: "Player 2",
+			round2: "Player 4",
+			round3: "Player 2",
+		};
 
 		const view = /*html*/ `
-    	<div class="h-100 d-flex flex-column">
+		<div class="h-100 d-flex flex-column">
 			<h1 class="pt-5 text-center display-1">${langPack.gameTitle}</h1>
 			<div class="d-flex flex-row justify-content-center">
 				<h1  id=left_player class="display-5">Player 190</h1>
@@ -152,6 +173,47 @@ export default class LocalGame extends Component {
 					</div>
 				</div>
 			</div>
+			<div class="modal" id="modalTournamentBracket" tabindex="-1">
+				<div class="modal-dialog modal-dialog-centered">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title">Tournament Bracket</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<div class="tournament-bracket">
+								<div class="round round-1">
+									<h6>Round 1</h6>
+									<div class="match">
+										<div>${tournament.p1} (${score.round1[0]})</div>
+										<div>vs</div>
+										<div>${tournament.p2} (${score.round1[1]})</div>
+										<strong>Winner: ${winner.round1}</strong>
+									</div>
+									<div class="match">
+										<div>${tournament.p3} (${score.round2[0]})</div>
+										<div>vs</div>
+										<div>${tournament.p4} (${score.round2[1]})</div>
+										<strong>Winner: ${winner.round2}</strong>
+									</div>
+								</div>
+								<div class="round round-2">
+									<h6>Final</h6>
+									<div class="match">
+										<div>${winner.round1}</div>
+										<div>vs</div>
+										<div>${winner.round2}</div>
+										<strong>Winner: ${winner.round3}</strong>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 			`;
 
@@ -165,6 +227,8 @@ export default class LocalGame extends Component {
 	}
 
 	async handleEvent(view, element) {
+
+
 		window.startGame = this.startGame;
 		window.gameHtml = view;
 		window.thisElement = element;
@@ -185,18 +249,7 @@ export default class LocalGame extends Component {
 	}
 
 	startGame(obj_) {
-		const lang = localStorage.getItem('language');
-		var langPackYou = "";
-
-		if (lang) {
-			if (lang === 'en') {
-				langPackYou = 'You';
-			} else if (lang === 'fr') {
-				langPackYou = 'Vous';
-			} else if (lang === 'es') {
-				langPackYou = 'Tú';
-			}
-		}
+		const langPack = game[store.state.language];
 
 		console.log(`Starting game with obj_:`);
 		console.log(obj_);
@@ -242,7 +295,7 @@ export default class LocalGame extends Component {
 		const listenedToKeys = [87, 83, 38, 40];
 
 		if (window.gameState.author_username === window.gameState.currentUsername) {
-			document.getElementById('left_player').innerText = langPackYou;
+			document.getElementById('left_player').innerText = langPack.you;
 			document.getElementById('right_player').innerText = obj_.opponent_username;
 			if (obj_.opponent_nickname) {
 				document.getElementById('right_player').innerText = obj_.opponent_nickname;
@@ -252,7 +305,7 @@ export default class LocalGame extends Component {
 			if (obj_.author_nickname) {
 				document.getElementById('left_player').innerText = obj_.author_nickname;
 			}
-			document.getElementById('right_player').innerText = langPackYou;
+			document.getElementById('right_player').innerText = langPack.you;
 		}
 
 		console.log('Gameoptions', obj_);

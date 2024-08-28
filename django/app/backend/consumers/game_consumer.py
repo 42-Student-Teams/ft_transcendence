@@ -96,13 +96,28 @@ class GameConsumer(WsConsumerCommon):
         bot_name = random_bot_name()
         if self.opponent_nickname is not None and self.opponent_nickname.startswith('bot:'):
             bot_name = self.opponent_nickname[len('bot:'):]
+        bot_name += " (BOT)"
+        a_nickname = None
+        if self.author_nickname is not None:
+            if self.author_nickname.startswith('user'):
+                a_nickname = self.author_nickname.split(':')[2]
+            if self.author_nickname.startswith('bot'):
+                a_nickname = self.author_nickname.split(':')[1] + ' (BOT)'
+        o_nickname = None
+        if self.opponent_nickname is not None:
+            if self.opponent_nickname.startswith('user'):
+                o_nickname = self.opponent_nickname.split(':')[2]
+            if self.opponent_nickname.startswith('bot'):
+                o_nickname = self.opponent_nickname.split(':')[1] + ' (BOT)'
         await self.send_json({
             'type': 'start',
             'ball_color': self.ball_color,
             'is_bot': self.is_bot,
             'author': request_author_username,
-            'opponent': self.opponent.username if self.opponent else f'{bot_name} (BOT)',
-            'fast': self.fast})
+            'opponent': self.opponent.username if self.opponent else bot_name,
+            'fast': self.fast,
+            'author_nickname': a_nickname,
+            'opponent_nickname': o_nickname})
 
     async def on_disconnect(self):
         print(f'{self.user.username} on_disconnect', flush=True)
@@ -124,7 +139,10 @@ class GameConsumer(WsConsumerCommon):
 
     @register_ws_func
     async def ping(self, msg_obj):
-        await self.send(text_data=json.dumps({'pong': 'pong'}))
+        try:
+            await self.send(text_data=json.dumps({'pong': 'pong'}))
+        except:
+            pass
 
     @register_ws_func
     def join(self, msg_obj):

@@ -363,6 +363,14 @@ canvas {
 }
 
 
+.icon-tournament-ready{
+	color: blue;
+}
+
+#toast-tournament-ready-notification
+{
+	background-color:white;
+}
 
 .btn-blue {
 	background-color: #0a58ca;
@@ -465,4 +473,35 @@ canvas {
 .img-profile-avatar {
 	width: 100px;
 	height: 100px;
+}
+
+
+.icon-tournament-ready, svg{
+	height:40px;
+}
+
+
+/* -- modal tournament bracket -- */
+
+.tournament-bracket {
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	align-items: center;
+}
+
+.round {
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.match {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 15px;
+}
+
+.match div {
+	margin: 5px 0;
 }
