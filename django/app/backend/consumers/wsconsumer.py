@@ -256,7 +256,7 @@ class WsConsumer(WsConsumerCommon):
             if key is not None:
                 print('!! sending game_acknowledgements', flush=True)
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
-                if waiting_username.startswith('bot:'):
+                if not waiting_username.startswith('bot:'):
                     await self.send_channel(waiting_username, 'relay_game_acknowledgement',
                                         {'match_key': key,
                                          'target_user': waiting_username})
