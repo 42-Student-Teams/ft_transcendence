@@ -22,7 +22,7 @@ def process_tournaments():
 
 
 
-def run_continuously(self, interval=120):
+def run_continuously(self, interval=15):
     cease_continuous_run = threading.Event()
 
     class ScheduleThread(threading.Thread):

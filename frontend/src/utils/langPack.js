@@ -83,6 +83,10 @@ export const home = {
 		failedLoadingChat: "Error, failed loading messages",
 		chatLoadMore: "Load more",
 		localGame: "Local game",
+		joinedTournament: "You joined tournament",
+		joinedTournamentQueue: "You joined the tournament queue",
+		youWonGame: "You have won the game",
+		youLostGame: "You have lost the game",
 	  languages: {
       en: "🇬🇧 English",
       fr: "🇫🇷 Français",
@@ -173,6 +177,10 @@ export const home = {
 		failedLoadingChat: "Erreur de chargement des messages",
 		chatLoadMore: "Charger plus de messages",
 		localGame: "Jeu local",
+		joinedTournament: "Vous avez rejoint le tournoi",
+		joinedTournamentQueue: "Vous avez rejoint la file d'attente",
+		youWonGame: "Vous avez gagné le jeu",
+		youLostGame: "Vous avez perdu le jeu",
 	  languages: {
 		en: "🇬🇧 Anglais",
 		fr: "🇫🇷 Français",
@@ -264,6 +272,10 @@ export const home = {
     failedLoadingChat: "Error, no se pudieron cargar los mensajes",
     	chatLoadMore: "Cargar más",
 		localGame: "Juego local",
+		joinedTournament: "Te has inscrito en el torneo",
+		joinedTournamentQueue: "Te has unido a la cola del torneo",
+		youWonGame: "Has ganado el juego",
+		youLostGame: "Has perdido el juego",
 	  languages: {
 		en: "🇬🇧 Inglés",
 		fr: "🇫🇷 Francés",

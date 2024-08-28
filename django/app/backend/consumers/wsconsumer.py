@@ -362,3 +362,11 @@ class WsConsumer(WsConsumerCommon):
         if msg_obj.get('target_user') != self.user_username:
             return
         await self.send_json({'type': 'toast', 'localization': msg_obj.get('localization')})
+
+    async def tournament_game_invite(self, event):
+        msg_obj = event["msg_obj"]
+        if msg_obj.get('target_user') is None or msg_obj.get('match_key') is None or msg_obj.get('tournament_id') is None:
+            return
+        if msg_obj.get('target_user') != self.user_username:
+            return
+        await self.send_json({'type': 'tournament_game_invite', 'match_key': msg_obj.get('match_key'), 'tournament_id': msg_obj.get('tournament_id')})

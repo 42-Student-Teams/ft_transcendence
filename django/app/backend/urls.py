@@ -27,5 +27,6 @@ urlpatterns=[
     path('match_available', views.MatchRequestAvailableView.as_view(), name='match_available'),
     path('create_tournament', views.CreateTournamentView.as_view(), name='create_tournament'),
     path('join_tournament', views.JoinTournamentView.as_view(), name='join_tournament'),
+    path('quit_tournament', views.QuitTournamentView.as_view(), name='quit_tournament'),
 	path('get_logged_in_status', views.loggedInStatusView.as_view(), name='get_logged_in_status'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

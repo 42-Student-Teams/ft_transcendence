@@ -250,9 +250,10 @@ export default class LocalGame extends Component {
 
 		class Paddle {
 			constructor() {
-				this.aipos_cal = 0
-				this.size = config.paddleHeight
-				this.speed = config.paddleSpeed
+				this.aipos_cal = 0;
+				this.size = config.paddleHeight;
+				this.speed = config.paddleSpeed;
+				this.id = alphanum(5);
 			}
 
 			render = () => {

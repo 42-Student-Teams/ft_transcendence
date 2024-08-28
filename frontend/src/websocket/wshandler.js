@@ -1,9 +1,10 @@
 import {chatInsertMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
-import { showToast } from "../utils/toastUtils.js";
+import {showToast, showTournamentInvite} from "../utils/toastUtils.js";
 import {updateFromSocket} from "../views/localGame.js";
 import store from "/src/store/index.js";
 import { home } from "../utils/langPack.js";
+import {navigateTo} from "../utils/router.js";
 
 function handleMessage(msg) {
     console.log('Received socket message:');
@@ -32,6 +33,11 @@ function handleMessage(msg) {
         case 'game_acknowledgement':
             if (('match_key' in msg_obj)) {
                 openGameWebsocket(msg_obj['match_key']);
+            }
+            break;
+        case 'tournament_game_invite':
+            if (('match_key' in msg_obj) && ('tournament_id' in msg_obj)) {
+                showTournamentInvite(msg_obj['match_key'], msg_obj['tournament_id']);
             }
             break;
         case 'friend_status_update':
@@ -68,6 +74,11 @@ function handleGameMessage(msg) {
     }
     let msg_obj = JSON.parse(msg['data']);
     //console.log(msg);
+
+    if ('game_bye' in msg_obj) {
+        console.log('Received BYE');
+        navigateTo('/');
+    }
 
     if (!('type' in msg_obj)) {
         return;

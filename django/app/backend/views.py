@@ -13,9 +13,8 @@ from django.db.models import Q, F
 from django.utils.text import slugify
 
 
-import jwt
 from .jwt_util import jwt_response, check_jwt
-from .models import JwtUser, GameHistory, MatchRequest, Tournament, TournamentSearchQueue
+from .models import JwtUser, GameHistory, MatchRequest, Tournament, TournamentSearchQueue, AcknowledgedMatchRequest
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -578,9 +577,9 @@ class CreateTournamentView(APIView):
             if request.data.get(prop) is None:
                 return Response({'status': 'error', 'message': f'Missing parameter {prop}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        all_participants_count = parse_to_int(request.data.get('all_participants_count'))
-        if all_participants_count < 0 or all_participants_count > settings.MAX_TOURNAMENT_PLAYERS:
-            return Response({'status': 'error', 'message': 'Wrong all_participants_count param'}, status=status.HTTP_400_BAD_REQUEST)
+        all_participants_count = 2 #settings.MAX_TOURNAMENT_PLAYERS #parse_to_int(request.data.get('all_participants_count'))
+        #if all_participants_count < 0 or all_participants_count > settings.MAX_TOURNAMENT_PLAYERS:
+        #    return Response({'status': 'error', 'message': 'Wrong all_participants_count param'}, status=status.HTTP_400_BAD_REQUEST)
         
         color = request.data.get('color')
         if color not in ['black', 'red', 'blue']:
@@ -599,6 +598,7 @@ class CreateTournamentView(APIView):
             return Response({'status': 'error', 'message': 'Bad name'}, status=status.HTTP_400_BAD_REQUEST)
 
         bot_list = request.data.get('bot_list')
+        print(bot_list, flush=True)
         if type(bot_list) != list:
             return Response({'status': 'error', 'message': 'Bad bot param'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -620,20 +620,23 @@ class CreateTournamentView(APIView):
         for bot_name in bot_list:
             tournament.waitlist.append(f'bot:{bot_name}')
 
+        channel_layer = get_channel_layer()
         # Get players in queue
         if tournament.subscribed_count < settings.MAX_TOURNAMENT_PLAYERS:
             players_in_queue = TournamentSearchQueue.get_up_to_x_users(settings.MAX_TOURNAMENT_PLAYERS - tournament.subscribed_count)
-            channel_layer = get_channel_layer()
             for player, player_nickname in players_in_queue:
                 tournament.waitlist.append(f'user:{player.username}:{player_nickname}')
                 tournament.subscribed_count += 1
                 async_to_sync(channel_layer.group_send)(player.username,
-                                                                {"type": "toast",
+                                                                {"type": "toast", "msg_obj": {
                                                                 "localization": f"%joinedTournament% {name}",
-                                                                 "target_user": player.username})
+                                                                 "target_user": player.username}})
 
         tournament.save()
-
+        async_to_sync(channel_layer.group_send)(user.username,
+                                                {"type": "toast", "msg_obj": {
+                                                 "localization": f"%joinedTournament% {name}",
+                                                 "target_user": user.username}})
 
         return Response({
             'status': 'success',
@@ -660,13 +663,61 @@ class JoinTournamentView(APIView):
         free_tournament = Tournament.objects.filter(subscribed_count__lt=F('all_participants_count'), op_lock=False).first()
         if free_tournament is not None:
             free_tournament.waitlist.append(f'user:{user.username}:{nickname}')
+            free_tournament.subscribed_count += 1
             free_tournament.save()
             async_to_sync(channel_layer.group_send)(user.username,
-                                                    {"type": "toast",
+                                                    {"type": "toast", "msg_obj": {
                                                     "localization": f"%joinedTournament% {free_tournament.name}",
-                                                     "target_user": user.username})
+                                                     "target_user": user.username}})
         else:
             TournamentSearchQueue.add_user_to_queue(user, nickname)
+            async_to_sync(channel_layer.group_send)(user.username,
+                                                    {"type": "toast", "msg_obj": {
+                                                        "localization": f"%joinedTournamentQueue%",
+                                                        "target_user": user.username}})
+
+        return Response({
+            'status': 'success',
+        }, status=status.HTTP_200_OK)
+
+
+class QuitTournamentView(APIView):
+    def post(self, request):
+        channel_layer = get_channel_layer()
+        user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        if user is None:
+            return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
+
+        print(f'User `{user}` wants to quit a tournament', flush=True)
+
+        tournament_id = request.data.get('tournament_id')
+        match_key = request.data.get('match_key')
+        if tournament_id is None or tournament_id is None:
+            return Response({'status': 'error', 'message': 'Bad tournament id or match key'}, status=status.HTTP_400_BAD_REQUEST)
+
+        controller_channel_name = f'controller_{request.data.get('match_key')}'
+        try:
+            async_to_sync(channel_layer.group_send)(controller_channel_name,
+                                                    {"type": "player_disconnect", "msg_obj": {
+                                                        "username": user.username,
+                                                    }})
+        except:
+            pass
+
+        tournament = Tournament.objects.filter(id=tournament_id).first()
+        if tournament is None:
+            return Response({'status': 'error', 'message': 'Tournament not found'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        tournament.remove_from_waitlist(user.username)
+
+        match_acknowledgement: AcknowledgedMatchRequest = AcknowledgedMatchRequest.objects.filter(match_key=match_key).first()
+        if match_acknowledgement is not None:
+            if user == match_acknowledgement.request_author:
+                tournament.waitlist.append(match_acknowledgement.opponent_nickname)
+            else:
+                tournament.waitlist.append(match_acknowledgement.author_nickname)
+            tournament.save()
 
         return Response({
             'status': 'success',

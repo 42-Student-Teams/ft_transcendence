@@ -251,7 +251,7 @@ class Tournament(models.Model):
 
     waitlist = models.JSONField(default=list, blank=True)  # This stores usernames and bot names
     # Format: 'user:username:nick name' for users and 'bot:bot nickname' for bots
-    active_participants_count = models.IntegerField(default=0)
+    active_participants_count = models.IntegerField(default=-1)
     all_participants_count = models.IntegerField(default=0)
     subscribed_count = models.IntegerField(default=0)
 
@@ -262,22 +262,34 @@ class Tournament(models.Model):
 
     def remove_from_waitlist(self, username):
         """Remove a user or bot from the waitlist."""
-        if username in self.waitlist:
-            self.waitlist.remove(username)
+        to_remove = None
+        for username_str in self.waitlist:
+            if not username_str.startswith('user:'):
+                continue
+            if username == username_str[len('user:'):username_str.rfind(':')]:
+                to_remove = username_str
+                break
+        if to_remove is not None:
+            self.waitlist.remove(to_remove)
             self.save()
 
     @staticmethod
     def report_results(winner, tournament_id):
         tournament = Tournament.objects.filter(id=tournament_id).first()
         if tournament is None:
+            print(f'Tournament not found {tournament_id}')
             return
+        print(f'Received winner {winner}')
         tournament.active_participants_count -= 1
+        print(f'Reducing active_participants (1), now it\'s {tournament.active_participants_count}', flush=True)
         tournament.waitlist.append(winner)
         tournament.save()
 
     def pair_and_notify(self):
         if self.subscribed_count < self.all_participants_count:
             return
+        if self.active_participants_count == -1:
+            self.active_participants_count = self.all_participants_count
         self.op_lock = True
         self.save()
         from asgiref.sync import async_to_sync
@@ -293,14 +305,14 @@ class Tournament(models.Model):
                     if user_obj is not None:
                         print(f'Sending WON to {user_obj.username}', flush=True)
                         async_to_sync(channel_layer.group_send)(user_obj.username,
-                                                                {"type": "toast",
+                                                                {"type": "toast", "msg_obj": {
                                                                 "localization": f"%youWonTournament% {self.name}",
-                                                                 "target_user": user_obj.username})
-            print(f'Deleting tournament {self.id}', flush=True)
+                                                                 "target_user": user_obj.username}})
+            print(f'Deleting tournament {self.id} (1)', flush=True)
             self.__class__.objects.filter(id=self.id).delete()
             return
         elif self.active_participants_count < 1:
-            print(f'Deleting tournament {self.id}', flush=True)
+            print(f'Deleting tournament {self.id} (2)', flush=True)
             self.__class__.objects.filter(id=self.id).delete()
             return
 
@@ -308,10 +320,14 @@ class Tournament(models.Model):
             user1 = self.waitlist.pop(0)
             user2 = self.waitlist.pop(0)
 
+            print(f'Tournament id {self.id}, pairing {user1} and {user2}!', flush=True)
+
             if user1.startswith('bot:') and user2.startswith('bot:'):
                 winner = random.choice([user1, user2])
+                print(f'Bot {winner} wins', flush=True)
                 self.waitlist.append(winner)
                 self.active_participants_count -= 1
+                print(f'Reducing active_participants (2), now it\'s {self.active_participants_count}', flush=True)
             elif user1.startswith('bot:') and user2.startswith('user:') or user1.startswith('user:') and user2.startswith('bot:'):
                 bot_user = user1 if user1.startswith('bot:') else user2
                 real_user = user1 if user1.startswith('user:') else user2
@@ -321,6 +337,7 @@ class Tournament(models.Model):
                 if real_user_obj is None:
                     self.waitlist.append(bot_user)
                     self.active_participants_count -= 1
+                    print(f'Reducing active_participants (3), now it\'s {self.active_participants_count}', flush=True)
                     continue
                 acknowledgement = AcknowledgedMatchRequest(
                     request_author=real_user_obj,
@@ -335,9 +352,10 @@ class Tournament(models.Model):
                 )
                 acknowledgement.save()
                 async_to_sync(channel_layer.group_send)(real_user_obj.username,
-                                                        {"type": "tournament_game_invite",
+                                                        {"type": "tournament_game_invite", "msg_obj": {
                                                          "match_key": acknowledgement.match_key,
-                                                         "username": real_user_obj.username})
+                                                            "tournament_id": self.id,
+                                                         "target_user": real_user_obj.username}})
             else:
                 real_username1 = user1[len('user:'):user1.rfind(':')]
                 real_user1_obj: JwtUser = JwtUser.objects.filter(username=real_username1).first()
@@ -346,13 +364,16 @@ class Tournament(models.Model):
                 if real_user1_obj is None and real_user2_obj is not None:
                     self.waitlist.append(user2)
                     self.active_participants_count -= 1
+                    print(f'Reducing active_participants (4), now it\'s {self.active_participants_count}', flush=True)
                     continue
                 elif real_user2_obj is None and real_user1_obj is not None:
                     self.waitlist.append(user1)
                     self.active_participants_count -= 1
+                    print(f'Reducing active_participants (5), now it\'s {self.active_participants_count}', flush=True)
                     continue
                 elif real_user1_obj is None and real_user2_obj is None:
                     self.active_participants_count -= 2
+                    print(f'Reducing active_participants (by two) (6), now it\'s {self.active_participants_count}', flush=True)
                     continue
 
                 acknowledgement = AcknowledgedMatchRequest(
@@ -368,13 +389,15 @@ class Tournament(models.Model):
                 )
                 acknowledgement.save()
                 async_to_sync(channel_layer.group_send)(real_user1_obj.username,
-                                                        {"type": "tournament_game_invite",
+                                                        {"type": "tournament_game_invite", "msg_obj": {
                                                          "match_key": acknowledgement.match_key,
-                                                         "username": real_user1_obj.username})
+                                                            "tournament_id": self.id,
+                                                         "target_user": real_user1_obj.username}})
                 async_to_sync(channel_layer.group_send)(real_user2_obj.username,
-                                                        {"type": "tournament_game_invite",
+                                                        {"type": "tournament_game_invite", "msg_obj": {
                                                          "match_key": acknowledgement.match_key,
-                                                         "username": real_user2_obj.username})
+                                                            "tournament_id": self.id,
+                                                         "target_user": real_user2_obj.username}})
 
 
         # If there's an odd participant, they stay in the waitlist

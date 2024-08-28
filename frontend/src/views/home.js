@@ -10,7 +10,7 @@ import store from "../store/index.js";
 import state from "../store/state.js";
 import { MAX_AI_PLAYERS } from "../utils/enum.js";
 import * as bootstrap from 'bootstrap';
-import { home } from "/src/utils/langPack.js";
+import { home } from "../utils/langPack.js";
 
 
 export default class Home extends Component {
@@ -322,18 +322,21 @@ export default class Home extends Component {
 				}
 
 				const game = {
-					Nickname: nickname,
-					Color: colorRadio.value,
-					Speed: speed,
-					AiPlayers: aiPlayers
+					author_nickname: nickname,
+					ball_color: colorRadio.value,
+					fast: speed,
+					bot_list: aiPlayers,
+					name: `${nickname}'s tournament`,
+					all_participants_count: 4,
+
 				};
 
 				try {
-					// Simulate backend interaction
 					const response = await this.postTournamentData(game);
+					console.log(response);
 					if (response.status !== 200) throw new Error("Backend error");
 
-					navigateTo("/tournament-game");
+					//navigateTo("/tournament-game");
 				} catch (error) {
 					showToast(`${langPack.serverError}`, "danger");
 				}
@@ -352,13 +355,16 @@ export default class Home extends Component {
 					return;
 				}
 
+				const data = {
+					nickname: nickname,
+				};
+
 				try {
-					// Simulate backend interaction
-					//const response = await this.postTournamentData(game);
-					//if (response.status !== 200) throw new Error("Backend error");
-					store.dispatch("setJoinTournamentNickName", nickname);
-					console.log(store.state.joinNickname);
-					navigateTo("/join-tournament");
+					const response = await this.postJoinTournament(data);
+					console.log(response);
+					if (response.status !== 200) throw new Error("Backend error");
+
+					//navigateTo("/tournament-game");
 				} catch (error) {
 					showToast(`${langPack.serverError}`, "danger");
 				}
@@ -481,9 +487,43 @@ export default class Home extends Component {
 
 
 	async postTournamentData(gameData) {
-		// Simulated function for posting data to the server
-		// remplacer ca avec un vrai call API voir avec leo comment faire
-		return { status: 200 }; // Assume success
+		const langPack = home[store.state.language];
+		try {
+		  const jwt = localStorage.getItem('jwt');
+		  const apiurl = process.env.API_URL;
+		  const response = await fetch(`${apiurl}/create_tournament`, {
+			method: 'POST',
+			headers: {
+			  'Authorization': `Bearer ${jwt}`,
+			  'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(gameData)
+		  });
+		  return (response);
+		} catch (error) {
+		  showToast(langPack.serverError, "danger");
+		  console.error(`Error:`, error);
+		}
+	}
+
+	async postJoinTournament(gameData) {
+		const langPack = home[store.state.language];
+		try {
+		  const jwt = localStorage.getItem('jwt');
+		  const apiurl = process.env.API_URL;
+		  const response = await fetch(`${apiurl}/join_tournament`, {
+			method: 'POST',
+			headers: {
+			  'Authorization': `Bearer ${jwt}`,
+			  'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(gameData)
+		  });
+		  return (response);
+		} catch (error) {
+		  showToast(langPack.serverError, "danger");
+		  console.error(`Error:`, error);
+		}
 	}
 
 	// // posting data tournament pour de vrai, esssaie
