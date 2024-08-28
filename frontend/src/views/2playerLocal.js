@@ -110,18 +110,39 @@ export default class TwoPlayerLocalGame extends Component {
 			paddleWidth: 10,
 			paddleHeight: 80,
 			paddleSpeed: 8,
-			ballXSpeed: obj.speed * 6 || 3,
+			ballXSpeed: 3,
 			ballYSpeed: 3,
 			ballSlice: 4
 		}
 
+		let pressedKeys = new Set();
+		const listenedToKeys = [87, 83, 38, 40];
+
+		document.handleKeyDown = function (e) {
+			if (listenedToKeys.includes(e.keyCode)) {
+				e.preventDefault();
+				/*if (!window.gameState.started) {
+					return;
+				}*/
+				pressedKeys.add(e.keyCode);
+			}
+		}
+
+		document.handleKeyUp = function (e) {
+			if (listenedToKeys.includes(e.keyCode)) {
+				pressedKeys.delete(e.keyCode);
+			}
+		}
+
+		document.addEventListener("keydown", document.handleKeyDown);
+		document.addEventListener("keyup", document.handleKeyUp);
 
 		class Paddle {
 			constructor(direction) {
 				this.direction = direction
 				this.y = config.canvasHeight / 2 - config.paddleHeight / 2
 				direction === 1 ? this.x = 0 : this.x = config.canvasWidth - config.paddleWidth
-				direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
+				//direction === 1 ? this.name = "Jackito" : obj.ai == true ? this.name = "AI" : this.name = "Inaranjo"
 				this.score = 0
 				this.aipos_cal = 0
 				this.size = config.paddleHeight
@@ -292,7 +313,7 @@ export default class TwoPlayerLocalGame extends Component {
 			ball.dy = config.ballYSpeed * Math.sign(Math.random() - .5)
 		}
 
-		const controller = obj.ai ? {
+		/*const controller = obj.ai ? {
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
 		} : {
@@ -300,11 +321,11 @@ export default class TwoPlayerLocalGame extends Component {
 			83: { pressed: false, func: paddle1.moveDown },
 			38: { pressed: false, func: paddle2.moveUp },
 			40: { pressed: false, func: paddle2.moveDown },
-		};
+		};*/
 
 		const ball = {
 			r: 8,
-			color: obj.color,
+			color: '#ff0000',
 		}
 
 
@@ -356,7 +377,7 @@ export default class TwoPlayerLocalGame extends Component {
 		};
 
 
-		const handleKeyDown = (e) => {
+		/*const handleKeyDown = (e) => {
 			controller[e.keyCode] && (controller[e.keyCode].pressed = true)
 		}
 
@@ -368,7 +389,7 @@ export default class TwoPlayerLocalGame extends Component {
 			Object.keys(controller).forEach(key => {
 				controller[key].pressed && controller[key].func()
 			})
-		}
+		}*/
 
 		const moveBall = () => {
 			ball.x += ball.dx
@@ -416,6 +437,10 @@ export default class TwoPlayerLocalGame extends Component {
 		}
 
 		const render = () => {
+			if (window.route_path && !window.route_path.includes('2player-local')) {
+				cancelAnimationFrame(window.animationFrameId);
+				// ...
+			}
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			bigpad.render()
 			paddle1.render()
@@ -425,8 +450,8 @@ export default class TwoPlayerLocalGame extends Component {
 
 
 
-		document.addEventListener("keydown", handleKeyDown)
-		document.addEventListener("keyup", handleKeyUp)
+		//document.addEventListener("keydown", handleKeyDown)
+		//document.addEventListener("keyup", handleKeyUp)
 
 		document.getElementById("start-game").addEventListener("click", () => {
 			document.getElementById("start-game").style.display = "none";
@@ -460,7 +485,7 @@ export default class TwoPlayerLocalGame extends Component {
 					date_partie: new Date(),
 					joueur1_username: "jackito",
 					joueur2_username: "naranjito",
-					is_ai_opponent: obj.ai,
+					is_ai_opponent: false,
 					duree_partie: 0,
 					score_joueur1: paddle1.score,
 					score_joueur2: paddle2.score
@@ -547,17 +572,33 @@ export default class TwoPlayerLocalGame extends Component {
 
 
 		const animate = () => {
+			if (window.route_path && !window.route_path.includes('2player-local')) {
+				return;x
+			}
 			render()
-			runPressedButtons()
+
+			if (pressedKeys.has(87)) {
+				/*window.gameState.*/paddle1.moveUp();
+			}
+			if (pressedKeys.has(83)) {
+				/*window.gameState.*/paddle1.moveDown();
+			}
+			if (pressedKeys.has(38)) {
+				/*window.gameState.*/paddle2.moveUp();
+			}
+			if (pressedKeys.has(40)) {
+				/*window.gameState.*/paddle2.moveDown();
+			}
+
 			checkWallCollisions()
 			checkPaddleCollisions()
 			moveBall()
-			if (obj.ai)
-				MovePaddleAI()
+			//if (obj.ai)
+			//	MovePaddleAI()
 			checkWin()
 			checkbig()
 			updateTimer()
-			window.requestAnimationFrame(animate)
+			window.animationFrameId = window.requestAnimationFrame(animate)
 		}
 
 		animate()

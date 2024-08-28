@@ -45,7 +45,7 @@ if debug_val == 'true':
     debug_val = True
 DEBUG = debug_val
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 ALLOWED_HOSTS = [
     'localhost',

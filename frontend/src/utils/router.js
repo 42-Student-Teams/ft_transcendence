@@ -59,7 +59,7 @@ const router = async () => {
 			'url': match.route.path
 		});
 	}
-
+	window.route_path = match.route.path;
 	if (!match.route.path.includes('local-game')) {
 		if (state.gameSocket && state.gameSocket.readyState === state.gameSocket.OPEN) {
 			console.log('Closing game socket');
