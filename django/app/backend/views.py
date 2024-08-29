@@ -676,6 +676,7 @@ class QuitTournamentView(APIView):
             async_to_sync(channel_layer.group_send)(controller_channel_name,
                                                     {"type": "player_disconnect", "msg_obj": {
                                                         "username": user.username,
+                                                        "who": user.username
                                                     }})
         except:
             pass

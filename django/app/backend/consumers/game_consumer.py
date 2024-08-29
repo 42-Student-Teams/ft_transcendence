@@ -225,12 +225,14 @@ class GameConsumer(WsConsumerCommon):
                 await self.send_channel(self.opponent_channel, 'gentle_disconnect',
                                     {"target_user": self.opponent.username})
         # if opponent disconnects
-        else:
+        elif event['msg_obj'].get('who') == self.opponent.username:
             print('Opponent disconnected', flush=True)
             # Author wins
             await self.user_won(self.user)
             await self.send_channel(self.author_channel, 'gentle_disconnect',
                                     {"target_user": self.user_username})
+        else:
+            return
         try:
             await self.send_json({'type': 'game_bye', 'msg_obj': {}})
         except:

@@ -1,11 +1,11 @@
 from backend.models import (JwtUser, Message, MatchRequest, AcknowledgedMatchRequest, GameSearchQueue,
-                            TournamentPvPQueue, TournamentSearchQueue)
+                            TournamentPvPQueue, TournamentSearchQueue, Tournament)
 from backend.util import timestamp_now, random_alphanum, AnonClass
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.db import database_sync_to_async
-
+from channels.layers import get_channel_layer
 
 class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
@@ -17,6 +17,27 @@ class WsConsumer(WsConsumerCommon):
         GameSearchQueue.objects.filter(user=self.user).delete()
         TournamentPvPQueue.objects.filter(user=self.user).delete()
         TournamentSearchQueue.objects.filter(user=self.user).delete()
+        tournaments = Tournament.objects.all()
+        for tournament in tournaments:
+            print(f'Deleting user {self.user.username} from tournament {tournament.id}')
+            tournament.remove_from_waitlist(self.user.username)
+            acknowledgements: list[AcknowledgedMatchRequest] = AcknowledgedMatchRequest.objects.filter(tournament_id=tournament.id)
+            for acknowledgement in acknowledgements:
+                channel_layer = get_channel_layer()
+                if self.user.username == acknowledgement.request_author.username:
+                    Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
+                elif self.user.username == acknowledgement.target_user.username:
+                    Tournament.report_results(acknowledgement.author_nickname, tournament.id)
+                async_to_sync(channel_layer.group_send)(acknowledgement.request_author.username,
+                                                        {"type": "relay_bye", "msg_obj": {
+                                                            "target_user": acknowledgement.request_author.username,
+                                                            "match_key": acknowledgement.match_key,
+                                                        }})
+                async_to_sync(channel_layer.group_send)(acknowledgement.target_user.username,
+                                                        {"type": "relay_bye", "msg_obj": {
+                                                            "target_user": acknowledgement.target_user.username,
+                                                            "match_key": acknowledgement.match_key,
+                                                        }})
 
     async def on_auth(self, msg_obj):
         await self.subscribe_to_groups()
