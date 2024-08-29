@@ -11,7 +11,11 @@ function openCommWebsocket() {
     let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
     socket.onmessage = handleMessage;
     socket.addEventListener("open", (ev) => {
-        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
+        try {
+            socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt')}));
+        } catch(err) {
+            console.log('Failed to send WS.');
+        }
     });
     store.dispatch("setWebSocket", socket);
 }
@@ -21,7 +25,11 @@ export function openGameWebsocket(match_key) {
     let socket = new WebSocket(`wss://${window.location.host }/wss/game/`);
     socket.onmessage = handleGameMessage;
     socket.addEventListener("open", (ev) => {
-        socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "match_key": match_key}));
+        try {
+            socket.send(JSON.stringify({"jwt": localStorage.getItem('jwt'), "match_key": match_key}));
+        } catch(err) {
+            console.log('Failed to send WS.');
+        }
     });
     store.dispatch("setGameSocket", socket);
 }
@@ -38,7 +46,12 @@ function wsSend(func, content, socket=null) {
     if (socket == null) {
         socket = state.socket;
     }
-    socket.send(JSON.stringify(payload));
+
+    try {
+        socket.send(JSON.stringify(payload));
+    } catch(err) {
+        console.log('Failed to send WS.');
+    }
 }
 
 export { openCommWebsocket };

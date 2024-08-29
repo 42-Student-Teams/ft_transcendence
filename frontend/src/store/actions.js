@@ -10,7 +10,11 @@ function logIn(context) {
 
 function logOut(context) {
     if (state.socket && state.socket.readyState === WebSocket.OPEN) {
-        state.socket.send(JSON.stringify({func: 'logout'}));
+		try {
+            state.socket.send(JSON.stringify({func: 'logout'}));
+        } catch(err) {
+            console.log('Failed to send WS.');
+        }
     }
     localStorage.clear();
     context.commit("logOut");
