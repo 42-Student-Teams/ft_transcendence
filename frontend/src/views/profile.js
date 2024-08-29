@@ -15,7 +15,7 @@ export default class Profile extends Component {
 		this.components = {
 			navBar: new NavBar(),
 		};
-		
+
 	}
 
 	async render() {
@@ -241,9 +241,36 @@ export default class Profile extends Component {
 
 	createMatch(match, isLastMatch) {
 		const langPack = profile[this.currentLang];
-		const result = match.gagnant_username === match.joueur1_username ? langPack.victory : langPack.defeat;
-		const resultClass = result === langPack.victory ? "text-success" : "text-danger";
+		let result = "";
+		const myPlayerUsername = (match.joueur1_username === store.state.username) ? match.joueur1_username : match.joueur2_username;
+		const myScore = (myPlayerUsername === match.joueur1_username) ? match.score_joueur1 : match.score_joueur2;
+		const opponentScore = (myPlayerUsername === match.joueur1_username) ? match.score_joueur2 : match.score_joueur1;
+
+		if (match.gagnant_username === null) {
+			if (myScore > opponentScore || myScore == opponentScore)
+				result = langPack.defeatByWithdraw;
+			else
+				result = langPack.defeat;
+		} else if (match.gagnant_username === myPlayerUsername) {
+			if (myScore === 3) {
+				result = langPack.victory;
+			} else if (myScore < 3) {
+				result = langPack.victoryByWithdraw;
+			}
+		} else {
+			if (opponentScore === 3) {
+				result = langPack.defeat;
+			}
+			else if (opponentScore < 3)
+				result = langPack.defeatByWithdraw;
+		}
+
 		const score = `${match.score_joueur1} - ${match.score_joueur2}`;
+		let resultClass = "";
+		if (result == langPack.victoryByWithdraw || result == langPack.victory)
+			resultClass = "text-success";
+		else
+			resultClass = "text-danger";
 		const date = new Date(match.date_partie).toLocaleString(this.currentLang);
 
 		return `

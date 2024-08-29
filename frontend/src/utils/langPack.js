@@ -297,6 +297,9 @@ export const home = {
 
 export const profile = {
 	en: {
+		defeatByWithdraw: "Defeat by withdraw",
+		victoryByWithdraw: "Victory by withdraw",
+		withdraw: "Withdraw",
 		editProfile: "Edit Profile",
 		profilePicture: "Profile Picture",
 		firstName: "First Name",
@@ -332,6 +335,9 @@ export const profile = {
 
 	},
 	fr: {
+		defeatByWithdraw: "Défaite par abandon",
+		victoryByWithdraw: "Victoire par abandon",
+		withdraw: "Abandonné",
 		editProfile: "Modifier le profil",
 		profilePicture: "Photo de profil",
 		firstName: "Prénom",
@@ -366,6 +372,9 @@ export const profile = {
 		friendUsernameNotSet: "Nom d'utilisateur de l'ami non défini"
 	},
 	es: {
+		defeatByWithdraw: "Derrota por abandono",
+		victoryByWithdraw: "Victoria por abandono",
+		withdraw: "Retirar",
 		editProfile: "Editar perfil",
 		profilePicture: "Foto de perfil",
 		firstName: "Nombre",
