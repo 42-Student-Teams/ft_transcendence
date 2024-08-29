@@ -517,7 +517,7 @@ export default class LocalGame extends Component {
 		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
-		myModal.hide();
+		myModal.dispose();
 		//resetBall();
 
 	}
