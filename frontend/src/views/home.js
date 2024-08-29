@@ -372,8 +372,7 @@ export default class Home extends Component {
 				try {
 					const response = await this.postJoinTournament(data);
 					console.log(response);
-					if (response.status !== 200)
-					{
+					if (response.status !== 200) {
 						const errorData = await response.json();
 						throw new Error(`${errorData.message}`);
 					}
@@ -391,13 +390,6 @@ export default class Home extends Component {
 			});
 		}
 
-		//if (document.querySelector("#local-game-btn")) {
-
-		/*document.querySelector("#local-game-btn").addEventListener("click", (event) => {
-			event.preventDefault();
-			console.log('Navigating to local game');
-		});*/
-		//}
 
 		if (this.element.querySelector("#local-game-btn")) {
 			this.element.querySelector("#local-game-btn").addEventListener("click", async (event) => {
@@ -405,23 +397,6 @@ export default class Home extends Component {
 				navigateTo("/2player-local");
 			});
 		}
-		// backend interaction, essaie
-		// 	try {
-		// 		// Make a real API call to post tournament data
-		// 		const response = await this.postTournamentData(game);
-		// 		if (response.ok) {
-		// 			showToast("Tournament created successfully!", "success");
-		// 			navigateTo("/tournament-game");
-		// 		} else {
-		// 			const errorData = await response.json();
-		// 			showToast(errorData.message || "Error creating tournament.", "danger");
-		// 		}
-		// 	} catch (error) {
-		// 		console.error("Error:", error);
-		// 		showToast("Server error. Please try again.", "danger");
-		// 	}
-		// });
-
 		// Helper function to toggle visibility
 		function toggleVisibility(activeList, buttonToActivate, lists, buttons) {
 			lists.forEach(list => {

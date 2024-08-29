@@ -271,8 +271,13 @@ class GameController():
             author_timestamp = None
             opponent_timestamp = None
             event = None
+
             # Process all events in the queue
             async with self.queue_lock:
+                if (self.author_paddle.y is None):
+                    self.author_paddle.y = 0
+                if (self.opponent_paddle.y is None):
+                    self.opponent_paddle.y = 0
                 while self.event_queue:
                     event = self.event_queue.pop(0)
                     # TODO: check for bounds
@@ -317,6 +322,7 @@ class GameController():
             self.bigpad.checkbig(self.ball, self.author_paddle, self.opponent_paddle, self.config)
 
             # Send game state update to clients
+
             update = {
                 "author_paddle_pos": {
                     'x': self.author_paddle.x,
@@ -340,6 +346,7 @@ class GameController():
                     'color': self.bigpad.color
                 },
             }
+            
             if author_timestamp is not None:
                 update['author_timestamp'] = author_timestamp
                 update['paddle_moved'] = True

@@ -7,7 +7,6 @@ import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
 import { showToast } from "../utils/toastUtils.js";
-//import ModalTournamentBracket from "../components/tournament/bracketModal.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] || ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -88,34 +87,12 @@ if (typeof refreshUserProfile === 'function') {
 	refreshUserProfile();
 }
 
-function displayGameOverMessage(winnerText) {
-	const currentPlayer = window.gameState.currentUsername;
-	const isWinner = winnerText === document.getElementById('left_player').innerText && currentPlayer === window.gameState.author_username ||
-		winnerText === document.getElementById('right_player').innerText && currentPlayer === window.gameState.opponent_username;
-
-	window.gameState.endTime = Date.now() - window.gameState.startTime;
-	window.gameState.stopperTime = true;
-
-	if (isWinner) {
-		document.getElementById('Modal-winner').innerText = `${ winnerText } wins!`;
-		document.getElementById("start-game").style.display = "block";
-		window.gameState.myModal.show();
-	} else {
-		showToast("You lost the game!", "error");
-		setTimeout(() => {
-			navigateTo("/");
-		}, 3000);
-	}
-}
-
-
 function checkGameOver() {
 	const leftScore = parseInt(document.getElementById('score-left').innerText);
 	const rightScore = parseInt(document.getElementById('score-right').innerText);
 
 	if (leftScore === 3 || rightScore === 3) {
 		const winnerText = leftScore > rightScore ? document.getElementById('left_player').innerText : document.getElementById('right_player').innerText;
-		displayGameOverMessage(winnerText);
 	}
 }
 
@@ -124,14 +101,10 @@ export default class LocalGame extends Component {
 	constructor() {
 		super({ element: document.getElementById("app") });
 		this.currentLang = store.state.language;
-		// store.events.subscribe("languageIdChange", () => this.renderAll());
-
 		this.render();
 	}
 
 	async render() {
-
-
 
 		const langPack = game[this.currentLang];
 		const tournament = {
@@ -411,7 +384,8 @@ export default class LocalGame extends Component {
 		canvas.style.backgroundColor = '#9c9c9e';
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
-		//const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
+		//const myModale = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
+		console.log('Modal', myModale);
 
 		const config = {
 			canvasWidth: 900,
@@ -544,7 +518,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
-			//myModal.show();
+			myModale.show();
 			updateTimer();
 			window.requestAnimationFrame(animate);
 		}
@@ -552,7 +526,7 @@ export default class LocalGame extends Component {
 		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
-		//myModal.dispose();
+		myModale.dispose();
 		//resetBall();
 
 	}
