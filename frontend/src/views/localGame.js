@@ -93,11 +93,12 @@ function sendGameOver() {
     };
 
     const apiurl = process.env.API_URL;
+	const jwt = localStorage.getItem('jwt');
     fetch(`${apiurl}/history_postGames`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('jwt')}`
+            'Authorization': `Bearer ${jwt}`
         },
         body: JSON.stringify(gameData)
     })

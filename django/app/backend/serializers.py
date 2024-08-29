@@ -11,7 +11,7 @@ import re
 class JwtUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         min_length=3,
-        max_length=12,
+        max_length=20,
         validators=[
             RegexValidator(
                 regex='^[a-zA-Z0-9_]+$',
@@ -19,8 +19,8 @@ class JwtUserSerializer(serializers.ModelSerializer):
             )
         ]
     )
-    first_name = serializers.CharField(max_length=12, required=True)
-    last_name = serializers.CharField(max_length=12, required=True)
+    first_name = serializers.CharField(max_length=20, required=True)
+    last_name = serializers.CharField(max_length=20, required=True)
     email = serializers.EmailField(
         validators=[EmailValidator(message="Please enter a valid email address.")],
         required=True

@@ -9,9 +9,9 @@ from .util import timestamp_now, random_alphanum, AnonClass
 
 
 class JwtUser(AbstractUser):
-    first_name = models.CharField(max_length=12)
-    last_name = models.CharField(max_length=12)
-    username = models.CharField(unique=True, max_length=12)
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
+    username = models.CharField(unique=True, max_length=20)
     email = models.EmailField(unique=True, null=True, blank=True)
     password = models.CharField(max_length=128)
     isoauth = models.BooleanField(default=False)
