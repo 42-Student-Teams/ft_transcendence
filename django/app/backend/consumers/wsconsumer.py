@@ -383,7 +383,8 @@ class WsConsumer(WsConsumerCommon):
             return
         if msg_obj.get('target_user') != self.user_username:
             return
-        await self.send_json({'game_bye': True})
+        msg_obj['type'] = 'game_bye'
+        await self.send_json(msg_obj)
 
     async def toast(self, event):
         msg_obj = event["msg_obj"]

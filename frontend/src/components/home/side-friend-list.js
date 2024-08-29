@@ -1,5 +1,5 @@
 import Component from "../../library/component.js";
-import { chatClear, fetchChatHistory } from "../../utils/chatUtils.js";
+import { chatClear, fetchChatHistoryChunk, insertChatHistoryChunk } from "../../utils/chatUtils.js";
 import { showToast } from "../../utils/toastUtils.js";
 import store from "../../store/index.js";
 import FriendProfileInfo from "../profile/FriendProfileInfo.js";
@@ -92,7 +92,7 @@ export default class SideFriendList extends Component {
       } else {
         let button = event.target.closest(".btn-direct-message");
         if (button) {
-          this.handleDirectMessage(event, button.getAttribute('data-username'));
+          await this.handleDirectMessage(event, button.getAttribute('data-username'));
         } else if (event.target.closest(".btn-block")) {
           this.handleBlockFriend(event);
         }
@@ -225,8 +225,12 @@ export default class SideFriendList extends Component {
       btnFriends.classList.remove("active");
     }
 
+    let msgfetch = await fetchChatHistoryChunk(friend_username, null);
     chatClear();
-    await fetchChatHistory(friend_username);
+    insertChatHistoryChunk(msgfetch.messages, msgfetch.gotAll, friend_username);
+    //await fetchChatHistory(friend_username);
+    console.log('Checking messages');
+    console.log(msgfetch);
   }
 
   async handleBlockFriend(event) {

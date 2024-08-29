@@ -89,6 +89,7 @@ export const home = {
 		joinedTournamentQueue: "You joined the tournament queue",
 		youWonGame: "You have won the game !",
 		youLostGame: "You have lost the game !",
+		join: "Join",
 		languages: {
 			en: "🇬🇧 English",
 			fr: "🇫🇷 Français",
@@ -185,6 +186,7 @@ export const home = {
 		joinedTournamentQueue: "Vous avez rejoint la file d'attente",
 		youWonGame: "Vous avez gagné la partie !",
 		youLostGame: "Vous avez perdu la partie !",
+		join: "Rejoindre",
 		languages: {
 			en: "🇬🇧 Anglais",
 			fr: "🇫🇷 Français",
@@ -282,6 +284,7 @@ export const home = {
 		joinedTournamentQueue: "Te has unido a la cola del torneo",
 		youWonGame: "Has ganado el partido !",
 		youLostGame: "Has perdido el partido !",
+		join: "Unirse",
 		languages: {
 			en: "🇬🇧 Inglés",
 			fr: "🇫🇷 Francés",

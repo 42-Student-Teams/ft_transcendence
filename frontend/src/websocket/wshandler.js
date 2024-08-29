@@ -1,4 +1,4 @@
-import {chatInsertMessage} from "../utils/chatUtils.js";
+import {insertNewMessage} from "../utils/chatUtils.js";
 import {openGameWebsocket} from "../utils/wsUtils.js"
 import {showToast, showTournamentInvite} from "../utils/toastUtils.js";
 import {updateFromSocket} from "../views/localGame.js";
@@ -14,18 +14,27 @@ function handleMessage(msg) {
     let msg_obj = JSON.parse(msg['data']);
     console.log(msg);
 
-    if ('game_bye' in msg_obj) {
-        console.log('Received BYE');
-        navigateTo('/');
-    }
-
     if (!('type' in msg_obj)) {
         return;
     }
 
     switch(msg_obj['type']) {
+        case 'game_bye':
+            console.log('Received BYE');
+            console.log(msg_obj);
+            navigateTo('/');
+            if ('match_key' in msg_obj) {
+                console.log(`Hiding any ${msg_obj['match_key']} invites`);
+
+                let selector = `.tournament-toast[data-match-key="${msg_obj['match_key']}"]`;
+                let element = document.querySelector(selector);
+                if (element) {
+                    element.parentElement.removeChild(element);
+                }
+            }
+            break;
         case 'dm':
-            chatInsertMessage(msg_obj['author'], msg_obj['message']);
+            insertNewMessage(msg_obj['message'], msg_obj['author']);
             break;
         /* 3) get an id to check against when we get an acknowledgement which isn't against a bot */
         /* Happens when requesting a match vs a player, which has to yet to be matched */
@@ -80,16 +89,15 @@ function handleGameMessage(msg) {
     let msg_obj = JSON.parse(msg['data']);
     //console.log(msg);
 
-    if ('game_bye' in msg_obj) {
-        console.log('Received BYE');
-        navigateTo('/');
-    }
-
     if (!('type' in msg_obj)) {
         return;
     }
 
     switch(msg_obj['type']) {
+        case 'game_bye':
+            console.log('Received BYE');
+            navigateTo('/');
+            break;
         case 'start':
             console.log('start');
             let gameData = {

@@ -61,7 +61,7 @@ class UserOauthLoginView(APIView):
             oauth_token = request.data['oauth_token']
         if oauth_token is not None:
             user_info = get_user_info(oauth_token)
-            print(user_info, flush=True)
+            #print(user_info, flush=True)
             if user_info is not None:
                 username = user_info['login']
             else:
@@ -728,29 +728,31 @@ class QuitTournamentView(APIView):
 
         tournament.remove_from_waitlist(user.username)
 
-        match_acknowledgement: AcknowledgedMatchRequest = AcknowledgedMatchRequest.objects.filter(match_key=match_key).first()
+        match_acknowledgement: AcknowledgedMatchRequest = (AcknowledgedMatchRequest.
+                                                           objects.filter(match_key=match_key).first())
         if match_acknowledgement is not None:
             if user == match_acknowledgement.request_author:
-                #tournament.waitlist.append(match_acknowledgement.opponent_nickname)
                 Tournament.report_results(match_acknowledgement.opponent_nickname, tournament_id)
             else:
-                #tournament.waitlist.append(match_acknowledgement.author_nickname)
                 Tournament.report_results(match_acknowledgement.author_nickname, tournament_id)
-            #tournament.save()
 
-        channel_layer = get_channel_layer()
-        if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.request_author):
-            TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.request_author)
+            channel_layer = get_channel_layer()
+            if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.request_author):
+                TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.request_author)
             async_to_sync(channel_layer.group_send)(match_acknowledgement.request_author.username,
-                                                    {"type": "relay_bye", "msg_obj": {
-                                                        "target_user": match_acknowledgement.request_author.username,
-                                                    }})
-        if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.target_user):
-            TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.target_user)
+                                                        {"type": "relay_bye", "msg_obj": {
+                                                            "target_user": match_acknowledgement.request_author.username,
+                                                            "match_key": match_acknowledgement.match_key,
+                                                        }})
+            if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.target_user):
+                TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.target_user)
             async_to_sync(channel_layer.group_send)(match_acknowledgement.target_user.username,
-                                                    {"type": "relay_bye", "msg_obj": {
-                                                        "target_user": match_acknowledgement.target_user.username,
-                                                    }})
+                                                        {"type": "relay_bye", "msg_obj": {
+                                                            "target_user": match_acknowledgement.target_user.username,
+                                                            "match_key": match_acknowledgement.match_key,
+                                                        }})
+
+            AcknowledgedMatchRequest.objects.filter(match_key=match_key).delete()
 
         return Response({
             'status': 'success',
