@@ -6,85 +6,140 @@ import * as bootstrap from 'bootstrap';
 import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
+import { showToast } from "../utils/toastUtils.js";
 //import ModalTournamentBracket from "../components/tournament/bracketModal.js";
 
 function updateFromSocket(msg_obj) {
-	if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
-		//console.log(msg_obj);
-	}
-	if (!Object.hasOwn(window, 'gameState')) {
-		return;
-	}
-	if ('waiting_between_points' in msg_obj) {
-		let cnv = document.getElementById('myCanvas');
-		if (!cnv) {
-			return;
-		}
-		if (msg_obj['waiting_between_points']) {
-			/* equivalent of resetBall */
-			cnv.style.backgroundColor = '#9c9c9e';
-			//window.gameState.stopperTime = true;
-			//window.gameState.endTime = Date.now() - window.gameState.startTime;
+    if (msg_obj['paddle_moved'] ||  ('update' in msg_obj && msg_obj['bigpad']['active'])) {
+        //console.log(msg_obj);
+    }
+    if (!Object.hasOwn(window, 'gameState')) {
+        return;
+    }
+    if ('waiting_between_points' in msg_obj) {
+        let cnv = document.getElementById('myCanvas');
+        if (!cnv) {
+            return;
+        }
+        if (msg_obj['waiting_between_points']) {
+            /* equivalent of resetBall */
+            cnv.style.backgroundColor = '#9c9c9e';
+            //window.gameState.stopperTime = true;
+            //window.gameState.endTime = Date.now() - window.gameState.startTime;
+        } else {
+            cnv.style.backgroundColor = '#EBEBED';
+        }
+    } else if ('author_points' in msg_obj) {
+        console.log(`Author points: ${msg_obj['author_points']}`);
+        document.getElementById('score-left').innerText = msg_obj['author_points'];
+        checkGameOver();
+    } else if ('opponent_points' in msg_obj) {
+        console.log(`Opponent points: ${msg_obj['opponent_points']}`);
+        document.getElementById('score-right').innerText = msg_obj['opponent_points'];
+        checkGameOver();
+    } else if ('countdown' in msg_obj) {
+        console.log(`Countdown: ${msg_obj['countdown']}`);
+        document.getElementById('Timer').innerText = msg_obj['countdown'];
+        if (msg_obj['countdown'] === 0) {
+            window.gameState.started = true;
+            document.getElementById('Timer').innerText = '';
+        }
+    } else {
+        let ourTimestamp = 0;
+        if (window.gameState.currentUsername === window.gameState.author_username) {
+            ourTimestamp = msg_obj['author_timestamp'];
+        } else {
+            ourTimestamp = msg_obj['opponent_timestamp'];
+        }
+        if (window.gameState.currentUsername === window.gameState.opponent_username) {
+            if (ourTimestamp >= window.gameState.lastTimestamp) {
+                console.log(`Timestamp ${ourTimestamp} is newer than last ${window.gameState.lastTimestamp}, setting y to ${msg_obj['opponent_paddle_pos']['y']}`);
+                window.gameState.youPaddle.x = msg_obj['opponent_paddle_pos']['x'];
+                window.gameState.youPaddle.y = msg_obj['opponent_paddle_pos']['y'];
+            }
+            window.gameState.youPaddle.size = msg_obj['opponent_paddle_pos']['size'];
+            window.gameState.opponentPaddle.x = msg_obj['author_paddle_pos']['x'];
+            window.gameState.opponentPaddle.y = msg_obj['author_paddle_pos']['y'];
+            window.gameState.opponentPaddle.size = msg_obj['author_paddle_pos']['size'];
+        } else {
+            if (ourTimestamp >= window.gameState.lastTimestamp) {
+                window.gameState.youPaddle.x = msg_obj['author_paddle_pos']['x'];
+                window.gameState.youPaddle.y = msg_obj['author_paddle_pos']['y'];
+            }
+            window.gameState.youPaddle.size = msg_obj['author_paddle_pos']['size'];
+            window.gameState.opponentPaddle.x = msg_obj['opponent_paddle_pos']['x'];
+            window.gameState.opponentPaddle.y = msg_obj['opponent_paddle_pos']['y'];
+            window.gameState.opponentPaddle.size = msg_obj['opponent_paddle_pos']['size'];
+        }
+        window.gameState.ball.x = msg_obj['ball_pos']['x'];
+        window.gameState.ball.y = msg_obj['ball_pos']['y'];
+        window.gameState.ball.r = msg_obj['ball_pos']['r'];
 
-		} else {
-			cnv.style.backgroundColor = '#EBEBED';
-		}
-
-	} else if ('author_points' in msg_obj) {
-		console.log(`Author points: ${msg_obj['author_points']}`);
-		document.getElementById('score-left').innerText = msg_obj['author_points'];
-	} else if ('opponent_points' in msg_obj) {
-		console.log(`Opponent points: ${msg_obj['opponent_points']}`);
-		document.getElementById('score-right').innerText = msg_obj['opponent_points'];
-	} else if ('countdown' in msg_obj) {
-		console.log(`Countdown: ${msg_obj['countdown']}`);
-		document.getElementById('Timer').innerText = msg_obj['countdown'];
-		if (msg_obj['countdown'] === 0) {
-			window.gameState.started = true;
-			document.getElementById('Timer').innerText = '';
-		}
-	} else {
-		let ourTimestamp = 0;
-		if (window.gameState.currentUsername === window.gameState.author_username) {
-			ourTimestamp = msg_obj['author_timestamp'];
-		} else {
-			ourTimestamp = msg_obj['opponent_timestamp'];
-		}
-		//ourTimestamp = 0;
-		/*if (!('timestamp' in msg_obj) || msg_obj['timestamp'] === null) {
-			console.error('Setting timestamp to 0!');
-			msg_obj['timestamp'] = 0;
-		}*/
-		if (window.gameState.currentUsername === window.gameState.opponent_username) {
-			if (ourTimestamp >= window.gameState.lastTimestamp) {
-				console.log(`Timestamp ${ourTimestamp} is newer than last ${window.gameState.lastTimestamp}, setting y to ${msg_obj['opponent_paddle_pos']['y']}`);
-				window.gameState.youPaddle.x = msg_obj['opponent_paddle_pos']['x'];
-				window.gameState.youPaddle.y = msg_obj['opponent_paddle_pos']['y'];
-			}
-			window.gameState.youPaddle.size = msg_obj['opponent_paddle_pos']['size'];
-			window.gameState.opponentPaddle.x = msg_obj['author_paddle_pos']['x'];
-			window.gameState.opponentPaddle.y = msg_obj['author_paddle_pos']['y'];
-			window.gameState.opponentPaddle.size = msg_obj['author_paddle_pos']['size'];
-		} else {
-			if (ourTimestamp >= window.gameState.lastTimestamp) {
-				window.gameState.youPaddle.x = msg_obj['author_paddle_pos']['x'];
-				window.gameState.youPaddle.y = msg_obj['author_paddle_pos']['y'];
-			}
-			window.gameState.youPaddle.size = msg_obj['author_paddle_pos']['size'];
-			window.gameState.opponentPaddle.x = msg_obj['opponent_paddle_pos']['x'];
-			window.gameState.opponentPaddle.y = msg_obj['opponent_paddle_pos']['y'];
-			window.gameState.opponentPaddle.size = msg_obj['opponent_paddle_pos']['size'];
-		}
-		window.gameState.ball.x = msg_obj['ball_pos']['x'];
-		window.gameState.ball.y = msg_obj['ball_pos']['y'];
-		window.gameState.ball.r = msg_obj['ball_pos']['r'];
-
-		window.gameState.bigpad.active = msg_obj['bigpad']['active'];
-		window.gameState.bigpad.x = msg_obj['bigpad']['x'];
-		window.gameState.bigpad.y = msg_obj['bigpad']['y'];
-		window.gameState.bigpad.color = msg_obj['bigpad']['color'];
-	}
+        window.gameState.bigpad.active = msg_obj['bigpad']['active'];
+        window.gameState.bigpad.x = msg_obj['bigpad']['x'];
+        window.gameState.bigpad.y = msg_obj['bigpad']['y'];
+        window.gameState.bigpad.color = msg_obj['bigpad']['color'];
+    }
 }
+
+function sendGameOver() {
+    const gameData = {
+        joueur1_username: window.gameState.author_username,
+        joueur2_username: window.gameState.opponent_username,
+        duree_partie: Math.floor((Date.now() - window.gameState.startTime) / 1000),
+        score_joueur1: parseInt(document.getElementById('score-left').innerText),
+        score_joueur2: parseInt(document.getElementById('score-right').innerText),
+        is_ai_opponent: window.gameState.ai
+    };
+
+    const apiurl = process.env.API_URL;
+	const jwt = localStorage.getItem('jwt');
+    fetch(`${apiurl}/history_postGames`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwt}`
+        },
+        body: JSON.stringify(gameData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Game history saved:', data);
+        const gameOverEvent = new CustomEvent('gameOver', { detail: gameData });
+        window.dispatchEvent(gameOverEvent);
+    })
+    .catch(error => console.error('Error saving game history:', error));
+
+    wsSend('game_over', gameData, state.gameSocket);
+}
+
+if (typeof refreshUserProfile === 'function') {
+    refreshUserProfile();
+}
+
+function displayGameOverMessage(winnerText) {
+    document.getElementById('Modal-winner').innerText = `${winnerText} wins!`;
+    document.getElementById("start-game").style.display = "block";
+    window.gameState.endTime = Date.now() - window.gameState.startTime;
+    window.gameState.stopperTime = true;
+    sendGameOver();
+    window.gameState.myModal.show();
+    
+    // Afficher le message
+    showToast("Game over! Results have been saved.", "success");
+}
+
+
+function checkGameOver() {
+    const leftScore = parseInt(document.getElementById('score-left').innerText);
+    const rightScore = parseInt(document.getElementById('score-right').innerText);
+
+    if (leftScore === 3 || rightScore === 3) {
+        const winnerText = leftScore > rightScore ? document.getElementById('left_player').innerText : document.getElementById('right_player').innerText;
+        displayGameOverMessage(winnerText);
+    }
+}
+
 
 export default class LocalGame extends Component {
 	constructor() {
@@ -397,6 +452,7 @@ export default class LocalGame extends Component {
 		window.gameState.opponentPaddle = new Paddle(); //paddle2
 		window.gameState.bigpad = new BiggerPad();
 		window.gameState.endTime = window.gameState.startTime - Date.now();
+
 
 		function resetBall() {
 			if (paddle1.score === 3 || paddle2.score === 3) {

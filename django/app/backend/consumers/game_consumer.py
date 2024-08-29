@@ -1,14 +1,14 @@
 import asyncio
 import json
 
-from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament
+from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament, GameHistory
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 from backend.consumers.game_controller import GameController
 from backend.util import random_bot_name
+from django.utils import timezone
 
 from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
-
 
 class GameConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
@@ -25,10 +25,8 @@ class GameConsumer(WsConsumerCommon):
         self.tournament_id = None
         self.author_nickname = None
         self.opponent_nickname = None
-        #self.opponent_disconnected_first = False
         self.voluntary_disconnect: bool = False
         self.received_over = False
-
 
     def get_acknowledgement_by_key(self, key):
         try:
@@ -39,7 +37,7 @@ class GameConsumer(WsConsumerCommon):
 
     def get_request_author_username(self, acknowledgement):
         return acknowledgement.request_author.username
- 
+
     def delete_acknowledgement_by_key(self, key):
         AcknowledgedMatchRequest.objects.filter(match_key=key).delete()
 
@@ -57,6 +55,7 @@ class GameConsumer(WsConsumerCommon):
             await self.close()
             return
 
+        self.start_time = timezone.now()
         acknowledgement_row: AcknowledgedMatchRequest = await database_sync_to_async(self.get_acknowledgement_by_key)(msg_obj.get('match_key'))
         acknowledgement = await database_sync_to_async(self.create_acknowledgement_safe_copy)(acknowledgement_row)
 
@@ -134,7 +133,6 @@ class GameConsumer(WsConsumerCommon):
             else:
                 await self.send_channel(self.author_channel, 'player_disconnect', {'who': self.user_username})
 
-
     @register_ws_func
     async def ping(self, msg_obj):
         try:
@@ -145,13 +143,9 @@ class GameConsumer(WsConsumerCommon):
     @register_ws_func
     def join(self, msg_obj):
         pass
-        # very important, this has to be used to join a game initiated by another user
-        # a game will have its channel as an alphanum ID, which will be sent to the joinee via comm
-        # wrong key and you're not allowed in
 
     @register_ws_func
     async def client_update(self, msg_obj):
-        #print(f'Game consumer: got update from user: {msg_obj}, sending to channel {self.controller_channel}', flush=True)
         msg_obj['username'] = self.user.username
         if self.game_controller is not None:
             await self.game_controller.client_update_relay(msg_obj)
@@ -163,8 +157,6 @@ class GameConsumer(WsConsumerCommon):
             return
         if self.opponent.username == self.user.username:
             return
-        #print(f'Game consumer: got update from opponent: {msg_obj}', flush=True)
-        # Yes, it's a nested msg_obj...
         if msg_obj.get('msg_obj') is None:
             return
         await self.game_controller.client_update_relay(msg_obj.get('msg_obj'))
@@ -214,8 +206,6 @@ class GameConsumer(WsConsumerCommon):
         self.voluntary_disconnect = True
         await self.disconnect(0)
 
-
-    # This is handled by the author socket. This is sent only if the disconnect was involuntary
     async def player_disconnect(self, event):
         print(f'({self.user_username}) Received Player disconnect', flush=True)
         if self.game_controller is None:
@@ -248,36 +238,76 @@ class GameConsumer(WsConsumerCommon):
         self.voluntary_disconnect = True
         await self.disconnect(0)
 
+    @database_sync_to_async
+    def save_game_history(self, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2, is_ai_opponent, ai_opponent_name):
+        return GameHistory.enregistrer_partie(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            duree_partie=duree_partie,
+            score_joueur1=score_joueur1,
+            score_joueur2=score_joueur2,
+            is_ai_opponent=is_ai_opponent,
+            ai_opponent_name=ai_opponent_name
+        )
+
     async def user_won(self, who):
         print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
-        # put that into the history and tournament, if applicable
+
+        # Déterminer le joueur1 et joueur2 (joueur1 est toujours l'auteur de la partie)
+        joueur1 = self.user
+        joueur2 = self.opponent if not self.is_bot else None
+
+        # Calculer la durée de la partie
+        duration = int((timezone.now() - self.start_time).total_seconds())
+
+        # Déterminer les scores
+        score_joueur1 = self.game_controller.author_score
+        score_joueur2 = self.game_controller.opponent_score
+
+        # Déterminer le nom de l'adversaire IA si applicable
+        ai_opponent_name = None
+        if self.is_bot:
+            ai_opponent_name = self.opponent_nickname.split(' (BOT)')[0] if self.opponent_nickname else "AI Opponent"
+
+        # Sauvegarder l'historique de la partie
+        await self.save_game_history(
+            joueur1=joueur1,
+            joueur2=joueur2,
+            duree_partie=duration,
+            score_joueur1=score_joueur1,
+            score_joueur2=score_joueur2,
+            is_ai_opponent=self.is_bot,
+            ai_opponent_name=ai_opponent_name
+        )
+
+        # Gestion du tournoi si applicable
         if self.tournament_id is not None:
             if who == self.user:
                 print(f'Sending tournament report that {who.username} ({self.author_nickname}) won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.author_nickname,
-                                                                     self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.tournament_id)
             else:
                 print(f'Sending tournament report that {self.opponent_nickname} won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname,
-                                                                         self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.tournament_id)
 
+        # Envoyer des notifications aux joueurs
         if who == self.user:
             await self.send_channel(self.user.username, 'toast',
-                                    {
-                                        "localization": f"%youWonGame%",
-                                        "target_user": self.user.username})
+                                    {"localization": f"%youWonGame%", "target_user": self.user.username})
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {
-                                        "localization": f"%youLostGame%",
-                                        "target_user": self.opponent.username})
+                                    {"localization": f"%youLostGame%", "target_user": self.opponent.username})
         else:
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {
-                                        "localization": f"%youWonGame%",
-                                        "target_user": self.opponent.username})
+                                    {"localization": f"%youWonGame%", "target_user": self.opponent.username})
             await self.send_channel(self.user.username, 'toast',
-                                    {
-                                        "localization": f"%youLostGame%",
-                                        "target_user": self.user.username})
+                                    {"localization": f"%youLostGame%", "target_user": self.user.username})
+            
+
+    @register_ws_func
+    async def game_over(self, msg_obj):
+        # Cette méthode est appelée lorsque le message 'game_over' est reçu
+        # Vous pouvez l'utiliser pour des mises à jour en temps réel si nécessaire
+        pass
+
+  

@@ -10,11 +10,13 @@ export default class Profile extends Component {
 		super({ element: document.getElementById("app") });
 		this.currentLang = store.state.language;
 		store.events.subscribe("stateChange", () => this.onStateChange()); // 
+		window.addEventListener('gameOver', () => this.refreshProfile());
 		this.render();
 
 		this.components = {
 			navBar: new NavBar(),
 		};
+		
 	}
 
 	async render() {
@@ -195,26 +197,30 @@ export default class Profile extends Component {
 		}
 	}
 
-	async fetchMatchHistory() {
+	async fetchMatchHistory(forceRefresh = false) {
 		const langPack = profile[this.currentLang];
 		try {
 			const jwt = localStorage.getItem('jwt');
 			const apiurl = process.env.API_URL;
-			await fetch(`${apiurl}/history_getGames`, {
+			const response = await fetch(`${apiurl}/history_getGames${forceRefresh ? '?refresh=true' : ''}`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${jwt}`,
 					'Content-Type': 'application/json'
 				}
-			}).then((response) => response.json())
-				.then((data) => {
-					this.matchHistory = data.historique.slice(0, 5);
-					this.renderMatchHistory();
-				});
+			});
+			const data = await response.json();
+			this.matchHistory = data.historique.slice(0, 5);
+			this.renderMatchHistory();
 		} catch (error) {
 			console.error('Error fetching match history:', error);
 			showToast(langPack.fetchMatchHistoryError, 'danger');
 		}
+	}
+
+	refreshProfile() {
+		getProfile();
+		this.fetchMatchHistory(true);
 	}
 
 	async renderMatchHistory() {
