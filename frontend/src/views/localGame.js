@@ -82,37 +82,6 @@ function updateFromSocket(msg_obj) {
     }
 }
 
-function sendGameOver() {
-    const gameData = {
-        joueur1_username: window.gameState.author_username,
-        joueur2_username: window.gameState.opponent_username,
-        duree_partie: Math.floor((Date.now() - window.gameState.startTime) / 1000),
-        score_joueur1: parseInt(document.getElementById('score-left').innerText),
-        score_joueur2: parseInt(document.getElementById('score-right').innerText),
-        is_ai_opponent: window.gameState.ai
-    };
-
-    const apiurl = process.env.API_URL;
-	const jwt = localStorage.getItem('jwt');
-    fetch(`${apiurl}/history_postGames`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${jwt}`
-        },
-        body: JSON.stringify(gameData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Game history saved:', data);
-        const gameOverEvent = new CustomEvent('gameOver', { detail: gameData });
-        window.dispatchEvent(gameOverEvent);
-    })
-    .catch(error => console.error('Error saving game history:', error));
-
-    wsSend('game_over', gameData, state.gameSocket);
-}
-
 if (typeof refreshUserProfile === 'function') {
     refreshUserProfile();
 }
@@ -122,7 +91,7 @@ function displayGameOverMessage(winnerText) {
     document.getElementById("start-game").style.display = "block";
     window.gameState.endTime = Date.now() - window.gameState.startTime;
     window.gameState.stopperTime = true;
-    sendGameOver();
+    //sendGameOver();
     window.gameState.myModal.show();
     
     // Afficher le message
