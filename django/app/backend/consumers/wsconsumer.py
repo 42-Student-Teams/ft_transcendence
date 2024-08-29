@@ -177,7 +177,7 @@ class WsConsumer(WsConsumerCommon):
         # Query for the oldest MatchRequest where target_user is None and fast is False
         oldest_request = None
         if match_author_username is None:
-            oldest_request: MatchRequest = MatchRequest.objects.filter(target_user__isnull=True, fast=False).order_by(
+            oldest_request: MatchRequest = MatchRequest.objects.filter(target_user__isnull=True).order_by(
                 'created_at').first()
         else:
             match_author = JwtUser.objects.filter(username=match_author_username).first()
