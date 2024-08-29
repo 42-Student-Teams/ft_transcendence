@@ -261,7 +261,7 @@ class GameConsumer(WsConsumerCommon):
         joueur1 = self.user
         joueur2 = self.opponent if not self.is_bot else None
 
-        # Calculer la durée de la partie (vous devrez peut-être ajouter un attribut pour suivre le temps de début)
+        # Calculer la durée de la partie
         duration = int((timezone.now() - self.start_time).total_seconds())
 
         # Déterminer les scores
@@ -306,5 +306,12 @@ class GameConsumer(WsConsumerCommon):
                                     {"localization": f"%youWonGame%", "target_user": self.opponent.username})
             await self.send_channel(self.user.username, 'toast',
                                     {"localization": f"%youLostGame%", "target_user": self.user.username})
+            
+
+    @register_ws_func
+    async def game_over(self, msg_obj):
+        # Cette méthode est appelée lorsque le message 'game_over' est reçu
+        # Vous pouvez l'utiliser pour des mises à jour en temps réel si nécessaire
+        pass
 
   
