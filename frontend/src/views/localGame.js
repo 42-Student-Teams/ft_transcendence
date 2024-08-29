@@ -93,7 +93,6 @@ function displayGameOverMessage(winnerText) {
     document.getElementById("start-game").style.display = "block";
     window.gameState.endTime = Date.now() - window.gameState.startTime;
     window.gameState.stopperTime = true;
-    //sendGameOver();
     window.gameState.myModal.show();
     
     // Afficher le message

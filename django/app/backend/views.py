@@ -459,47 +459,6 @@ class getFriendProfileView(APIView):
 
 ###------------------------------GAME HISTORY VIEW-------------------------------------------------------###
 
-class GameHistoryCreateView(APIView):
-    def post(self, request, format=None):
-        serializer = GameHistoryCreateSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response({'status': 'error', 'message': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        validated_data = serializer.validated_data
-        joueur1 = JwtUser.objects.filter(username=validated_data['joueur1_username']).first()
-        if not joueur1:
-            return Response({'status': 'error', 'message': 'Joueur 1 not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        joueur2 = None
-        if not validated_data['is_ai_opponent']:
-            joueur2 = JwtUser.objects.filter(username=validated_data['joueur2_username']).first()
-            if not joueur2:
-                return Response({'status': 'error', 'message': 'Joueur 2 not found'}, status=status.HTTP_404_NOT_FOUND)
-
-        try:
-            game_history = GameHistory.enregistrer_partie(
-                joueur1=joueur1,
-                joueur2=joueur2,
-                duree_partie=validated_data['duree_partie'],
-                score_joueur1=validated_data['score_joueur1'],
-                score_joueur2=validated_data['score_joueur2'],
-                is_ai_opponent=validated_data['is_ai_opponent'],
-                ai_opponent_name=validated_data.get('ai_opponent_name')
-            )
-        except ValidationError as e:
-            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        except IntegrityError as e:
-            return Response({'status': 'error', 'message': 'Database integrity error. Please check your input.'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'status': 'error', 'message': f'An unexpected error occurred: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        return Response({
-            'status': 'success',
-            'message': 'Game history created successfully',
-            'game': GameHistorySerializer(game_history).data
-        }, status=status.HTTP_201_CREATED)
-
-
 class GameHistoryListView(APIView):
     def get(self, request):
         username = check_jwt(request)

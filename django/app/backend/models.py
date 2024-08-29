@@ -73,22 +73,25 @@ class GameHistory(models.Model):
 
     def save(self, *args, **kwargs):
         # Détermination du gagnant avant la sauvegarde
-        if self.score_joueur1 > self.score_joueur2:
-            self.gagnant = self.joueur1
-        elif self.score_joueur2 > self.score_joueur1:
-            self.gagnant = self.joueur2 if not self.is_ai_opponent else None
+        #if self.score_joueur1 > self.score_joueur2:
+        #    self.gagnant = self.joueur1
+        #elif self.score_joueur2 > self.score_joueur1:
+        #    self.gagnant = self.joueur2 if not self.is_ai_opponent else None
         super().save(*args, **kwargs)
 
     @classmethod
-    def enregistrer_partie(cls, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2, is_ai_opponent=False, ai_opponent_name=None):
+    def enregistrer_partie(cls, joueur1_username, joueur2_username, duree_partie, score_joueur1, score_joueur2,
+                           gagnant_username, is_ai_opponent=False, ai_opponent_name=None):
+
         partie = cls(
-            joueur1=joueur1,
-            joueur2=joueur2,
+            joueur1=JwtUser.objects.filter(username=joueur1_username).first(),
+            joueur2=JwtUser.objects.filter(username=joueur2_username).first(),
             duree_partie=duree_partie,
             score_joueur1=score_joueur1,
             score_joueur2=score_joueur2,
             is_ai_opponent=is_ai_opponent,
-            ai_opponent_name=ai_opponent_name
+            ai_opponent_name=ai_opponent_name,
+            gagnant=JwtUser.objects.filter(username=gagnant_username).first(),
         )
         partie.save()
         return partie

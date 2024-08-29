@@ -239,23 +239,21 @@ class GameConsumer(WsConsumerCommon):
         await self.disconnect(0)
 
     @database_sync_to_async
-    def save_game_history(self, joueur1, joueur2, duree_partie, score_joueur1, score_joueur2, is_ai_opponent, ai_opponent_name):
+    def save_game_history(self, joueur1_username, joueur2_username, duree_partie, score_joueur1, score_joueur2,
+                          gagnant_username, is_ai_opponent, ai_opponent_name):
         return GameHistory.enregistrer_partie(
-            joueur1=joueur1,
-            joueur2=joueur2,
+            joueur1_username=joueur1_username,
+            joueur2_username=joueur2_username,
             duree_partie=duree_partie,
             score_joueur1=score_joueur1,
             score_joueur2=score_joueur2,
             is_ai_opponent=is_ai_opponent,
-            ai_opponent_name=ai_opponent_name
+            ai_opponent_name=ai_opponent_name,
+            gagnant_username=gagnant_username
         )
 
     async def user_won(self, who):
         print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
-
-        # Déterminer le joueur1 et joueur2 (joueur1 est toujours l'auteur de la partie)
-        joueur1 = self.user
-        joueur2 = self.opponent if not self.is_bot else None
 
         # Calculer la durée de la partie
         duration = int((timezone.now() - self.start_time).total_seconds())
@@ -266,18 +264,21 @@ class GameConsumer(WsConsumerCommon):
 
         # Déterminer le nom de l'adversaire IA si applicable
         ai_opponent_name = None
-        if self.is_bot:
-            ai_opponent_name = self.opponent_nickname.split(' (BOT)')[0] if self.opponent_nickname else "AI Opponent"
-
+        try:
+            if self.is_bot:
+                ai_opponent_name = self.opponent_nickname.split(' (BOT)')[0] if self.opponent_nickname else "AI Opponent"
+        except Exception as e:
+            pass
         # Sauvegarder l'historique de la partie
         await self.save_game_history(
-            joueur1=joueur1,
-            joueur2=joueur2,
+            joueur1_username=self.user.username if self.user else None,
+            joueur2_username=self.opponent.username if self.opponent else None,
             duree_partie=duration,
             score_joueur1=score_joueur1,
             score_joueur2=score_joueur2,
             is_ai_opponent=self.is_bot,
-            ai_opponent_name=ai_opponent_name
+            ai_opponent_name=ai_opponent_name,
+            gagnant_username=who.username if who else None
         )
 
         # Gestion du tournoi si applicable
