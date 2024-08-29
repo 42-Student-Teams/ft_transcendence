@@ -10,7 +10,6 @@ export default class Profile extends Component {
 		super({ element: document.getElementById("app") });
 		this.currentLang = store.state.language;
 		store.events.subscribe("stateChange", () => this.onStateChange()); // 
-		window.addEventListener('gameOver', () => this.refreshProfile());
 		this.render();
 
 		this.components = {
@@ -180,6 +179,8 @@ export default class Profile extends Component {
 						const profileNameElem = document.getElementById("profile-name");
 						const profilePictureElem = document.getElementById("profile-picture");
 
+						await this.fetchMatchHistory();
+
 						if (profileNameElem && profilePictureElem) {
 							profileNameElem.innerText = `${profile.firstname} ${profile.lastname}`;
 							profilePictureElem.src = profile.avatar;
@@ -197,12 +198,12 @@ export default class Profile extends Component {
 		}
 	}
 
-	async fetchMatchHistory(forceRefresh = false) {
+	async fetchMatchHistory() {
 		const langPack = profile[this.currentLang];
 		try {
 			const jwt = localStorage.getItem('jwt');
 			const apiurl = process.env.API_URL;
-			const response = await fetch(`${apiurl}/history_getGames${forceRefresh ? '?refresh=true' : ''}`, {
+			const response = await fetch(`${apiurl}/history_getGames`, {
 				method: 'GET',
 				headers: {
 					'Authorization': `Bearer ${jwt}`,
@@ -216,11 +217,6 @@ export default class Profile extends Component {
 			console.error('Error fetching match history:', error);
 			showToast(langPack.fetchMatchHistoryError, 'danger');
 		}
-	}
-
-	refreshProfile() {
-		getProfile();
-		this.fetchMatchHistory(true);
 	}
 
 	async renderMatchHistory() {

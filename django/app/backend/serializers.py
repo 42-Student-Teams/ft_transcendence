@@ -7,6 +7,9 @@ from django.conf import settings
 from .models import JwtUser, Message, GameHistory
 import re
 
+
+default_avatar = '/staticfiles/avatars/default_avatar.png'
+
 #-----------------------------------------User's DATA--------------------------------------#
 class JwtUserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
@@ -306,14 +309,14 @@ class GameHistoryWithAvatarSerializer(serializers.ModelSerializer):
     def get_joueur1_avatar(self, obj):
         if obj.joueur1 and obj.joueur1.avatar:
             return obj.joueur1.avatar.url
-        return settings.STATIC_URL + 'avatars/default_avatar.png'
+        return default_avatar
 
     def get_joueur2_avatar(self, obj):
         if obj.is_ai_opponent:
-            return settings.STATIC_URL + 'avatars/default_avatar.png'
+            return default_avatar
         elif obj.joueur2 and obj.joueur2.avatar:
             return obj.joueur2.avatar.url
-        return settings.STATIC_URL + 'avatars/default_avatar.png'
+        return default_avatar
 
     def get_joueur2_username(self, obj):
         if obj.is_ai_opponent:

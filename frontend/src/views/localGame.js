@@ -432,7 +432,7 @@ export default class LocalGame extends Component {
 		canvas.style.backgroundColor = '#9c9c9e';
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
-		const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
+		//const myModal = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
 
 		const config = {
 			canvasWidth: 900,
@@ -565,7 +565,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
-			myModal.show();
+			//myModal.show();
 			updateTimer();
 			window.requestAnimationFrame(animate);
 		}
@@ -573,7 +573,7 @@ export default class LocalGame extends Component {
 		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
-		myModal.dispose();
+		//myModal.dispose();
 		//resetBall();
 
 	}
