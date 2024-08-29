@@ -14,16 +14,25 @@ function handleMessage(msg) {
     let msg_obj = JSON.parse(msg['data']);
     console.log(msg);
 
-    if ('game_bye' in msg_obj) {
-        console.log('Received BYE');
-        navigateTo('/');
-    }
-
     if (!('type' in msg_obj)) {
         return;
     }
 
     switch(msg_obj['type']) {
+        case 'game_bye':
+            console.log('Received BYE');
+            console.log(msg_obj);
+            navigateTo('/');
+            if ('match_key' in msg_obj) {
+                console.log(`Hiding any ${msg_obj['match_key']} invites`);
+
+                let selector = `.tournament-toast[data-match-key="${msg_obj['match_key']}"]`;
+                let element = document.querySelector(selector);
+                if (element) {
+                    element.parentElement.removeChild(element);
+                }
+            }
+            break;
         case 'dm':
             insertNewMessage(msg_obj['message'], msg_obj['author']);
             break;
@@ -80,16 +89,15 @@ function handleGameMessage(msg) {
     let msg_obj = JSON.parse(msg['data']);
     //console.log(msg);
 
-    if ('game_bye' in msg_obj) {
-        console.log('Received BYE');
-        navigateTo('/');
-    }
-
     if (!('type' in msg_obj)) {
         return;
     }
 
     switch(msg_obj['type']) {
+        case 'game_bye':
+            console.log('Received BYE');
+            navigateTo('/');
+            break;
         case 'start':
             console.log('start');
             let gameData = {

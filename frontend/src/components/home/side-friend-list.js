@@ -85,7 +85,6 @@ export default class SideFriendList extends Component {
     });
 
     this.element.addEventListener("click", async (event) => {
-      console.log('Got click event');
       const profileImage = event.target.closest(".view-profile");
       if (profileImage) {
         const username = profileImage.getAttribute('data-username');

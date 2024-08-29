@@ -122,9 +122,7 @@ class GameConsumer(WsConsumerCommon):
     async def on_disconnect(self):
         print(f'{self.user.username} on_disconnect', flush=True)
         try:
-            await self.send_json({
-                'game_bye': True,
-            })
+            await self.send_json({'type': 'game_bye', 'msg_obj': {}})
         except Exception as e:
             print(e)
         if self.game_controller is not None:
@@ -210,7 +208,7 @@ class GameConsumer(WsConsumerCommon):
             return
 
         try:
-            await self.send_json({'game_bye': True,})
+            await self.send_json({'type': 'game_bye', 'msg_obj': {}})
         except:
             pass
         self.voluntary_disconnect = True
@@ -244,9 +242,7 @@ class GameConsumer(WsConsumerCommon):
             await self.send_channel(self.author_channel, 'gentle_disconnect',
                                     {"target_user": self.user_username})
         try:
-            await self.send_json({
-                'game_bye': True,
-            })
+            await self.send_json({'type': 'game_bye', 'msg_obj': {}})
         except:
             pass
         self.voluntary_disconnect = True

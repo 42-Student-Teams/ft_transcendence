@@ -50,7 +50,7 @@ export function showTournamentInvite(match_key, tournament_id) {
     const iconHTML = '<i class="fas fa-gamepad icon-tournament-ready icon-tournament-notification me-1"></i>';
 
     const toastHTML = `
-        <div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
+        <div data-match-key="${match_key}" class="tournament-toast position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
             <div id="toast-tournament-ready-notification" data-bs-autohide="false" class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="container-fluid">
 					<div class="toast-body text-center mb-2 pt-4">
