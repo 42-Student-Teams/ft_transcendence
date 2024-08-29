@@ -42,6 +42,8 @@ function updateFromSocket(msg_obj) {
         document.getElementById('Timer').innerText = msg_obj['countdown'];
         if (msg_obj['countdown'] === 0) {
             window.gameState.started = true;
+			window.gameState.stopperTime = false;
+			window.gameState.startTime = Date.now();
             document.getElementById('Timer').innerText = '';
         }
     } else {
@@ -310,7 +312,7 @@ export default class LocalGame extends Component {
 			author_username: obj_.author_username,
 			lastTimestamp: 0,
 			started: false,
-			stopperTime: false,
+			stopperTime: true,
 			startTime: Date.now(),
 			endTime: 0,
 			lookTime: 0,
@@ -454,7 +456,7 @@ export default class LocalGame extends Component {
 						`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 				}
 			}
-			else if (window.gameState) {
+			else if (window.gameState && window.gameState.started == true) {
 				const minutes = Math.floor(window.gameState.endTime / 60000);
 				const seconds = Math.floor((window.gameState.endTime % 60000) / 1000);
 				if (timerElement) {
