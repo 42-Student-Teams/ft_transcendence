@@ -1,5 +1,6 @@
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
+import {openCommWebsocket} from "./wsUtils.js";
 
 async function registerUser(username, password) {
     try {
@@ -41,6 +42,7 @@ async function loginOauth(oauth_token) {
         //return (response);
         const result = await response.json();
 		localStorage.setItem("jwt", result.jwt);
+        openCommWebsocket();
         return result;
     } catch (error) {
         console.error("An error occurred:", error);
