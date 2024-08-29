@@ -60,22 +60,22 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
     def do_auth(self, msg_obj):
         print('Doing auth', flush=True)
         if msg_obj.get('jwt') is None:
-            print('RETURN', flush=True)
+            print('RETURN 1', flush=True)
             return
         try:
             payload = jwt.decode(msg_obj.get('jwt'), settings.JWT_SECRET, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            print('RETURN', flush=True)
+            print('RETURN 2', flush=True)
             return
         except (IndexError, jwt.DecodeError):
-            print('RETURN', flush=True)
+            print('RETURN 3', flush=True)
             return
         if 'username' not in payload:
-            print('RETURN', flush=True)
+            print('RETURN 4', flush=True)
             return
         self.user = JwtUser.objects.filter(username=payload['username']).first()
         if self.user is None:
-            print('RETURN', flush=True)
+            print('RETURN 5', flush=True)
             return
         self.user_username = self.user.username
         print('ALL GOOD', flush=True)

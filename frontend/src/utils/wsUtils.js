@@ -4,6 +4,9 @@ import store from "../store/index.js";
 import state from "../store/state.js";
 
 function openCommWebsocket() {
+    if (!localStorage.getItem('jwt')) {
+        return;
+    }
     /* open socket */
     let socket = new WebSocket(`wss://${window.location.host }/wss/comm/`);
     socket.onmessage = handleMessage;
