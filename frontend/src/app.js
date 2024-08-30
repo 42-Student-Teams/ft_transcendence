@@ -99,7 +99,7 @@ async function authStatus() {
 			return false;
 		}
 	} catch (error) {
-		console.error('Error fetching auth status:', error);
+		//console.error('Error fetching auth status:', error);
 		return false;
 	}
 }
