@@ -20,6 +20,10 @@ class WsConsumer(WsConsumerCommon):
             channel_layer = get_channel_layer()
             for tournament in tournaments:
                 print(f'Deleting user {self.user.username} from tournament {tournament.id}')
+                for entry in tournament.waitlist:
+                    if entry.startswith(f'user:{self.user.username}'):
+                        tournament.amount_players_quit += 1
+                        tournament.save()
                 tournament.remove_from_waitlist(self.user.username)
                 acknowledgements: list[AcknowledgedMatchRequest] = AcknowledgedMatchRequest.objects.filter(tournament_id=tournament.id)
                 for acknowledgement in acknowledgements:

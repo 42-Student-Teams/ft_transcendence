@@ -692,6 +692,8 @@ class QuitTournamentView(APIView):
             return Response({'status': 'error', 'message': 'Tournament not found'},
                             status=status.HTTP_400_BAD_REQUEST)
 
+        tournament.amount_players_quit += 1
+        tournament.save()
         tournament.remove_from_waitlist(user.username)
 
         match_acknowledgement: AcknowledgedMatchRequest = (AcknowledgedMatchRequest.

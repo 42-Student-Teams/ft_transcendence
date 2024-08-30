@@ -285,6 +285,7 @@ class Tournament(models.Model):
     subscribed_count = models.IntegerField(default=0)
     matches_paired = models.IntegerField(default=0)
     game_history = models.JSONField(default=list, blank=True)
+    amount_players_quit = models.IntegerField(default=0)
 
     def add_to_waitlist(self, username):
         """Add a user or bot (identified by username) to the waitlist."""
@@ -312,6 +313,7 @@ class Tournament(models.Model):
             return
         print(f'Received winner {winner}')
         tournament.active_participants_count -= 1
+        tournament.amount_players_quit += 1
         print(f'Reducing active_participants (1), now it\'s {tournament.active_participants_count}', flush=True)
         tournament.waitlist.append(winner)
         tournament.save()
@@ -320,7 +322,7 @@ class Tournament(models.Model):
         if self.subscribed_count < self.all_participants_count:
             return
         if self.active_participants_count == -1:
-            self.active_participants_count = self.all_participants_count
+            self.active_participants_count = self.all_participants_count - self.amount_players_quit
         self.op_lock = True
         self.save()
         from asgiref.sync import async_to_sync
