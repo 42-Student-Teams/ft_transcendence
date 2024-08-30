@@ -9,6 +9,9 @@ import { wsSend } from "../utils/wsUtils.js";
 import { BiggerPad, Paddle } from "./localGame.js";
 
 function updateFromSocket(msg_obj) {
+	if (!window.gameState) {
+		return;
+	} 
 	if (msg_obj['paddle_moved'] || ('update' in msg_obj && msg_obj['bigpad']['active'])) {
 		//console.log(msg_obj);
 	}
@@ -515,6 +518,9 @@ export default class LocalGame extends Component {
 		document.addEventListener("keyup", document.handleKeyUp);
 
 		function animate() {
+			if (!window.gameState) {
+				return;
+			}
 			render();
 
 			if (/*window.gameState.ai*/ true) {
