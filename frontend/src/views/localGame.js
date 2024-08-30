@@ -356,6 +356,7 @@ export default class LocalGame extends Component {
 				this.size = config.paddleHeight;
 				this.speed = config.paddleSpeed;
 				this.id = alphanum(5);
+				this.y = config.canvasHeight / 2 - config.paddleHeight / 2;
 			}
 
 			render = () => {
