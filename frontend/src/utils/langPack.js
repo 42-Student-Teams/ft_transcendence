@@ -90,6 +90,8 @@ export const home = {
 		youWonGame: "You have won the game !",
 		youLostGame: "You have lost the game !",
 		join: "Join",
+		opponentAbandoned: "has abandoned.",
+		youWonTournament: "You have won the tournament!",
 		languages: {
 			en: "🇬🇧 English",
 			fr: "🇫🇷 Français",
@@ -187,6 +189,8 @@ export const home = {
 		youWonGame: "Vous avez gagné la partie !",
 		youLostGame: "Vous avez perdu la partie !",
 		join: "Rejoindre",
+		opponentAbandoned: "a abandonné.",
+		youWonTournament: "Vous avez gagné le tournoi!",
 		languages: {
 			en: "🇬🇧 Anglais",
 			fr: "🇫🇷 Français",
@@ -285,6 +289,8 @@ export const home = {
 		youWonGame: "Has ganado el partido !",
 		youLostGame: "Has perdido el partido !",
 		join: "Unirse",
+		opponentAbandoned: "ha abandonado.",
+		youWonTournament: "¡Has ganado el torneo!",
 		languages: {
 			en: "🇬🇧 Inglés",
 			fr: "🇫🇷 Francés",

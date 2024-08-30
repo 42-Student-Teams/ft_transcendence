@@ -11,33 +11,54 @@ class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def clean_db_entries(self):
+    def clean_db_entries(self, was_reload):
+        print(f'Cleaning db entries for user {self.user.username}')
         MatchRequest.objects.filter(request_author=self.user).delete()
-        AcknowledgedMatchRequest.objects.filter(request_author=self.user).delete()
+
+        if was_reload:
+            tournaments = Tournament.objects.all()
+            channel_layer = get_channel_layer()
+            for tournament in tournaments:
+                print(f'Deleting user {self.user.username} from tournament {tournament.id}')
+                tournament.remove_from_waitlist(self.user.username)
+                acknowledgements: list[AcknowledgedMatchRequest] = AcknowledgedMatchRequest.objects.filter(tournament_id=tournament.id)
+                for acknowledgement in acknowledgements:
+                    print(f'checking acknowledgement from username {self.user.username}: {acknowledgement.request_author.username}')
+                    if self.user.username == acknowledgement.request_author.username:
+                        Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
+                        print(f'Reporting nickname {acknowledgement.opponent_nickname} as winning to tournament {tournament.id}')
+                    elif acknowledgement.target_user is not None and self.user.username == acknowledgement.target_user.username:
+                        Tournament.report_results(acknowledgement.author_nickname, tournament.id)
+                        print(
+                            f'Reporting nickname {acknowledgement.author_nickname} as winning to tournament {tournament.id}')
+                    #elif acknowledgement.is_bot and self.user.username == acknowledgement.request_author.username:
+                    #    Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
+                    '''async_to_sync(channel_layer.group_send)(acknowledgement.request_author.username,
+                                                            {"type": "relay_bye", "msg_obj": {
+                                                                "target_user": acknowledgement.request_author.username,
+                                                                "match_key": acknowledgement.match_key,
+                                                            }})
+                    if acknowledgement.target_user is not None:
+                        async_to_sync(channel_layer.group_send)(acknowledgement.target_user.username,
+                                                            {"type": "relay_bye", "msg_obj": {
+                                                                "target_user": acknowledgement.target_user.username,
+                                                                "match_key": acknowledgement.match_key,
+                                                            }})'''
+                    if self.user.username == acknowledgement.request_author.username and acknowledgement.target_user is not None:
+                        async_to_sync(channel_layer.group_send)(acknowledgement.target_user.username,
+                                                                {"type": "toast", "msg_obj": {
+                                                                    "localization": f"{self.user.username} %opponentAbandoned%",
+                                                                    "target_user": acknowledgement.target_user.username}})
+                    if acknowledgement.target_user is not None and self.user.username == acknowledgement.target_user.username:
+                        async_to_sync(channel_layer.group_send)(acknowledgement.request_author.username,
+                                                                {"type": "toast", "msg_obj": {
+                                                                    "localization": f"{self.user.username} %opponentAbandoned%",
+                                                                    "target_user": acknowledgement.request_author.username}})
+
+            AcknowledgedMatchRequest.objects.filter(request_author=self.user).delete()
+            TournamentPvPQueue.objects.filter(user=self.user).delete()
         GameSearchQueue.objects.filter(user=self.user).delete()
-        TournamentPvPQueue.objects.filter(user=self.user).delete()
         TournamentSearchQueue.objects.filter(user=self.user).delete()
-        tournaments = Tournament.objects.all()
-        for tournament in tournaments:
-            print(f'Deleting user {self.user.username} from tournament {tournament.id}')
-            tournament.remove_from_waitlist(self.user.username)
-            acknowledgements: list[AcknowledgedMatchRequest] = AcknowledgedMatchRequest.objects.filter(tournament_id=tournament.id)
-            for acknowledgement in acknowledgements:
-                channel_layer = get_channel_layer()
-                if self.user.username == acknowledgement.request_author.username:
-                    Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
-                elif self.user.username == acknowledgement.target_user.username:
-                    Tournament.report_results(acknowledgement.author_nickname, tournament.id)
-                async_to_sync(channel_layer.group_send)(acknowledgement.request_author.username,
-                                                        {"type": "relay_bye", "msg_obj": {
-                                                            "target_user": acknowledgement.request_author.username,
-                                                            "match_key": acknowledgement.match_key,
-                                                        }})
-                async_to_sync(channel_layer.group_send)(acknowledgement.target_user.username,
-                                                        {"type": "relay_bye", "msg_obj": {
-                                                            "target_user": acknowledgement.target_user.username,
-                                                            "match_key": acknowledgement.match_key,
-                                                        }})
 
     async def on_auth(self, msg_obj):
         await self.subscribe_to_groups()
@@ -80,7 +101,7 @@ class WsConsumer(WsConsumerCommon):
         await self.close()
 
     async def on_disconnect(self):
-        await database_sync_to_async(self.clean_db_entries)()
+        await database_sync_to_async(self.clean_db_entries)(True)
         print(f"Disconnecting user: {self.user_username if self.user else 'Unknown'}")
         if self.authed:
             await self.update_user_status('Offline')
@@ -364,7 +385,7 @@ class WsConsumer(WsConsumerCommon):
             return
         if 'local-game' not in msg_obj.get('url'):
             print('Clearing db because we opened a non local game page', flush=True)
-            await database_sync_to_async(self.clean_db_entries)()
+            await database_sync_to_async(self.clean_db_entries)(False)
 
     # CHANNEL RECEIVERS
     async def channel_dm(self, event):

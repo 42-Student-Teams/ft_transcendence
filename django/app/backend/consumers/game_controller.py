@@ -7,8 +7,6 @@ from channels.layers import get_channel_layer
 from backend.models import AcknowledgedMatchRequest
 
 
-#import inspect
-
 def sign(n):
     if n < 0:
         return -1
@@ -18,7 +16,7 @@ def sign(n):
         return 1
 
 
-class Paddle():
+class Paddle:
     def __init__(self, side, config):
         self.aipos_cal = 0
         self.size = config.paddleHeight
@@ -45,20 +43,20 @@ class Paddle():
             self.y = 0
 
 
-class Config():
-    def __init__(self):
+class Config:
+    def __init__(self, is_fast):
         self.canvasWidth = 900
         self.canvasHeight = 500
         self.paddleWidth = 10
         self.paddleHeight = 80
         self.paddleSpeed = 8
-        self.ballXSpeed = 3
-        self.ballYSpeed = 3
+        self.ballXSpeed = 3 if not is_fast else 6
+        self.ballYSpeed = 3 if not is_fast else 6
         self.ballSlice = 4
         self.ballRadius = 8
 
 
-class Ball():
+class Ball:
     def __init__(self, config: Config):
         self.x = 0
         self.y = 0
@@ -220,7 +218,7 @@ class GameController():
         self.author_score = 0
         self.opponent_score = 0
 
-        self.config = Config()
+        self.config = Config(self.acknowledgement.fast)
 
         # The author of a match is always on the left, his opponent on the right
         self.author_paddle = Paddle(0, self.config)

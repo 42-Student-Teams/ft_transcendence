@@ -7,6 +7,8 @@ import { navigateTo } from "../utils/router.js";
 import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
 import { showToast } from "../utils/toastUtils.js";
+import { Paddle } from "./localGame.js";
+import { BiggerPad } from "./localGame.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] || ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -52,6 +54,12 @@ function updateFromSocket(msg_obj) {
 		} else {
 			ourTimestamp = msg_obj['opponent_timestamp'];
 		}
+		if (window.gameState.youPaddle == null) {
+			window.gameState.youPaddle = new Paddle();
+		}
+		if (window.gameState.opponentPaddle == null) {
+			window.gameState.opponentPaddle = new Paddle();
+		}
 		if (window.gameState.currentUsername === window.gameState.opponent_username) {
 			if (ourTimestamp >= window.gameState.lastTimestamp) {
 				console.log(`Timestamp ${ourTimestamp} is newer than last ${window.gameState.lastTimestamp}, setting y to ${msg_obj['opponent_paddle_pos']['y']}`);
@@ -71,6 +79,9 @@ function updateFromSocket(msg_obj) {
 			window.gameState.opponentPaddle.x = msg_obj['opponent_paddle_pos']['x'];
 			window.gameState.opponentPaddle.y = msg_obj['opponent_paddle_pos']['y'];
 			window.gameState.opponentPaddle.size = msg_obj['opponent_paddle_pos']['size'];
+		}
+		if (window.gameState.ball == null) {
+			window.gameState.ball = { r: 8, color: 'red' };
 		}
 		window.gameState.ball.x = msg_obj['ball_pos']['x'];
 		window.gameState.ball.y = msg_obj['ball_pos']['y'];
@@ -385,7 +396,7 @@ export default class LocalGame extends Component {
 		const ctx = canvas.getContext("2d");
 		const timerElement = document.getElementById("Timer");
 		//const myModale = new bootstrap.Modal(document.getElementById('modalTournamentBracket'), { keyboard: true });
-		console.log('Modal', myModale);
+		//console.log('Modal', myModale);
 
 		const config = {
 			canvasWidth: 900,
@@ -518,7 +529,7 @@ export default class LocalGame extends Component {
 				MovePaddleAI();
 			}*/
 			//checkWin();
-			myModale.show();
+			//myModale.show();
 			updateTimer();
 			window.requestAnimationFrame(animate);
 		}
@@ -526,10 +537,12 @@ export default class LocalGame extends Component {
 		animate();
 
 		canvas.style.backgroundColor = '#EBEBED';
-		myModale.dispose();
+		//myModale.dispose();
 		//resetBall();
 
 	}
 }
 
 export { updateFromSocket };
+export { Paddle };
+export { BiggerPad };
