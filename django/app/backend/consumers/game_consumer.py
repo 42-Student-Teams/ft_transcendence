@@ -46,8 +46,8 @@ class GameConsumer(WsConsumerCommon):
         return AcknowledgedMatchRequest.create_safe_copy(acknowledgement)
 
     @staticmethod
-    def report_tournament_win(nickname, tournament_id):
-        Tournament.report_results(nickname, tournament_id)
+    def report_tournament_win(nickname, loser, tournament_id):
+        Tournament.report_results(nickname, loser, tournament_id)
 
     async def on_auth(self, msg_obj):
         print('Received auth message', flush=True)
@@ -254,6 +254,23 @@ class GameConsumer(WsConsumerCommon):
             gagnant_username=gagnant_username
         )
 
+    def format_tournament_results(self, tournament_id):
+        print('IM HERE', flush=True)
+        res = ''
+        tournament = Tournament.objects.filter(id=tournament_id).first()
+        def format_player_username(username):
+            if username.startswith('user'):
+                return username.split(':')[2]
+            if username.startswith('bot'):
+                return username.split(':')[1] + ' (BOT)'
+        for entry in tournament.game_history:
+            print(f'processing entry {entry}', flush=True)
+            res += f'\n<br>[{format_player_username(entry["player1"])} vs. {format_player_username(entry["player2"])}]'
+            if entry["gagnant"] is not None:
+                res += f'<br>** Winner -> {format_player_username(entry["gagnant"])} **\n<br>'
+        print(f'Formatted tournament results: {res}', flush=True)
+        return res
+
     async def user_won(self, who):
         print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
 
@@ -283,28 +300,33 @@ class GameConsumer(WsConsumerCommon):
             gagnant_username=who.username if who else None
         )
 
+        tournament_results = ''
+
         # Gestion du tournoi si applicable
         if self.tournament_id is not None:
             if who == self.user:
                 print(f'Sending tournament report that {who.username} ({self.author_nickname}) won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.opponent_nickname, self.tournament_id)
             else:
                 print(f'Sending tournament report that {self.opponent_nickname} won', flush=True)
-                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.tournament_id)
+                await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.author_nickname, self.tournament_id)
+            print(f'Formatting tournament results', flush=True)
+            tournament_results = await database_sync_to_async(self.format_tournament_results)(self.tournament_id)
+            print(f'Formatted tournament results: {tournament_results}', flush=True)
 
         # Envoyer des notifications aux joueurs
         if who == self.user:
             await self.send_channel(self.user.username, 'toast',
-                                    {"localization": f"%youWonGame%", "target_user": self.user.username})
+                                    {"localization": f"%youWonGame%{tournament_results}", "target_user": self.user.username, "timeout": -1})
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {"localization": f"%youLostGame%", "target_user": self.opponent.username})
+                                    {"localization": f"%youLostGame%{tournament_results}", "target_user": self.opponent.username, "timeout": -1})
         else:
             if self.opponent is not None:
                 await self.send_channel(self.opponent.username, 'toast',
-                                    {"localization": f"%youWonGame%", "target_user": self.opponent.username})
+                                    {"localization": f"%youWonGame%{tournament_results}", "target_user": self.opponent.username, "timeout": -1})
             await self.send_channel(self.user.username, 'toast',
-                                    {"localization": f"%youLostGame%", "target_user": self.user.username})
+                                    {"localization": f"%youLostGame%{tournament_results}", "target_user": self.user.username, "timeout": -1})
             
 
     @register_ws_func

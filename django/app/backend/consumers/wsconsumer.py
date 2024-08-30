@@ -29,10 +29,10 @@ class WsConsumer(WsConsumerCommon):
                 for acknowledgement in acknowledgements:
                     print(f'checking acknowledgement from username {self.user.username}: {acknowledgement.request_author.username}')
                     if self.user.username == acknowledgement.request_author.username:
-                        Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
+                        Tournament.report_results(acknowledgement.opponent_nickname, acknowledgement.author_nickname, tournament.id)
                         print(f'Reporting nickname {acknowledgement.opponent_nickname} as winning to tournament {tournament.id}')
                     elif acknowledgement.target_user is not None and self.user.username == acknowledgement.target_user.username:
-                        Tournament.report_results(acknowledgement.author_nickname, tournament.id)
+                        Tournament.report_results(acknowledgement.author_nickname, acknowledgement.opponent_nickname, tournament.id)
                         print(
                             f'Reporting nickname {acknowledgement.author_nickname} as winning to tournament {tournament.id}')
                     #elif acknowledgement.is_bot and self.user.username == acknowledgement.request_author.username:

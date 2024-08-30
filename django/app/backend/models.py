@@ -306,8 +306,9 @@ class Tournament(models.Model):
             self.save()
 
     @staticmethod
-    def report_results(winner, tournament_id):
+    def report_results(winner, loser, tournament_id):
         tournament = Tournament.objects.filter(id=tournament_id).first()
+        print(f'Game History before reporting results {tournament.game_history}', flush=True)
         if tournament is None:
             print(f'Tournament not found {tournament_id}')
             return
@@ -316,6 +317,15 @@ class Tournament(models.Model):
         tournament.amount_players_quit += 1
         print(f'Reducing active_participants (1), now it\'s {tournament.active_participants_count}', flush=True)
         tournament.waitlist.append(winner)
+        game_hist = tournament.game_history
+        new_hist = []
+        for entry in game_hist:
+            print(f'Checking entry {winner}, {loser}', entry)
+            if entry['player1'] == loser and entry['player2'] == winner or entry['player1'] == winner and entry['player2'] == loser:
+                print(f'Found entry {entry}, setting winner to {winner}', flush=True)
+                entry['gagnant'] = winner
+            new_hist.append(entry)
+        tournament.game_history = new_hist
         tournament.save()
 
     def pair_and_notify(self):
@@ -340,7 +350,9 @@ class Tournament(models.Model):
                         async_to_sync(channel_layer.group_send)(user_obj.username,
                                                                 {"type": "toast", "msg_obj": {
                                                                 "localization": f"%youWonTournament% {self.name}",
-                                                                 "target_user": user_obj.username}})
+                                                                 "target_user": user_obj.username,
+                                                                 "timeout": -1,
+                                                                 "toast_type": "success"}})
             print(f'Deleting tournament {self.id} (1)', flush=True)
             self.__class__.objects.filter(id=self.id).delete()
             return
@@ -349,21 +361,25 @@ class Tournament(models.Model):
             self.__class__.objects.filter(id=self.id).delete()
             return
 
+        bot_wins_to_report = []
         while len(self.waitlist) > 1:
             user1 = self.waitlist.pop(0)
             user2 = self.waitlist.pop(0)
 
             print(f'Tournament id {self.id}, pairing {user1} and {user2}!', flush=True)
-            self.game_history.append({'player1': user1, 'player2': user2, 'points1': 0, 'points2': 0, 'match_number': self.matches_paired})
+            self.game_history.append({'player1': user1, 'player2': user2, 'points1': 0, 'points2': 0, 'match_number': self.matches_paired, 'gagnant': None})
             self.matches_paired += 1
             self.save()
 
             if user1.startswith('bot:') and user2.startswith('bot:'):
                 winner = random.choice([user1, user2])
                 print(f'Bot {winner} wins', flush=True)
-                self.waitlist.append(winner)
-                self.active_participants_count -= 1
-                print(f'Reducing active_participants (2), now it\'s {self.active_participants_count}', flush=True)
+                loser = user1 if winner == user2 else user2
+                #Tournament.report_results(winner, loser, self.id)
+                bot_wins_to_report.append([winner, loser, self.id])
+                #self.waitlist.append(winner)
+                #self.active_participants_count -= 1
+                #print(f'Reducing active_participants (2), now it\'s {self.active_participants_count}', flush=True)
             elif user1.startswith('bot:') and user2.startswith('user:') or user1.startswith('user:') and user2.startswith('bot:'):
                 bot_user = user1 if user1.startswith('bot:') else user2
                 real_user = user1 if user1.startswith('user:') else user2
@@ -387,6 +403,7 @@ class Tournament(models.Model):
                     author_nickname=real_user,
                 )
                 acknowledgement.save()
+                print(f'SENDING tournament_game_invite to {real_user_obj.username}', flush=True)
                 async_to_sync(channel_layer.group_send)(real_user_obj.username,
                                                         {"type": "tournament_game_invite", "msg_obj": {
                                                          "match_key": acknowledgement.match_key,
@@ -437,5 +454,9 @@ class Tournament(models.Model):
 
 
         # If there's an odd participant, they stay in the waitlist
+
         self.op_lock = False
+        #self.game_history = Tournament.objects.filter(id=self.id).first().game_history
         self.save()
+        for entry in bot_wins_to_report:
+            Tournament.report_results(entry[0], entry[1], entry[2])

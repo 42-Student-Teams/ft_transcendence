@@ -1,10 +1,10 @@
-import {insertNewMessage} from "../utils/chatUtils.js";
-import {openGameWebsocket} from "../utils/wsUtils.js"
-import {showToast, showTournamentInvite} from "../utils/toastUtils.js";
-import {updateFromSocket} from "../views/localGame.js";
-import store from "/src/store/index.js";
+import { insertNewMessage } from "../utils/chatUtils.js";
 import { home } from "../utils/langPack.js";
-import {navigateTo} from "../utils/router.js";
+import { navigateTo } from "../utils/router.js";
+import { showToast, showTournamentInvite } from "../utils/toastUtils.js";
+import { openGameWebsocket } from "../utils/wsUtils.js";
+import { updateFromSocket } from "../views/localGame.js";
+import store from "/src/store/index.js";
 
 function handleMessage(msg) {
     console.log('Received socket message:');
@@ -51,6 +51,9 @@ function handleMessage(msg) {
             break;
         case 'tournament_game_invite':
             if (('match_key' in msg_obj) && ('tournament_id' in msg_obj)) {
+                if (document.querySelector(`.tournament-toast[data-match-key="${msg_obj['match_key']}"]`)) {
+                    return;
+                }
                 showTournamentInvite(msg_obj['match_key'], msg_obj['tournament_id']);
             }
             break;
@@ -76,7 +79,7 @@ function handleMessage(msg) {
                 localized_message = localized_message.replaceAll(placeholder, langPack[key]);
             });
             let toast_type = "success";
-            if ('type' in msg_obj) {
+            if ('toast_type' in msg_obj) {
                 toast_type = msg_obj['type'];
             }
             let timeout = 5000;
@@ -130,5 +133,4 @@ function handleGameMessage(msg) {
     }
 }
 
-export { handleMessage };
-export { handleGameMessage };
+export { handleGameMessage, handleMessage };

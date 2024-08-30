@@ -1,7 +1,7 @@
 import * as bootstrap from 'bootstrap';
-import {home, toast} from "./langPack.js";
 import store from "../store/index.js";
-import {navigateTo} from "./router.js";
+import { home, toast } from "./langPack.js";
+import { navigateTo } from "./router.js";
 
 export function showToast(message, type, timeout=5000) {
     if (typeof bootstrap === 'undefined') {
@@ -94,6 +94,8 @@ export function showTournamentInvite(match_key, tournament_id) {
         };
         store.dispatch("setCurrentGameData", game);
         navigateTo("/local-game");
+        //delete toastContainer
+        document.body.removeChild(toastContainer);
     }
 
     document.rejectInvite = function() {
@@ -123,6 +125,7 @@ export function showTournamentInvite(match_key, tournament_id) {
                 showToast(langPack.serverError, "danger");
                 console.error('Error:', error);
             });
+            document.body.removeChild(toastContainer);
     }
 
     const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));

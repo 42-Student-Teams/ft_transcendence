@@ -700,9 +700,9 @@ class QuitTournamentView(APIView):
                                                            objects.filter(match_key=match_key).first())
         if match_acknowledgement is not None:
             if user == match_acknowledgement.request_author:
-                Tournament.report_results(match_acknowledgement.opponent_nickname, tournament_id)
+                Tournament.report_results(match_acknowledgement.opponent_nickname, match_acknowledgement.author_nickname, tournament_id)
             else:
-                Tournament.report_results(match_acknowledgement.author_nickname, tournament_id)
+                Tournament.report_results(match_acknowledgement.author_nickname, match_acknowledgement.opponent_nickname, tournament_id)
 
             channel_layer = get_channel_layer()
             if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.request_author):
@@ -714,7 +714,8 @@ class QuitTournamentView(APIView):
                                                         }})
             if TournamentPvPQueue.is_user_in_queue(match_acknowledgement.target_user):
                 TournamentPvPQueue.remove_user_from_queue(match_acknowledgement.target_user)
-            async_to_sync(channel_layer.group_send)(match_acknowledgement.target_user.username,
+            if match_acknowledgement.target_user is not None:
+                async_to_sync(channel_layer.group_send)(match_acknowledgement.target_user.username,
                                                         {"type": "relay_bye", "msg_obj": {
                                                             "target_user": match_acknowledgement.target_user.username,
                                                             "match_key": match_acknowledgement.match_key,

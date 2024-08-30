@@ -1,14 +1,12 @@
+import * as bootstrap from 'bootstrap';
 import Component from "../library/component.js";
+import store from "../store/index.js";
 import state from "../store/state.js";
 import { usernameFromToken } from "../utils/jwtUtils.js";
-import { wsSend } from "../utils/wsUtils.js";
-import * as bootstrap from 'bootstrap';
-import { navigateTo } from "../utils/router.js";
-import store from "../store/index.js"
 import { game } from "../utils/langPack.js";
-import { showToast } from "../utils/toastUtils.js";
-import { Paddle } from "./localGame.js";
-import { BiggerPad } from "./localGame.js";
+import { navigateTo } from "../utils/router.js";
+import { wsSend } from "../utils/wsUtils.js";
+import { BiggerPad, Paddle } from "./localGame.js";
 
 function updateFromSocket(msg_obj) {
 	if (msg_obj['paddle_moved'] || ('update' in msg_obj && msg_obj['bigpad']['active'])) {
@@ -266,6 +264,14 @@ export default class LocalGame extends Component {
 
 	startGame(obj_) {
 
+		let toasts = document.querySelectorAll('.tournament-toast');
+		for (let toast of toasts) {
+			try {
+				document.body.removeChild(toast);
+			} catch (error) {
+				//console.log()
+			}
+		}
 
 		window.startGame = this.startGame;
 		const langPack = game[store.state.language];
@@ -508,18 +514,6 @@ export default class LocalGame extends Component {
 					window.gameState.youPaddle.moveDown();
 				}
 			} else {
-				if (pressedKeys.has(87)) {
-					window.gameState.opponentPaddle.moveUp();
-				}
-				if (pressedKeys.has(83)) {
-					window.gameState.opponentPaddle.moveDown();
-				}
-				if (pressedKeys.has(38)) {
-					window.gameState.youPaddle.moveUp();
-				}
-				if (pressedKeys.has(40)) {
-					window.gameState.youPaddle.moveDown();
-				}
 			}
 
 			//checkWallCollisions();
@@ -543,6 +537,4 @@ export default class LocalGame extends Component {
 	}
 }
 
-export { updateFromSocket };
-export { Paddle };
-export { BiggerPad };
+export { BiggerPad, Paddle, updateFromSocket };
