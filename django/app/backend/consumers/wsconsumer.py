@@ -95,18 +95,18 @@ class WsConsumer(WsConsumerCommon):
         print(f"Logging out user: {self.user_username if self.user_username else 'Unknown'}")
         if self.user:
             await self.update_user_status('Offline')
-            self.user = None
+            #self.user = None
             self.authed = False
             self.connected = False
         await self.close()
 
     async def on_disconnect(self):
-        await database_sync_to_async(self.clean_db_entries)(True)
         print(f"Disconnecting user: {self.user_username if self.user else 'Unknown'}")
+        await database_sync_to_async(self.clean_db_entries)(True)
         if self.authed:
             await self.update_user_status('Offline')
             await self.broadcast_status_change()
-            self.user = None
+            # self.user = None
             self.authed = False
 
     def get_friends(self):

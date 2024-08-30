@@ -632,6 +632,12 @@ class JoinTournamentView(APIView):
         if nickname is None or len(nickname) == 0 or len(nickname) > settings.MAX_NAME_LENGTH:
             return Response({'status': 'error', 'message': 'Bad nickname'}, status=status.HTTP_400_BAD_REQUEST)
 
+        tournaments = Tournament.objects.all()
+        for tournament in tournaments:
+            for entry in tournament.waitlist:
+                if entry.startswith(f'user:{user.username}:'):
+                    return Response({'status': 'error', 'message': 'User already in tournament'}, status=status.HTTP_400_BAD_REQUEST)
+        
         existing_tournament = Tournament.objects.filter(initiated_by=user).first()
         if existing_tournament is not None:
             return Response({'status': 'error', 'message': 'User already has a tournament'}, status=status.HTTP_400_BAD_REQUEST)
