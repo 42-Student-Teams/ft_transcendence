@@ -75,7 +75,15 @@ function handleMessage(msg) {
                 const placeholder = `%${key}%`;
                 localized_message = localized_message.replaceAll(placeholder, langPack[key]);
             });
-            showToast(localized_message, "success");
+            let toast_type = "success";
+            if ('type' in msg_obj) {
+                toast_type = msg_obj['type'];
+            }
+            let timeout = 5000;
+            if ('timeout' in msg_obj) {
+                timeout = parseInt(msg_obj['timeout']);
+            }
+            showToast(localized_message, toast_type, timeout);
         default:
             return;
     }

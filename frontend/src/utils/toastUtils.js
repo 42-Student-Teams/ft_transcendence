@@ -3,7 +3,7 @@ import {home, toast} from "./langPack.js";
 import store from "../store/index.js";
 import {navigateTo} from "./router.js";
 
-export function showToast(message, type) {
+export function showToast(message, type, timeout=5000) {
     if (typeof bootstrap === 'undefined') {
         console.error('Bootstrap is not defined');
         return;
@@ -14,9 +14,13 @@ export function showToast(message, type) {
         ? '<i class="fas fa-check-circle text-success me-2"></i>'
         : '<i class="fas fa-exclamation-circle text-danger me-2"></i>';
 
+    let autohideInsert = '';
+    if (timeout < 0) {
+        autohideInsert = 'data-bs-autohide="false"';
+    }
     const toastHTML = `
         <div class="position-fixed top-50 start-50 translate-middle p-3" style="z-index: 1055;">
-            <div class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div ${autohideInsert} class="toast align-items-center border-0" role="alert" aria-live="assertive" aria-atomic="true">
                 <div class="d-flex">
                     <div class="toast-body">
                         ${iconHTML}<span>${message}</span>
@@ -33,9 +37,11 @@ export function showToast(message, type) {
     const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
     toastElement.show();
 
-    setTimeout(() => {
-        document.body.removeChild(toastContainer);
-    }, 5000);
+    if (timeout > 0) {
+        setTimeout(() => {
+            document.body.removeChild(toastContainer);
+        }, timeout);
+    }
 }
 
 export function showTournamentInvite(match_key, tournament_id) {

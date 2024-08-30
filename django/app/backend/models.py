@@ -283,6 +283,8 @@ class Tournament(models.Model):
     active_participants_count = models.IntegerField(default=-1)
     all_participants_count = models.IntegerField(default=0)
     subscribed_count = models.IntegerField(default=0)
+    matches_paired = models.IntegerField(default=0)
+    game_history = models.JSONField(default=list, blank=True)
 
     def add_to_waitlist(self, username):
         """Add a user or bot (identified by username) to the waitlist."""
@@ -350,6 +352,9 @@ class Tournament(models.Model):
             user2 = self.waitlist.pop(0)
 
             print(f'Tournament id {self.id}, pairing {user1} and {user2}!', flush=True)
+            self.game_history.append({'player1': user1, 'player2': user2, 'points1': 0, 'points2': 0, 'match_number': self.matches_paired})
+            self.matches_paired += 1
+            self.save()
 
             if user1.startswith('bot:') and user2.startswith('bot:'):
                 winner = random.choice([user1, user2])
