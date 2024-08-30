@@ -123,4 +123,57 @@ export function showTournamentInvite(match_key, tournament_id) {
     toastElement.show();
 }
 
-window.lol = showTournamentInvite;
+
+export function showTournamentResults() {
+    const toastHTML = `<div class="modal fade" id="modalTournamentBracket" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Tournament Bracket</h5>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tournament-bracket">
+                                <div class="bg-info round round-1">
+                                    <h6>Round 1</h6>
+                                    <div class="match">
+                                        <div>${tournament.p1} (${score.round1[0]})</div>
+                                        <div>vs</div>
+                                        <div>${tournament.p2} (${score.round1[1]})</div>
+                                        <strong>Winner: ${winner.round1}</strong>
+                                    </div>
+                                    <div class="match">
+                                        <div>${tournament.p3} (${score.round2[0]})</div>
+                                        <div>vs</div>
+                                        <div>${tournament.p4} (${score.round2[1]})</div>
+                                        <strong>Winner: ${winner.round2}</strong>
+                                    </div>
+                                </div>
+                                <div class="round round-2">
+                                    <h6>Final</h6>
+                                    <div class="match">
+                                        <div>${winner.round1}</div>
+                                        <div>vs</div>
+                                        <div>${winner.round2}</div>
+                                        <i class="fa-solid fa-trophy"> </i>
+                                        <span>Winner of the Tournament </span>
+                                        <strong> ${winner.round3}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+    const toastContainer = document.createElement('div');
+    toastContainer.innerHTML = toastHTML;
+    document.body.appendChild(toastContainer);
+
+    const toastElement = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+    toastElement.show();
+
+    setTimeout(() => {
+        document.body.removeChild(toastContainer);
+    }, 5000);
+
+}
+
+window.lol = showTournamentResults;
