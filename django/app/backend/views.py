@@ -1,4 +1,6 @@
 import os
+
+import requests
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
@@ -726,3 +728,41 @@ class QuitTournamentView(APIView):
         return Response({
             'status': 'success',
         }, status=status.HTTP_200_OK)
+
+
+class GetOauthTokenView(APIView):
+    def post(self, request):
+
+        #user = JwtUser.objects.filter(username=check_jwt(request)).first()
+        #if user is None:
+        #    return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        print(f'Getting token...', flush=True)
+        code = request.data.get('code')
+        if code is None:
+            return Response({'status': 'error', 'message': 'Missing code'}, status=status.HTTP_400_BAD_REQUEST)
+
+        print('getAccessToken')
+        #url = os.getenv('TOKEN_URL')
+        url = 'https://api.intra.42.fr/oauth/token'
+        params = {
+            'grant_type': 'authorization_code',
+            'client_id': os.getenv('CLIENT_ID'),
+            'client_secret': os.getenv('CLIENT_SECRET'),
+            'code': code,
+            'redirect_uri': os.getenv('REDIRECT_URI').replace('%IP%', os.getenv('BACKEND_IP')),
+        }
+
+        print(params)
+
+        try:
+            response = requests.post(url, json=params, headers={'Content-Type': 'application/json'})
+            print(response.text, flush=True)
+            if response.status_code != 200:
+                raise Exception(f'HTTP error! status: {response.status_code}')
+
+            data = response.json()
+            return Response(data, status=status.HTTP_200_OK)
+        except Exception as error:
+            print('Error fetching access token:', error)
+            return Response({'status': 'error', 'message': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -30,11 +30,16 @@ function updateFromSocket(msg_obj) {
 		}
 	} else if ('author_points' in msg_obj) {
 		console.log(`Author points: ${msg_obj['author_points']}`);
+		if (document.getElementById('score-left')) {
+			document.getElementById('score-left').innerText = msg_obj['author_points'];
+		}
 		document.getElementById('score-left').innerText = msg_obj['author_points'];
 		checkGameOver();
 	} else if ('opponent_points' in msg_obj) {
 		console.log(`Opponent points: ${msg_obj['opponent_points']}`);
-		document.getElementById('score-right').innerText = msg_obj['opponent_points'];
+		if (document.getElementById('score-right')) {
+			document.getElementById('score-right').innerText = msg_obj['opponent_points'];
+		}
 		checkGameOver();
 	} else if ('countdown' in msg_obj) {
 		console.log(`Countdown: ${msg_obj['countdown']}`);
@@ -43,9 +48,14 @@ function updateFromSocket(msg_obj) {
 			window.gameState.started = true;
 			window.gameState.stopperTime = false;
 			window.gameState.startTime = Date.now();
-			document.getElementById('Timer').innerText = '';
+			if (document.getElementById('Timer')) {
+				document.getElementById('Timer').innerText = '';
+			}
 		}
 	} else {
+		if (!window.gameState.currentUsername) {
+			return;
+		}
 		let ourTimestamp = 0;
 		if (window.gameState.currentUsername === window.gameState.author_username) {
 			ourTimestamp = msg_obj['author_timestamp'];

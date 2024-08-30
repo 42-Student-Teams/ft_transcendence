@@ -22,11 +22,13 @@ export default class Login extends Component {
 	}
 
 	async handleEvent() {
-		this.element.querySelector("button").addEventListener("click", () => {
+		this.element.querySelector("button").addEventListener("click", async () => {
 			const { state, expirationTime } = generateRandomState();
         	sessionStorage.setItem('oauth_state', JSON.stringify({ state, expirationTime }));
 			
-			open(`${process.env.AUTHORIZATION_URL}?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&state=${state}&response_type=code`, "_self");
+			open(`${process.env.AUTHORIZATION_URL}?client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI.replace('%IP%', process.env.BACKEND_IP)}&state=${state}&response_type=code`, "_self");
+			//let token = await getAccessToken();
+			//console.log('token: ', token);
 		});
 	}
 }

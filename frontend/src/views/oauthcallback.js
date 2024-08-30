@@ -1,17 +1,15 @@
 import Component from "../library/component.js";
-import {loginOauth, registerUser, userExists, userIsOauth} from "../utils/apiutils.js";
-import store from "../store/index.js";
-import {navigateTo} from "../utils/router.js";
+import { loginOauth } from "../utils/apiutils.js";
+import { navigateTo } from "../utils/router.js";
 
 async function getAccessToken(code) {
 	console.log('getAccessToken');
-    const url = process.env.TOKEN_URL;
+    const url = `${process.env.API_URL}/get_oauth_token`;
+    
+    //const url = '/your-django-endpoint/';  // Update this to your actual Django endpoint URL
+    
     const params = {
-        grant_type: 'authorization_code',
-        client_id: process.env.CLIENT_ID,
-        client_secret: process.env.CLIENT_SECRET,
         code: code,
-        redirect_uri: process.env.REDIRECT_URI,
     };
 
     try {
@@ -100,3 +98,5 @@ export default class OauthCallback extends Component {
         }
     }
 }
+
+export { getAccessToken };

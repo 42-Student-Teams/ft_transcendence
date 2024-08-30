@@ -28,4 +28,5 @@ urlpatterns=[
     path('join_tournament', views.JoinTournamentView.as_view(), name='join_tournament'),
     path('quit_tournament', views.QuitTournamentView.as_view(), name='quit_tournament'),
 	path('get_logged_in_status', views.loggedInStatusView.as_view(), name='get_logged_in_status'),
+    path('get_oauth_token', views.GetOauthTokenView.as_view(), name='get_oauth_token'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

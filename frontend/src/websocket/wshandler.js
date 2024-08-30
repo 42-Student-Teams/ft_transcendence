@@ -123,7 +123,9 @@ function handleGameMessage(msg) {
                                 };
             // This might actually not be needed, since we pass gameData directly to startGame
             store.dispatch("setCurrentGameData", gameData);
-            window.startGame(gameData);
+            if (window.startGame) {
+                window.startGame(gameData);
+            }
             break;
         case 'relay_from_controller':
             updateFromSocket(msg_obj);
