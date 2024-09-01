@@ -5,6 +5,7 @@ import time
 
 import requests
 
+from app.settings import logger
 
 def timestamp_now():
     t = datetime.datetime.now(datetime.timezone.utc)
@@ -26,10 +27,10 @@ def get_user_info(access_token):
         data = response.json()
         return data
     except requests.exceptions.HTTPError as http_err:
-        print(f'HTTP error occurred: {http_err}')
+        logger.error(f'HTTP error occurred: {http_err}')
         raise
     except Exception as err:
-        print(f'Other error occurred: {err}')
+        logger.error(f'Other error occurred: {err}')
         raise
 
 

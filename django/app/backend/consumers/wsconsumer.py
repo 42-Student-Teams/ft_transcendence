@@ -3,23 +3,25 @@ from backend.models import (JwtUser, Message, MatchRequest, AcknowledgedMatchReq
 from backend.util import timestamp_now, random_alphanum, AnonClass
 from backend.consumers.consumer_util import WsConsumerCommon, register_ws_func
 
-from asgiref.sync import async_to_sync, sync_to_async
+from asgiref.sync import async_to_sync
 from channels.db import database_sync_to_async
 from channels.layers import get_channel_layer
+
+from app.settings import logger
 
 class WsConsumer(WsConsumerCommon):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def clean_db_entries(self, was_reload):
-        print(f'Cleaning db entries for user {self.user.username}')
+        logger.debug(f'Cleaning db entries for user {self.user.username}')
         MatchRequest.objects.filter(request_author=self.user).delete()
 
         if was_reload:
             tournaments = Tournament.objects.all()
             channel_layer = get_channel_layer()
             for tournament in tournaments:
-                print(f'Deleting user {self.user.username} from tournament {tournament.id}')
+                logger.debug(f'Deleting user {self.user.username} from tournament {tournament.id}')
                 for entry in tournament.waitlist:
                     if entry.startswith(f'user:{self.user.username}'):
                         tournament.amount_players_quit += 1
@@ -27,13 +29,13 @@ class WsConsumer(WsConsumerCommon):
                 tournament.remove_from_waitlist(self.user.username)
                 acknowledgements: list[AcknowledgedMatchRequest] = AcknowledgedMatchRequest.objects.filter(tournament_id=tournament.id)
                 for acknowledgement in acknowledgements:
-                    print(f'checking acknowledgement from username {self.user.username}: {acknowledgement.request_author.username}')
+                    logger.debug(f'checking acknowledgement from username {self.user.username}: {acknowledgement.request_author.username}')
                     if self.user.username == acknowledgement.request_author.username:
                         Tournament.report_results(acknowledgement.opponent_nickname, acknowledgement.author_nickname, tournament.id)
-                        print(f'Reporting nickname {acknowledgement.opponent_nickname} as winning to tournament {tournament.id}')
+                        logger.debug(f'Reporting nickname {acknowledgement.opponent_nickname} as winning to tournament {tournament.id}')
                     elif acknowledgement.target_user is not None and self.user.username == acknowledgement.target_user.username:
                         Tournament.report_results(acknowledgement.author_nickname, acknowledgement.opponent_nickname, tournament.id)
-                        print(
+                        logger.debug(
                             f'Reporting nickname {acknowledgement.author_nickname} as winning to tournament {tournament.id}')
                     #elif acknowledgement.is_bot and self.user.username == acknowledgement.request_author.username:
                     #    Tournament.report_results(acknowledgement.opponent_nickname, tournament.id)
@@ -70,7 +72,7 @@ class WsConsumer(WsConsumerCommon):
 
     def update_user_status_safe(self, status):
         if self.user:
-            print(f"Updating status for user {self.user.username} to {status}")
+            logger.debug(f"Updating status for user {self.user.username} to {status}")
             self.user.status = status
             self.user.save()
 
@@ -96,7 +98,7 @@ class WsConsumer(WsConsumerCommon):
 
     @register_ws_func
     async def logout(self, msg_obj):
-        print(f"Logging out user: {self.user_username if self.user_username else 'Unknown'}")
+        logger.debug(f"Logging out user: {self.user_username if self.user_username else 'Unknown'}")
         if self.user:
             await self.update_user_status('Offline')
             #self.user = None
@@ -105,7 +107,7 @@ class WsConsumer(WsConsumerCommon):
         await self.close()
 
     async def on_disconnect(self):
-        print(f"Disconnecting user: {self.user_username if self.user else 'Unknown'}")
+        logger.debug(f"Disconnecting user: {self.user_username if self.user else 'Unknown'}")
         await database_sync_to_async(self.clean_db_entries)(True)
         if self.authed:
             await self.update_user_status('Offline')
@@ -123,7 +125,7 @@ class WsConsumer(WsConsumerCommon):
     async def subscribe_to_groups(self):
         if self.user is None:
             return
-        print(f'SUBSCRIBE: {self.user.username}', flush=True)
+        logger.debug(f'SUBSCRIBE: {self.user.username}')
         if len(self.subscribed_groups) > 0:
             return
         await self.subscribe_to_group(self.user.username)
@@ -152,7 +154,7 @@ class WsConsumer(WsConsumerCommon):
 
     @register_ws_func
     async def direct_message(self, msg_obj):
-        print(f"Got message command: to: {msg_obj.get('friend_username')}, message: {msg_obj.get('message')}", flush=True)
+        logger.debug(f"Got message command: to: {msg_obj.get('friend_username')}, message: {msg_obj.get('message')}")
         friend_username = msg_obj.get('friend_username')
         if friend_username is None or msg_obj.get('message') is None:
             return
@@ -162,13 +164,13 @@ class WsConsumer(WsConsumerCommon):
             return
         blocked = await database_sync_to_async(self.username_is_blocked)(friend_username)
         if blocked:
-            print(f'BLOCKED: {friend_username}, not sending message', flush=True)
+            logger.debug(f'BLOCKED: {friend_username}, not sending message')
             return
         await database_sync_to_async(self.create_message)(friend, msg_obj.get('message'))
         msg_obj['author'] = self.user.username
-        print(f"Relaying message {msg_obj.get('message')} to channel", flush=True)
-        print('Groups I\'m in:', flush=True)
-        print(self.subscribed_groups, flush=True)
+        logger.debug(f"Relaying message {msg_obj.get('message')} to channel")
+        logger.debug('Groups I\'m in:')
+        logger.debug(self.subscribed_groups)
         await self.send_channel(friend_username, 'channel_dm', msg_obj)
 
     def acknowledge_bot_request(self, msg_obj):
@@ -230,7 +232,7 @@ class WsConsumer(WsConsumerCommon):
             if match_author is None:
                 return None
             oldest_request: MatchRequest = MatchRequest.objects.filter(request_author=match_author).first()
-        print("Got oldest request", flush=True)
+        logger.debug("Got oldest request")
         if oldest_request:
             req_copy = AnonClass(
                 request_author=AnonClass(username=oldest_request.request_author.username),
@@ -276,10 +278,10 @@ class WsConsumer(WsConsumerCommon):
         key = acknowledgement.match_key
         if acknowledgement.is_bot:
             return [key, acknowledgement.opponent_nickname]
-        print(f'Key: {key}', flush=True)
+        logger.debug(f'Key: {key}')
         waiting: TournamentPvPQueue = TournamentPvPQueue.objects.filter(match_key=key).first()
         if waiting is None:
-            print('waiting is None', flush=True)
+            logger.debug('waiting is None')
             TournamentPvPQueue.add_user_to_queue(user, key)
         else:
             username = waiting.user.username
@@ -293,14 +295,14 @@ class WsConsumer(WsConsumerCommon):
     async def request_game(self, msg_obj):
         errormsg = {'type': 'request_game_resp', 'status': 'error'}
         if msg_obj.get('tournament_id') is not None:
-            print(f'Got game request from tournament {msg_obj.get("tournament_id")}')
+            logger.debug(f'Got game request from tournament {msg_obj.get("tournament_id")}')
             acknowledgement = await database_sync_to_async(self.acknowledgement_by_key)(msg_obj.get("match_key"))
             if acknowledgement is None:
                 return
             key, waiting_username = await database_sync_to_async(self.handle_acknowledgement)(acknowledgement, self.user)
-            print(key, waiting_username, flush=True)
+            logger.debug(key, waiting_username)
             if key is not None:
-                print('!! sending game_acknowledgements', flush=True)
+                logger.debug('!! sending game_acknowledgements')
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': key})
                 if not waiting_username.startswith('bot:'):
                     await self.send_channel(waiting_username, 'relay_game_acknowledgement',
@@ -314,20 +316,20 @@ class WsConsumer(WsConsumerCommon):
             else:
                 request = await database_sync_to_async(self.get_available_match_request)()
             if request is not None:
-                print('Someone is proposing a match, joining', flush=True)
+                logger.debug('Someone is proposing a match, joining')
                 # if someone is already proposing a match we join it
                 acknowledgement_key = await database_sync_to_async(self.acknowledge_request_join_from_search)(request,
                                                                                                               self.user)
                 if acknowledgement_key is None:
                     return
                 await self.send_json({'type': 'game_acknowledgement', 'match_key': acknowledgement_key})
-                print(f'Sending acknowledgement to author ({request.request_author}, (we are {self.user_username} (his opponent))', flush=True)
+                logger.debug(f'Sending acknowledgement to author ({request.request_author}, (we are {self.user_username} (his opponent))')
                 # We need to specify the target_user because we ourselves are also subscribed to the group
                 await self.send_channel(request.request_author.username, 'relay_game_acknowledgement',
                                         {'match_key': acknowledgement_key, 'target_user': request.request_author.username})
             else:
                 # otherwise we add ourselves to the match search queue
-                print('Adding ourselves to wait queue', flush=True)
+                logger.debug('Adding ourselves to wait queue')
                 await database_sync_to_async(self.add_user_to_queue)(self.user)
             return
         if msg_obj.get('ball_color') is None or msg_obj.get('ball_color') not in ['black', 'blue', 'red']:
@@ -336,26 +338,26 @@ class WsConsumer(WsConsumerCommon):
             msg_obj['fast'] = False
         if msg_obj.get('ai') is None:
             await self.send_json(errormsg)
-            print("err1", flush=True)
+            logger.debug("err1")
             return
         if msg_obj.get('ai') is None and msg_obj.get('target_user') is None:
             await self.send_json(errormsg)
-            print("err2", flush=True)
+            logger.debug("err2")
             return
         if msg_obj.get('target_user') is not None:
             if not await database_sync_to_async(self.user_exists)(msg_obj.get('target_user')):
                 await self.send_json(errormsg)
-                print("err3", flush=True)
+                logger.debug("err3")
                 return
             friend = await database_sync_to_async(self.get_friend_by_username)(msg_obj.get('target_user'))
             if friend is None:
                 await self.send_json(errormsg)
-                print("err4", flush=True)
+                logger.debug("err4")
                 return
             blocked = await database_sync_to_async(self.user_is_blocked)(friend)
             if blocked:
                 await self.send_json(errormsg)
-                print("err5 (blocked)", flush=True)
+                logger.debug("err5 (blocked)")
                 return
             match_request_id = await database_sync_to_async(self.request_match)(msg_obj, friend)
             await self.send_json({'type': 'match_request_id', 'id': match_request_id})
@@ -384,16 +386,16 @@ class WsConsumer(WsConsumerCommon):
 
     @register_ws_func
     async def navigating_to(self, msg_obj):
-        print(f'navigating_to: {msg_obj}', flush=True)
+        logger.debug(f'navigating_to: {msg_obj}')
         if msg_obj.get('url') is None:
             return
         if 'local-game' not in msg_obj.get('url'):
-            print('Clearing db because we opened a non local game page', flush=True)
+            logger.debug('Clearing db because we opened a non local game page')
             await database_sync_to_async(self.clean_db_entries)(False)
 
     # CHANNEL RECEIVERS
     async def channel_dm(self, event):
-        print("Got dm on channel", flush=True)
+        logger.debug("Got dm on channel")
         msg_obj = event["msg_obj"]
         if msg_obj.get('friend_username') == self.user_username:
             # it could contain more fields, which is not desirable
@@ -402,12 +404,12 @@ class WsConsumer(WsConsumerCommon):
                 'author': msg_obj.get('author'),
                 'message': msg_obj.get('message'),
             }
-            print(f'Sending the json from channel_dm ({self.user_username})', flush=True)
+            logger.debug(f'Sending the json from channel_dm ({self.user_username})')
             await self.send_json(sanitized_msg_obj)
 
     async def friend_status_change(self, event):
         msg_obj = event["msg_obj"]
-        print(f"Received friend status change: {msg_obj}")
+        logger.debug(f"Received friend status change: {msg_obj}")
         await self.send_json({
             'type': 'friend_status_update',
             'username': msg_obj['user'],
@@ -423,7 +425,7 @@ class WsConsumer(WsConsumerCommon):
         await self.send_json({'type': 'game_acknowledgement', 'match_key': msg_obj.get('match_key')})
 
     async def relay_bye(self, event):
-        print(f"Received relay bye: {event}", flush=True)
+        logger.debug(f"Received relay bye: {event}")
         msg_obj = event["msg_obj"]
         if msg_obj.get('target_user') is None or msg_obj.get('match_key') is None:
             return

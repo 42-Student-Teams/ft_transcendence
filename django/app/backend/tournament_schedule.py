@@ -4,18 +4,20 @@ import time
 import multiprocessing
 
 
+from app.settings import logger
+
 _scheduler_started = False
 
 def process_tournaments():
-    print(f"Processing tournaments [{multiprocessing.current_process().name}] [{threading.current_thread()}]...", flush=True)
+    logger.debug(f"Processing tournaments [{multiprocessing.current_process().name}] [{threading.current_thread()}]...")
     from backend.models import Tournament
 
     tournaments = Tournament.objects.all()
     for tournament in tournaments:
         if tournament.op_lock:
-            print(f'Tournament {tournaments.id} locked, skipping', flush=True)
+            logger.debug(f'Tournament {tournaments.id} locked, skipping')
             continue
-        print(f'Processing tournament {tournament.id}', flush=True)
+        logger.debug(f'Processing tournament {tournament.id}')
         tournament.pair_and_notify()
 
 

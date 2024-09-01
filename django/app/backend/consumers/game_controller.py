@@ -5,7 +5,7 @@ import random
 from channels.layers import get_channel_layer
 
 from backend.models import AcknowledgedMatchRequest
-
+from app.settings import logger
 
 def sign(n):
     if n < 0:
@@ -80,11 +80,9 @@ class Ball:
     def check_paddle_collisions(self, config: Config, paddle1: Paddle, paddle2: Paddle):
         if self.x - self.r <= config.paddleWidth:
             if paddle1.check_collision(self):
-                print('COLLISION 1!!!!', flush=True)
                 self.reverse_direction(paddle1, config)
         if self.x + self.r >= config.canvasWidth:
             if paddle2.check_collision(self):
-                print(f'COLLISION 2! paddle2.x {paddle2.x}, y: {paddle2.y}, ball.x: {self.x}, y: {self.y}', flush=True)
                 self.reverse_direction(paddle2, config)
 
     def check_win_paddle(self, paddle: Paddle, config: Config):
@@ -126,7 +124,6 @@ class BiggerPad():
         self.effect = False
         self.x = random.uniform(200, config.canvasWidth - 200)
         self.y = random.uniform(200, config.canvasHeight - 200)
-        print(f'SET coords to x: {self.x}, y: {self.y}')
         self.size = 50
         self.effect_time = 8
         self.app_time = 20 // 14
@@ -140,7 +137,6 @@ class BiggerPad():
         self.happened = False
         self.x = random.uniform(200, self.config.canvasWidth - 200)
         self.y = random.uniform(200, self.config.canvasHeight - 200)
-        print(f'SET coords to x: {self.x}, y: {self.y}')
 
     @staticmethod
     def choosecolor():
@@ -149,16 +145,16 @@ class BiggerPad():
     def ft_effect(self, ball, paddle1, paddle2):
         #console.log("-----", this.color);
         if self.color == "#ffc107":
-            print('BIG making paddle bigger', flush=True)
+            logger.debug('BIG making paddle bigger')
             if ball.dx > 0:
                 paddle1.size = paddle1.size + 30
             else:
                 paddle2.size = paddle2.size + 30
         elif self.color == "#198754":
-            print('BIG making ball bigger', flush=True)
+            logger.debug('BIG making ball bigger')
             ball.r = 2 * ball.r
         else:
-            print('BIG Inverting ball', flush=True)
+            logger.debug('BIG making ball faster')
             ball.dx = 2 * ball.dx
 
     def stop(self, ball: Ball, paddle1: Paddle, paddle2: Paddle, config: Config):
@@ -183,7 +179,7 @@ class BiggerPad():
         if r < self.happening_chance and not self.happened and (datetime.now() - self.time_disp).total_seconds() > self.off_time:
             self.time_ap = datetime.now()
             self.happened = True
-            print('BIG HAPPENED!!!!!!!!!!!!!!!!!!!!!!', flush=True)
+            logger.debug('BIG happened')
         if self.happened:
             # https://www.geeksforgeeks.org/find-two-rectangles-overlap/
             # Careful! (0;0) is in bottom left here!
@@ -192,7 +188,7 @@ class BiggerPad():
             l2 = [self.x, config.canvasHeight - self.y]
             r2 = [self.x + self.size, config.canvasHeight - self.y - self.size]
             if self.rects_overlap(l1, r1, l2, r2):
-                print('BIG BALL COLLISION!!!!!!!!!!!!!!!!!!!!!!', flush=True)
+                logger.debug('BIG ball collision')
                 self.ft_effect(ball, paddle1, paddle2)
                 self.happened = False
                 self.effect = True
@@ -205,7 +201,7 @@ class BiggerPad():
 
 class GameController():
     def __init__(self, acknowledgement: AcknowledgedMatchRequest):
-        print(f'%%%%%%%%%%%%%%%%%%%%%%%%%\nINITTING CONTROLLER ID [{id(self)}]!\n%%%%%%%%%%%%%%%%%%%%%%%%%%\n', flush=True)
+        logger.info(f'%%%%%%%%%%%%%%%%%%%%%%%%%\nINITTING CONTROLLER ID [{id(self)}]!\n%%%%%%%%%%%%%%%%%%%%%%%%%%\n')
         self.acknowledgement = acknowledgement
         self.channel_layer = get_channel_layer()
         self.controller_channel = f'controller_{acknowledgement.match_key}'
@@ -228,7 +224,7 @@ class GameController():
         self.bigpad = BiggerPad(self.config)
 
     async def start(self):
-        print('Start!', flush=True)
+        logger.info('Controller start!')
         self.running = True
         #self.game_thread = threading.Thread(target=self.game_loop)
         self.reset_ball()
@@ -239,16 +235,14 @@ class GameController():
         asyncio.create_task(self.game_loop())
 
     async def stop(self):
-        print("Stop!", flush=True)
+        logger.info('Controller stop!')
         self.running = False
         if self.game_thread:
             self.game_thread.join()
 
     async def game_loop(self):
-        print(f'Initial ballpos: {self.ball.x}, {self.ball.y}', flush=True)
         while self.running:
             if self.restart_timeout:
-                print('Restart timeout!', flush=True)
                 self.restart_timeout = False
                 await asyncio.sleep(1)
                 self.start_ball()
@@ -304,13 +298,13 @@ class GameController():
             if self.ball.check_win_paddle(self.author_paddle, self.config):
                 self.opponent_score += 1
                 await self.send_game_update({"opponent_points": self.opponent_score})
-                print('opponent scored!')
+                logger.debug('Opponent scored')
                 self.reset_ball(True)
                 continue
             elif self.ball.check_win_paddle(self.opponent_paddle, self.config):
                 self.author_score += 1
                 await self.send_game_update({"author_points": self.author_score})
-                print('author scored!')
+                logger.debug('Author scored')
                 self.reset_ball(True)
                 continue
 
@@ -381,8 +375,7 @@ class GameController():
             pass
         else:
             async with self.queue_lock:
-                #print(f'CONTROLLER GOT EVENT: {msg_obj} ({inspect.stack()[1][3]})')
-                print(f'CONTROLLER [{id(self)}] GOT EVENT: {msg_obj}')
+                logger.debug(f'Controller [{id(self)}] got event: {msg_obj}')
                 self.event_queue.append(msg_obj)
 
     # Ported funcs
@@ -398,5 +391,4 @@ class GameController():
         self.send_game_update({
             "waiting_between_points": True
         })
-        print('Setting restart_timeout to True')
         self.restart_timeout = True

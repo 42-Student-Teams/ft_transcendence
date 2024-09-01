@@ -5,16 +5,11 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequest, JsonResponse, FileResponse
-from django.templatetags.static import static
-from django.urls import reverse
-from django.core.exceptions import ValidationError
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db.models import Q, F
 from django.utils.text import slugify
-from django.db import IntegrityError
-
 
 from .jwt_util import jwt_response, check_jwt
 from .models import (JwtUser, GameHistory, MatchRequest, Tournament, TournamentSearchQueue, AcknowledgedMatchRequest,
@@ -22,9 +17,12 @@ from .models import (JwtUser, GameHistory, MatchRequest, Tournament, TournamentS
 
 from rest_framework import status
 from rest_framework.response import Response
-from .serializers import JwtUserSerializer, MessageSerializer, GameHistorySerializer, GameHistoryCreateSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer, UserProfileSerializer, UserLoginSerializer, ImprovedUserProfileSerializer, FriendUsernameSerializer, UsernameSerializer, ChatMessagesSerializer
+from .serializers import (JwtUserSerializer, MessageSerializer, PlayerStatsSerializer, GameHistoryWithAvatarSerializer,
+                          UserLoginSerializer, ImprovedUserProfileSerializer, FriendUsernameSerializer,
+                          UsernameSerializer, ChatMessagesSerializer)
 
 from .util import get_user_info
+from app.settings import logger
 
 
 def index(request):
@@ -37,19 +35,19 @@ def create_user(request):
 ##--------------------------------------USER DATA - POST METHODE-----------------------------------------###
 class UserCreateView(APIView):
     def post(self, request):
-        print('--------------------')
-        print(request.data)
-        print('--------------------')
+        logger.debug('--------------------')
+        logger.debug(request.data)
+        logger.debug('--------------------')
         serializer = JwtUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            print(f"got username: {user.username}", flush=True)
+            logger.debug(f"got username: {user.username}")
             return jwt_response(user.username)
         else:
             errors = []
             for error_msgs in serializer.errors.values():
                 errors.extend([f"({error})" for error in error_msgs])
-            print(f"Validation errors: {errors}", flush=True)
+            logger.debug(f"Validation errors: {errors}")
             return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserOauthLoginView(APIView):
@@ -63,7 +61,6 @@ class UserOauthLoginView(APIView):
             oauth_token = request.data['oauth_token']
         if oauth_token is not None:
             user_info = get_user_info(oauth_token)
-            #print(user_info, flush=True)
             if user_info is not None:
                 username = user_info['login']
             else:
@@ -532,19 +529,13 @@ class MatchRequestAvailableView(APIView):
             return Response({'available': 'true'}, status=status.HTTP_200_OK)
 
 
-def parse_to_int(var):
-    try:
-        return int(var)
-    except (ValueError, TypeError):
-        return -1
-
 class CreateTournamentView(APIView):
     def post(self, request):
         user = JwtUser.objects.filter(username=check_jwt(request)).first()
         if user is None:
             return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(f'User `{user}` wants to create a tournament', flush=True)
+        logger.debug(f'User `{user}` wants to create a tournament')
 
         existing_tournament = Tournament.objects.filter(initiated_by=user).first()
         if existing_tournament is not None:
@@ -555,9 +546,7 @@ class CreateTournamentView(APIView):
             if request.data.get(prop) is None:
                 return Response({'status': 'error', 'message': f'Missing parameter {prop}'}, status=status.HTTP_400_BAD_REQUEST)
 
-        all_participants_count = settings.MAX_TOURNAMENT_PLAYERS #parse_to_int(request.data.get('all_participants_count'))
-        #if all_participants_count < 0 or all_participants_count > settings.MAX_TOURNAMENT_PLAYERS:
-        #    return Response({'status': 'error', 'message': 'Wrong all_participants_count param'}, status=status.HTTP_400_BAD_REQUEST)
+        all_participants_count = settings.MAX_TOURNAMENT_PLAYERS
         
         color = request.data.get('color')
         if color not in ['black', 'red', 'blue']:
@@ -576,7 +565,7 @@ class CreateTournamentView(APIView):
             return Response({'status': 'error', 'message': 'Bad name'}, status=status.HTTP_400_BAD_REQUEST)
 
         bot_list = request.data.get('bot_list')
-        print(bot_list, flush=True)
+        logger.debug(bot_list)
         if type(bot_list) != list:
             return Response({'status': 'error', 'message': 'Bad bot param'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -628,7 +617,7 @@ class JoinTournamentView(APIView):
         if user is None:
             return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(f'User `{user}` wants to join a tournament', flush=True)
+        logger.debug(f'User `{user}` wants to join a tournament')
 
         nickname = request.data.get('nickname')
         if nickname is None or len(nickname) == 0 or len(nickname) > settings.MAX_NAME_LENGTH:
@@ -672,7 +661,7 @@ class QuitTournamentView(APIView):
         if user is None:
             return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(f'User `{user}` wants to quit a tournament', flush=True)
+        logger.debug(f'User `{user}` wants to quit a tournament')
 
         tournament_id = request.data.get('tournament_id')
         match_key = request.data.get('match_key')
@@ -737,12 +726,11 @@ class GetOauthTokenView(APIView):
         #if user is None:
         #    return Response({'status': 'error', 'message': 'Not authed'}, status=status.HTTP_400_BAD_REQUEST)
         
-        print(f'Getting token...', flush=True)
+        logger.debug(f'Getting token...')
         code = request.data.get('code')
         if code is None:
             return Response({'status': 'error', 'message': 'Missing code'}, status=status.HTTP_400_BAD_REQUEST)
 
-        print('getAccessToken')
         #url = os.getenv('TOKEN_URL')
         url = 'https://api.intra.42.fr/oauth/token'
         params = {
@@ -753,16 +741,14 @@ class GetOauthTokenView(APIView):
             'redirect_uri': os.getenv('REDIRECT_URI').replace('%IP%', os.getenv('BACKEND_IP')),
         }
 
-        print(params)
-
         try:
             response = requests.post(url, json=params, headers={'Content-Type': 'application/json'})
-            print(response.text, flush=True)
+            logger.debug(response.text)
             if response.status_code != 200:
                 raise Exception(f'HTTP error! status: {response.status_code}')
 
             data = response.json()
             return Response(data, status=status.HTTP_200_OK)
         except Exception as error:
-            print('Error fetching access token:', error)
+            logger.error('Error fetching access token:', error)
             return Response({'status': 'error', 'message': str(error)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

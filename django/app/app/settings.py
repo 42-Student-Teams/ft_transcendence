@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 from django.conf import settings
@@ -197,7 +198,17 @@ TOKEN_EXPIRATION_MINUTES:int = int(os.getenv("TOKEN_EXPIRATION_MINUTES", 15))
 AUTH_USER_MODEL = 'backend.jwtuser'
 
 MAX_TOURNAMENT_PLAYERS = 4
-if MAX_TOURNAMENT_PLAYERS < 2:
-    MAX_TOURNAMENT_PLAYERS = 2
+if MAX_TOURNAMENT_PLAYERS < 4:
+    MAX_TOURNAMENT_PLAYERS = 4
 
 MAX_NAME_LENGTH = 30
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.error("BRUH")
+if os.getenv('LOGGING_DEBUG') == 'true':
+    logging.basicConfig(level=logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
+
+logging.getLogger('daphne').setLevel(logging.WARN)

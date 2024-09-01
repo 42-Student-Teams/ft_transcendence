@@ -1,4 +1,3 @@
-import asyncio
 import json
 
 from backend.models import AcknowledgedMatchRequest, JwtUser, Tournament, GameHistory
@@ -7,7 +6,7 @@ from backend.consumers.game_controller import GameController
 from backend.util import random_bot_name
 from django.utils import timezone
 
-from asgiref.sync import async_to_sync
+from app.settings import logger
 from channels.db import database_sync_to_async
 
 class GameConsumer(WsConsumerCommon):
@@ -50,7 +49,7 @@ class GameConsumer(WsConsumerCommon):
         Tournament.report_results(nickname, loser, tournament_id)
 
     async def on_auth(self, msg_obj):
-        print('Received auth message', flush=True)
+        logger.debug('Received auth message')
         if msg_obj.get('match_key') is None:
             await self.close()
             return
@@ -86,12 +85,12 @@ class GameConsumer(WsConsumerCommon):
         # this means we are the requesting user, we create the game controller
         request_author_username = await database_sync_to_async(self.get_request_author_username)(acknowledgement)
         if self.user.username == request_author_username:
-            print(f'My username is {self.user.username}, the request_author_username is {request_author_username}. Starting GameController', flush=True)
+            logger.debug(f'My username is {self.user.username}, the request_author_username is {request_author_username}. Starting GameController')
             self.game_controller = GameController(acknowledgement)
             await self.game_controller.start()
 
         # maybe we should wait for the opponent...
-        print('Sending start json', flush=True)
+        logger.debug('Sending start json')
         bot_name = random_bot_name()
         if self.opponent_nickname is not None and self.opponent_nickname.startswith('bot:'):
             bot_name = self.opponent_nickname[len('bot:'):]
@@ -119,15 +118,15 @@ class GameConsumer(WsConsumerCommon):
             'opponent_nickname': o_nickname})
 
     async def on_disconnect(self):
-        print(f'{self.user.username} on_disconnect', flush=True)
+        logger.debug(f'{self.user.username} on_disconnect')
         try:
             await self.send_json({'type': 'game_bye', 'msg_obj': {}})
         except Exception as e:
-            print(e)
+            logger.debug(e)
         if self.game_controller is not None:
             await self.game_controller.stop()
         if not self.voluntary_disconnect:
-            print(f'Disconnect was not voluntary, sending player_disconnect who={self.user_username}')
+            logger.debug(f'Disconnect was not voluntary, sending player_disconnect who={self.user_username}')
             if self.game_controller is not None:
                 await self.player_disconnect({"msg_obj": {'who': self.user_username}})
             else:
@@ -167,12 +166,12 @@ class GameConsumer(WsConsumerCommon):
                 return
             else:
                 self.received_over = True
-            print(f'{self.user.username} received OVER', flush=True)
+            logger.debug(f'{self.user.username} received OVER')
             self.voluntary_disconnect = True
 
             if self.game_controller is not None:
-                print(f'Handling who won, author ({self.user.username}) score: {self.game_controller.author_score}.'
-                      f' opponent ({self.opponent.username if self.opponent is not None else "BOT"}) score: {self.game_controller.opponent_score}', flush=True)
+                logger.debug(f'Handling who won, author ({self.user.username}) score: {self.game_controller.author_score}.'
+                      f' opponent ({self.opponent.username if self.opponent is not None else "BOT"}) score: {self.game_controller.opponent_score}')
                 if self.game_controller.author_score >= 3:
                     # author won
                     await self.user_won(self.user)
@@ -188,15 +187,15 @@ class GameConsumer(WsConsumerCommon):
                 pass
 
     async def gentle_disconnect(self, event):
-        print(f'({self.user_username}) Received Gentle disconnect', flush=True)
-        print(event, flush=True)
+        logger.debug(f'({self.user_username}) Received Gentle disconnect')
+        logger.debug(event)
         msg_obj = event["msg_obj"]
-        print(msg_obj, flush=True)
+        logger.debug(msg_obj)
         if msg_obj.get('target_user') is None:
-            print('target_user was not received', flush=True)
+            logger.debug('target_user was not received')
             return
         if msg_obj.get('target_user') != self.user_username:
-            print('target_user was not self', flush=True)
+            logger.debug('target_user was not self')
             return
 
         try:
@@ -207,18 +206,18 @@ class GameConsumer(WsConsumerCommon):
         await self.disconnect(0)
 
     async def player_disconnect(self, event):
-        print(f'({self.user_username}) Received Player disconnect', flush=True)
+        logger.debug(f'({self.user_username}) Received Player disconnect')
         if self.game_controller is None:
-            print('Received Player disconnect at opponent, returning', flush=True)
+            logger.debug('Received Player disconnect at opponent, returning')
             return
 
         if event['msg_obj'].get('who') is None:
-            print('who was not received', flush=True)
+            logger.debug('who was not received')
             return
 
         # if author disconnects
         if event['msg_obj'].get('who') == self.user_username:
-            print('Author disconnected', flush=True)
+            logger.debug('Author disconnected')
             # Opponent wins
             await self.user_won(self.opponent)
             if self.opponent is not None:
@@ -226,7 +225,7 @@ class GameConsumer(WsConsumerCommon):
                                     {"target_user": self.opponent.username})
         # if opponent disconnects
         elif event['msg_obj'].get('who') == self.opponent.username:
-            print('Opponent disconnected', flush=True)
+            logger.debug('Opponent disconnected')
             # Author wins
             await self.user_won(self.user)
             await self.send_channel(self.author_channel, 'gentle_disconnect',
@@ -255,7 +254,7 @@ class GameConsumer(WsConsumerCommon):
         )
 
     def format_tournament_results(self, tournament_id):
-        print('IM HERE', flush=True)
+        logger.debug('IM HERE')
         res = ''
         tournament = Tournament.objects.filter(id=tournament_id).first()
         def format_player_username(username):
@@ -264,15 +263,15 @@ class GameConsumer(WsConsumerCommon):
             if username.startswith('bot'):
                 return username.split(':')[1] + ' (BOT)'
         for entry in tournament.game_history:
-            print(f'processing entry {entry}', flush=True)
+            logger.debug(f'processing entry {entry}')
             res += f'\n<br>[{format_player_username(entry["player1"])} vs. {format_player_username(entry["player2"])}]'
             if entry["gagnant"] is not None:
                 res += f'<br>** Winner -> {format_player_username(entry["gagnant"])} **\n<br>'
-        print(f'Formatted tournament results: {res}', flush=True)
+        logger.debug(f'Formatted tournament results: {res}')
         return res
 
     async def user_won(self, who):
-        print(f'Noting that user {who.username if who else "BOT"} won', flush=True)
+        logger.debug(f'Noting that user {who.username if who else "BOT"} won')
 
         # Calculer la durée de la partie
         duration = int((timezone.now() - self.start_time).total_seconds())
@@ -305,14 +304,14 @@ class GameConsumer(WsConsumerCommon):
         # Gestion du tournoi si applicable
         if self.tournament_id is not None:
             if who == self.user:
-                print(f'Sending tournament report that {who.username} ({self.author_nickname}) won', flush=True)
+                logger.debug(f'Sending tournament report that {who.username} ({self.author_nickname}) won')
                 await database_sync_to_async(self.report_tournament_win)(self.author_nickname, self.opponent_nickname, self.tournament_id)
             else:
-                print(f'Sending tournament report that {self.opponent_nickname} won', flush=True)
+                logger.debug(f'Sending tournament report that {self.opponent_nickname} won')
                 await database_sync_to_async(self.report_tournament_win)(self.opponent_nickname, self.author_nickname, self.tournament_id)
-            print(f'Formatting tournament results', flush=True)
+            logger.debug(f'Formatting tournament results')
             tournament_results = await database_sync_to_async(self.format_tournament_results)(self.tournament_id)
-            print(f'Formatted tournament results: {tournament_results}', flush=True)
+            logger.debug(f'Formatted tournament results: {tournament_results}')
 
         # Envoyer des notifications aux joueurs
         if who == self.user:

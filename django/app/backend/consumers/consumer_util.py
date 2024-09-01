@@ -1,10 +1,10 @@
-import asyncio
 import json
 
-from asgiref.sync import async_to_sync, sync_to_async
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from backend.models import JwtUser
 
+from app.settings import logger
 from django.conf import settings
 import jwt
 
@@ -34,7 +34,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
                 self.__class__.funcs[name] = self.__class__.__dict__[name]
 
     async def connect(self):
-        print('someone connected', flush=True)
+        logger.debug('someone connected')
         await self.accept()
         self.connected = True
 
@@ -42,7 +42,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         pass
 
     async def disconnect(self, close_code):
-        print('someone disconnected', flush=True)
+        logger.debug('someone disconnected')
         for group in self.subscribed_groups:
             await self.channel_layer.group_discard(
                 group, self.channel_name
@@ -58,34 +58,34 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
         self.subscribed_groups.append(group)
 
     def do_auth(self, msg_obj):
-        print('Doing auth', flush=True)
+        logger.debug('Doing auth')
         if msg_obj.get('jwt') is None:
-            print('RETURN 1', flush=True)
+            logger.debug('RETURN 1')
             return
         try:
             payload = jwt.decode(msg_obj.get('jwt'), settings.JWT_SECRET, algorithms=['HS256'])
         except jwt.ExpiredSignatureError:
-            print('RETURN 2', flush=True)
+            logger.debug('RETURN 2')
             return
         except (IndexError, jwt.DecodeError):
-            print('RETURN 3', flush=True)
+            logger.debug('RETURN 3')
             return
         if 'username' not in payload:
-            print('RETURN 4', flush=True)
+            logger.debug('RETURN 4')
             return
         self.user = JwtUser.objects.filter(username=payload['username']).first()
         if self.user is None:
-            print('RETURN 5', flush=True)
+            logger.debug('RETURN 5')
             return
         self.user_username = self.user.username
-        print('ALL GOOD', flush=True)
+        logger.debug('ALL GOOD')
         self.authed = True
 
     async def receive(self, text_data):
-        #print(dir(self))
+        #logger.debug(dir(self))
         if not self.connected:
             return
-        print('RECEIVE', text_data, flush=True)
+        logger.debug(f'RECEIVE {text_data}')
         msg_obj = None
         try:
             msg_obj = json.loads(text_data)
@@ -96,7 +96,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
                 pass
             return
         if not self.authed:
-            print('Not authed, doing auth', flush=True)
+            logger.debug('Not authed, doing auth')
             await sync_to_async(self.do_auth)(msg_obj)
             if not self.authed:
                 try:
@@ -127,7 +127,7 @@ class WsConsumerCommon(AsyncWebsocketConsumer):
             pass # socket was closed
 
     async def send_channel(self, channel, msgtype, content):
-        print(f'SEND TO CHANNEL {channel} ({type(channel)})', flush=True)
+        logger.debug(f'SEND TO CHANNEL {channel} ({type(channel)})')
         await self.channel_layer.group_send(
             channel, {"type": msgtype, "msg_obj": content}
         )
